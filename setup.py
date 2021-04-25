@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="duckduckgo",
+    name="duckduckgo_search",
     version=__version__,
     author="deedy5",
     author_email="deedy-ru@ya.ru",
