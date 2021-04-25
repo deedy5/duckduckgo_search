@@ -35,7 +35,7 @@ def search_ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_r
             counter += 1
             if counter >= max_results:
                 return results
-            print(counter)
+
         next_page = tree.xpath('.//div[@class="nav-link"]')[-1] 
         names = next_page.xpath('.//input[@type="hidden"]/@name')
         values = next_page.xpath('.//input[@type="hidden"]/@value')
