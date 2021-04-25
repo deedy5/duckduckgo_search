@@ -3,7 +3,7 @@ import requests
 
 __version__ = 0.2
 
-def search_ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
     '''
     DuckDuckGo search
     Query parameters, link: https://duckduckgo.com/params:
