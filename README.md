@@ -32,7 +32,7 @@ search_ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_resul
 ### Example
 ```python
 keywords = 'google'
-results = search_ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=100)
+results = search_ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=2)
 print(results)
 ```
 ```python
