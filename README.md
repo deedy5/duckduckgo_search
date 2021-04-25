@@ -1,5 +1,5 @@
 ![Python >= 3.6](https://img.shields.io/badge/python->=3.6-red.svg)
-## Duckduckgo
+## Duckduckgo_search
 
 Duckduckgo.com search results.
 
