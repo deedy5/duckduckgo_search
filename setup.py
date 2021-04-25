@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="duckduckgo",
-    version="__version__",
+    version=__version__,
     author="deedy5",
     author_email="deedy-ru@ya.ru",
     description="Duckduckgo.com search results",
