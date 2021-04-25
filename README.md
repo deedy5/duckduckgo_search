@@ -7,6 +7,11 @@ Duckduckgo.com search results.
 ```python
 lxml, requests
 ```
+### Install
+```python
+pip install -U duckduckgo_search
+```
+
 ### Usage
 ```python
 from duckduckgo_search import ddg
