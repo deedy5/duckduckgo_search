@@ -9,7 +9,9 @@ lxml, requests
 ```
 ### Usage
 ```python
-duckduckgo.search_ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
+from duckduckgo_search import ddg
+
+ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
     '''
     DuckDuckGo search
     Query parameters, link: https://duckduckgo.com/params:
@@ -32,7 +34,7 @@ duckduckgo.search_ddg(keywords, region='wt-wt', safesearch='Moderate', time=None
 ### Example
 ```python
 keywords = 'google'
-results = duckduckgo.search_ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=2)
+results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=2)
 print(results)
 ```
 ```python
