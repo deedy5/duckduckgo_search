@@ -1,7 +1,7 @@
 from lxml import html
 import requests
 
-__version__ = 0.3
+__version__ = 0.4
 
 def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
     '''
