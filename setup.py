@@ -8,7 +8,6 @@ setup(
     name="duckduckgo_search",
     version=__version__,
     author="deedy5",
-    author_email="deedy-ru@ya.ru",
     description="Duckduckgo.com search results",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -17,7 +16,7 @@ setup(
     py_modules=["duckduckgo_search"],
     install_requires=["requests>=2.25.0", "lxml>=4.6.3"],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
