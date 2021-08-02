@@ -43,5 +43,11 @@ results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_res
 print(results)
 ```
 ```python
-[{'title': 'Google', 'href': 'http://www.l.google.com/', 'body': "Google has many special features to help you find exactly what you're looking for. Advertising Programs Business Solutions About Google."}, {'title': 'Google - Home | Facebook', 'href': 'https://www.facebook.com/Google/', 'body': "Google, Mountain View, CA. 28M likes · 52,285 talking about this · 611 were here. Organizing the world's information and making it universally accessible... See actions taken by the people who manage and post content. Google Inc. is responsible for this Page."}]
+[{'title': 'Google', 
+  'href': 'http://www.l.google.com/', 
+  'body': "Google has many special features to help you find exactly what you're looking for. Advertising Programs Business Solutions About Google."}, 
+  {'title': 'Google - Home | Facebook', 
+  'href': 'https://www.facebook.com/Google/', 
+  'body': "Google, Mountain View, CA. 28M likes · 52,285 talking about this · 611 were here. Organizing the world's information and making it universally accessible... See actions taken by the people who manage and post content. Google Inc. is responsible for this Page."},
+]
 ```
