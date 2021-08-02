@@ -1,7 +1,7 @@
 from lxml import html
 import requests
 
-__version__ = 0.4
+__version__ = 0.5
 
 def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
     '''
@@ -16,12 +16,21 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
 
     results, counter = [], 0
     url = 'https://html.duckduckgo.com/html'    
-    safesearch_base = {'On': 1, 'Moderate': -1, 'Off': -2}
-    payload = {'q': keywords, 'l': region, 'p': safesearch_base[safesearch],'df': time}
+    safesearch_base = {
+        'On': 1, 
+        'Moderate': -1, 
+        'Off': -2
+        }
+    payload = {
+        'q': keywords, 
+        'l': region, 
+        'p': safesearch_base[safesearch],
+        'df': time
+        }
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0"}
 
     while True:
-        res = requests.post(url, headers=headers, data=payload)
+        res = requests.post(url, headers=headers, data=payload, **kwargs)
         tree = html.fromstring(res.text)
         if tree.xpath('//div[@class="no-results"]/text()'):
             return results
