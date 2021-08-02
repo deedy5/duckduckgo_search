@@ -1,4 +1,4 @@
-![Python >= 3.6](https://img.shields.io/badge/python->=3.6-red.svg)
+![Python >= 3.6](https://img.shields.io/badge/python->=3.6-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) 
 ## Duckduckgo_search
 
 Duckduckgo.com search results.
