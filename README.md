@@ -13,6 +13,7 @@ pip install -U duckduckgo_search
 ```
 
 ### Usage
+*WARNING : At the moment, the site gives an error when making frequent repeated requests. Do not send requests more often than **once every 30 seconds**.*
 ```python
 from duckduckgo_search import ddg
 
