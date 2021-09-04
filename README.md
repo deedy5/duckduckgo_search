@@ -13,19 +13,19 @@ pip install -U duckduckgo_search
 ```
 
 ### Usage
-**WARNING** : *The site gives an error when making frequent repeated requests.</br>
-Recommended time intervals depending on the number of results requested:* </br>
+*WARNING! : The site duckduckgo.com gives an error when making frequent repeated requests.</br>
+If the function returns an error, **wait 15 seconds**. </br>
+Approximate time intervals depending on the number of requested results:* </br>
 
 number of results requested | interval between requests |
 ---------------|---------------------------------------
-max_results=10 | 1 sec |
-max_results=20 | 3 sec |
-max_results=30 | 5 sec |
-max_results=40 | 5 sec |
-max_results=50 | 5 sec |
-max_results>=60 | >=10 sec |
+1 <= max_results <=10 | 1 sec |
+10 <= max_results <= 20 | 3 sec |
+20 <= max_results <= 30 | 5 sec |
+30 <= max_results <= 200 | >= 10 sec |
 
-If the site gives you an error, **wait 15 seconds**.*
+
+
 ```python
 from duckduckgo_search import ddg
 
@@ -36,8 +36,9 @@ ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, 
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: 'd' (day), 'w' (week), 'm' (month), 'y' (year), or 'year-month-date..year-month-date';
-    max_results: depends on the keyword, the maximum DDG gives out about 200 results.
+    time: 'd' (day), 'w' (week), 'm' (month), 'y' (year), or 'year-month-date..year-month-date';    
+    max_results = 30 gives a number of results not less than 30,   
+    maximum DDG gives out about 200 results.
     '''
 ```
 ### Returns
