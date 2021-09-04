@@ -1,7 +1,7 @@
 from lxml import html
 import requests
 
-__version__ = 0.5
+__version__ = 0.6
 
 def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
     '''
@@ -27,25 +27,28 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
         'p': safesearch_base[safesearch],
         'df': time
         }
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0"}
-
-    while True:
-        res = requests.post(url, headers=headers, data=payload, **kwargs)
-        tree = html.fromstring(res.text)
-        if tree.xpath('//div[@class="no-results"]/text()'):
-            return results
-        for element in tree.xpath('//div[contains(@class, "results_links")]'):
-            position = {
-                'title': element.xpath('.//a[contains(@class, "result__a")]/text()')[0],
-                'href': element.xpath('.//a[contains(@class, "result__a")]/@href')[0],
-                'body': ''.join(element.xpath('.//a[contains(@class, "result__snippet")]//text()')),
-                }
-            results.append(position)
-            counter += 1
-            if counter >= max_results:
+    with requests.Session() as s:
+        s.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0"})
+        
+        while True:
+            print('i')
+            res = s.post(url, data=payload, **kwargs)
+            tree = html.fromstring(res.text)
+            if tree.xpath('//div[@class="no-results"]/text()'):
+                print(len(results))
                 return results
+            for element in tree.xpath('//div[contains(@class, "results_links")]'):
+                position = {
+                    'title': element.xpath('.//a[contains(@class, "result__a")]/text()')[0],
+                    'href': element.xpath('.//a[contains(@class, "result__a")]/@href')[0],
+                    'body': ''.join(element.xpath('.//a[contains(@class, "result__snippet")]//text()')),
+                    }
+                results.append(position)
+                counter += 1
+                if counter >= max_results:
+                    return results
 
-        next_page = tree.xpath('.//div[@class="nav-link"]')[-1] 
-        names = next_page.xpath('.//input[@type="hidden"]/@name')
-        values = next_page.xpath('.//input[@type="hidden"]/@value')
-        payload = {n: v for n, v in zip(names, values)}
+            next_page = tree.xpath('.//div[@class="nav-link"]')[-1] 
+            names = next_page.xpath('.//input[@type="hidden"]/@name')
+            values = next_page.xpath('.//input[@type="hidden"]/@value')
+            payload = {n: v for n, v in zip(names, values)}
