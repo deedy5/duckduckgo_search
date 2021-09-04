@@ -21,8 +21,8 @@ number of results requested | interval between requests |
 ---------------|---------------------------------------
 1 <= max_results <=10 | 1 sec |
 10 <= max_results <= 20 | 3 sec |
-20 <= max_results <= 30 | 5 sec |
-30 <= max_results <= 200 | >= 10 sec |
+20 <= max_results <= 40 | 5 sec |
+40 <= max_results <= 200 | >= 10 sec |
 
 
 
