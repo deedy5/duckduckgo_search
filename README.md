@@ -13,7 +13,19 @@ pip install -U duckduckgo_search
 ```
 
 ### Usage
-*WARNING : At the moment, the site gives an error when making frequent repeated requests. Do not send requests more often than **once every 30 seconds**.*
+**WARNING** : *The site gives an error when making frequent repeated requests.</br>
+Recommended time intervals depending on the number of results requested:* </br>
+
+number of results requested | interval between requests |
+---------------|---------------------------------------
+max_results=10 | 1 sec |
+max_results=20 | 3 sec |
+max_results=30 | 5 sec |
+max_results=40 | 5 sec |
+max_results=50 | 5 sec |
+max_results>=60 | >=10 sec |
+
+If the site gives you an error, **wait 15 seconds**.*
 ```python
 from duckduckgo_search import ddg
 
