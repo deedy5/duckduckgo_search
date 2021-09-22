@@ -13,25 +13,15 @@ pip install -U duckduckgo_search
 ```
 
 ### Usage
-*WARNING! : The site duckduckgo.com gives an error when making frequent repeated requests.</br>
-If the function returns an error, **wait 15 seconds**. </br>
-Approximate time intervals depending on the number of requested results:* </br>
 
-number of results requested | interval between requests |
----------------|---------------------------------------
-1 <= max_results <=10 | 1 sec |
-10 <= max_results <= 20 | 3 sec |
-20 <= max_results <= 40 | 5 sec |
-40 <= max_results <= 200 | >= 10 sec |
-
-
+*WARNING!*: set the delay between function calls to **2 seconds** to avoid site error. </br>
+If the function returns an error, wait 15 seconds. </br>
 
 ```python
 from duckduckgo_search import ddg
 
 ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
-    '''
-    DuckDuckGo search
+    ''' DuckDuckGo search
     Query parameters, link: https://duckduckgo.com/params:
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
