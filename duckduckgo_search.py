@@ -2,10 +2,10 @@ from time import sleep
 from lxml import html
 import requests
 
-__version__ = 0.7
+__version__ = 0.8
 
 session = requests.Session()
-session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0"})
+session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"})
 
 def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
     ''' DuckDuckGo search
