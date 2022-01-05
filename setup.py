@@ -8,7 +8,7 @@ setup(
     name="duckduckgo_search",
     version=__version__,
     author="deedy5",
-    author_email="deedy-ru@ya.ru",
+    author_email="",
     description="Duckduckgo.com search results",
     long_description=long_description,
     long_description_content_type="text/markdown",
