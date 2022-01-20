@@ -15,7 +15,7 @@ setup(
     url="https://github.com/deedy5/duckduckgo_search",
     license="MIT",
     py_modules=["duckduckgo_search"],
-    install_requires=["requests>=2.26.0", "lxml>=4.6.3"],
+    install_requires=["requests>=2.26.0", "lxml>=4.6.3", "brotli>=1.0.9"],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
