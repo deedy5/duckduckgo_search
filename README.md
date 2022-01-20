@@ -44,6 +44,8 @@ ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, 
 ```
 ### Example
 ```python
+from duckduckgo_search import ddg
+
 keywords = 'google'
 results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=2)
 print(results)
@@ -98,10 +100,12 @@ ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None
 ```
 ### Example
 ```python
+from duckduckgo_search import ddg_images
+
 keywords = 'world'
-results = ddg_images(keywords='world', region='br-pt', safesearch='Off', time='Year', size='Wallpaper', 
-                color='Green', type_image='Photo',layout='Square', license_image='Public', max_results=500)
-print(results)
+r = ddg_images(keywords='world', region='br-pt', safesearch='Off', time='Year', size='Wallpaper', 
+               color='Green', type_image='Photo',layout='Square', license_image='Public', max_results=500)
+print(r)
 ```
 ```python
 [
