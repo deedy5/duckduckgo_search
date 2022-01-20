@@ -12,7 +12,9 @@ lxml, requests
 pip install -U duckduckgo_search
 ```
 
-### Usage
+# Usage
+
+## 1. ddg() - search by duckduckgo.com
 
 *WARNING!*: set the delay between function calls to **2 seconds** to avoid site error. </br>
 If the function returns an error, wait 15 seconds. </br>
@@ -58,5 +60,54 @@ print(results)
  'href': 'https://www.facebook.com/Google/', 
  'body': "Google, Mountain View, CA. 28M likes · 52,285 talking about this · 611 were here. Organizing the world's information and making it universally accessible... See actions taken by the people who manage and post content. Google Inc. is responsible for this Page."
  },
+]
+```
+___
+## 2. ddg_images() - image search by duckduckgo.com
+```python
+from duckduckgo_search import ddg_images
+
+ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
+           color=None, type_image=None, layout=None, license_image=None, max_results=100):
+    ''' DuckDuckGo images search
+    keywords: keywords for query;
+    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
+    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
+    time: Day, Week, Month, Year;
+    size: Small, Medium, Large, Wallpaper;
+    color: color, Monochrome, Red, Orange, Yellow, Green, Blue, Purple, Pink, Brown, Black, Gray, Teal, White;
+    type_image: photo, clipart, gif, transparent, line;
+    layout: Square, Tall, Wide;
+    license_image: any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
+             ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
+             ModifyCommercially (Free to Modify, Share, and Use Commercially);
+    max_results: number of results, maximum ddg_images gives out 1000 results.
+    '''
+```
+### Returns
+```python
+[{'height': image height,
+  'image': image url,
+  'source': image source,
+  'thumbnail': image thumbnail,
+  'title': image title,
+  'url': url where the image was found,
+  'width': image width },  
+ ...
+ ]
+```
+### Example
+```python
+keywords = 'world'
+results = ddg_images(keywords='world', region='br-pt', safesearch='Off', time='Year', size='Wallpaper', 
+                color='Green', type_image='Photo',layout='Square', license_image='Public', max_results=500)
+print(results)
+```
+```python
+[
+{'height': 1920, 'image': 'https://publicdomainpictures.net/pictures/110000/velka/arid-world.jpg', 'source': 'Bing', 'thumbnail': 'https://tse4.mm.bing.net/th?id=OIP.kCgFTRlCKn04iljW31QvNQHaHa&pid=Api', 'title': 'Arid World Free Stock Photo - Public Domain Pictures', 'url': 'https://www.publicdomainpictures.net/view-image.php?image=108025&picture=arid-world', 'width': 1920},
+ 
+{'height': 2400, 'image': 'https://www.goodfreephotos.com/albums/vector-images/kawaii-earth-vector-clipart.png', 'source': 'Bing', 'thumbnail': 'https://tse4.mm.bing.net/th?id=OIP.Sq1GMsUVFlekkoof_wwx7wHaHa&pid=Api', 'title': 'Kawaii Earth Vector Clipart image - Free stock photo ...', 'url': 'https://www.goodfreephotos.com/public-domain-images/kawaii-earth-vector-clipart.png.php', 'width': 2400},
+...
 ]
 ```
