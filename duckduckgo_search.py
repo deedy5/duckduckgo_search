@@ -1,10 +1,11 @@
 import json
 from time import sleep
+from datetime import datetime
 import requests
 from lxml import html
 
 
-__version__ = 0.9
+__version__ = '0.9.5'
 
 
 session = requests.Session()
@@ -110,4 +111,65 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
         results.extend(r for r in data['results'])
         payload['s'] += 100
     return results
+
+
+
+def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30):
+    ''' DuckDuckGo news search
+    keywords: keywords for query;
+    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
+    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
+    time: 'd' (day), 'w' (week), 'm' (month);    
+    max_results = 30, maximum DDG_news gives out 240 results.
+    '''
     
+    # get vqd
+    payload = {
+        'q': keywords, 
+        }    
+    res = session.post("https://duckduckgo.com", data=payload)
+    tree = html.fromstring(res.text)
+    vqd = tree.xpath("//script[contains(text(), 'vqd=')]/text()")[0].split("vqd='")[-1].split("';")[0]
+    
+    # get news
+    safesearch_base = {
+        'On': 1, 
+        'Moderate': -1, 
+        'Off': -2
+        }
+    params = {
+        'l': region,
+        'o': 'json',
+        'noamp': '1',
+        'q': keywords,
+        'vqd': vqd,
+        'p': safesearch_base[safesearch],
+        'df': time,
+        's': 0,
+        }
+    data_previous, cache = [], set()
+    results = []     
+    while params['s'] < min(max_results, 240):
+        resp = session.get('https://duckduckgo.com/news.js', params=params)
+        data = resp.json()['results']
+        if data_previous and data == data_previous:
+            break
+        else:
+            data_previous = data
+        for r in data:
+            title = r['title']
+            if title in cache:
+                continue
+            else:
+                cache.add(title)
+            results.append({
+                'date': datetime.utcfromtimestamp(r['date']).isoformat(),
+                'title': title,
+                'body': r['excerpt'],
+                'url': r['url'],
+                'image': r.get('image', ''),
+                'source': r['source'],
+                 })
+        params['s'] += 30
+        sleep(0.2)
+    return sorted(results, key=lambda x: x['date'], reverse=True)
