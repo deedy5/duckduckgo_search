@@ -5,29 +5,70 @@ import requests
 from lxml import html
 
 
-__version__ = '0.9.5'
+__version__ = '1.0'
 
 
 session = requests.Session()
 session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"})
 
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28):
     ''' DuckDuckGo search
     Query parameters, link: https://duckduckgo.com/params:
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: 'd' (day), 'w' (week), 'm' (month), 'y' (year), or 'year-month-date..year-month-date';    
-    max_results = 30 gives a number of results not less than 30,   
+    time: 'd' (day), 'w' (week), 'm' (month), 'y' (year);    
+    max_results = 28 gives a number of results not less than 28,   
     maximum DDG gives out about 200 results.
     '''
+
+    # get vqd
+    payload = {
+        'q': keywords, 
+        }    
+    res = session.post("https://duckduckgo.com", data=payload)
+    tree = html.fromstring(res.text)
+    vqd = tree.xpath("//script[contains(text(), 'vqd=')]/text()")[0].split("vqd='")[-1].split("';")[0]
+    sleep(0.75)
     
+    # search
     safesearch_base = {
         'On': 1, 
         'Moderate': -1, 
         'Off': -2
         }
+    params = {
+        'q': keywords,
+        'l': region,
+        'p': safesearch_base[safesearch],
+        's': 0,
+        'df': time,
+        'o': 'json',        
+        'vqd': vqd,      
+        }
+    results, cache = [], set()
+    while len(results) < max_results and params["s"] < 200:
+        resp = session.get('https://links.duckduckgo.com/d.js', params=params)
+        if '/506-10.js' in resp.url:
+            return results
+        data = resp.json()["results"]
+        for r in data:
+            try:
+                s = r["n"].split("s=")[1].split('&')[0]
+                params["s"] = int(s) - int(s) % 2
+                break
+            except:
+                if r['u'] not in cache:
+                    cache.add(r['u'])
+                    results.append({
+                        'title': r['t'],
+                        'href': r['u'],
+                        'body': r['a'],
+                        })
+        sleep(0.75)
+
+    ''' using html method
     payload = {
         'q': keywords, 
         'l': region, 
@@ -53,7 +94,8 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
         values = next_page.xpath('.//input[@type="hidden"]/@value')
         payload = {n: v for n, v in zip(names, values)}
         sleep(2)
-
+    '''
+    return results
 
         
 def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
