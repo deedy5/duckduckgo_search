@@ -61,10 +61,12 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
             except:
                 if r['u'] not in cache:
                     cache.add(r['u'])
+                    body = html.fromstring(r['a'])
+                    body = html.tostring(body, method='text', encoding='unicode')
                     results.append({
-                        'title': r['t'],
+                        'title': html.fromstring(r['t']).text,
                         'href': r['u'],
-                        'body': r['a'],
+                        'body': body,
                         })
         sleep(0.75)
 
