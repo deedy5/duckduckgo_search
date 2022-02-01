@@ -16,20 +16,18 @@ pip install -U duckduckgo_search
 
 ## 1. ddg() - search by duckduckgo.com
 
-*WARNING!*: set the delay between function calls to **2 seconds** to avoid site error. </br>
-If the function returns an error, wait 15 seconds. </br>
+*WARNING!*: set a delay of at least **0.75** seconds between function calls.
 
 ```python
 from duckduckgo_search import ddg
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, **kwargs):
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28):
     ''' DuckDuckGo search
-    Query parameters, link: https://duckduckgo.com/params:
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
     time: 'd' (day), 'w' (week), 'm' (month), 'y' (year), or 'year-month-date..year-month-date';    
-    max_results = 30 gives a number of results not less than 30,   
+    max_results = 28 gives a number of results not less than 28,   
     maximum DDG gives out about 200 results.
     '''
 ```
@@ -46,22 +44,15 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
 ```python
 from duckduckgo_search import ddg
 
-keywords = 'google'
-results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=2)
+keywords = 'Bella Ciao'
+results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=28)
 print(results)
 ```
 ```python
 [
- {
- 'title': 'Google', 
- 'href': 'http://www.l.google.com/', 
- 'body': "Google has many special features to help you find exactly what you're looking for. Advertising Programs Business Solutions About Google."
- }, 
- {
- 'title': 'Google - Home | Facebook', 
- 'href': 'https://www.facebook.com/Google/', 
- 'body': "Google, Mountain View, CA. 28M likes · 52,285 talking about this · 611 were here. Organizing the world's information and making it universally accessible... See actions taken by the people who manage and post content. Google Inc. is responsible for this Page."
- },
+{'title': 'Bella Ciao - Original Italian Lyrics & English Translation ...', 'href': 'https://dailyitalianwords.com/bella-ciao-original-italian-lyrics-english-translation/', 'body': 'Bella Ciao - English Meaning (Mondine version) In the morning as soon as I get up oh goodbye beautiful, goodbye beautiful, goodbye beautiful, bye, bye, bye In the morning as soon as I get up I have to go to the paddy fields. And between insects and mosquitoes oh goodbye beautiful, goodbye beautiful, goodbye beautiful, bye, bye, bye'},
+{'title': "What's the meaning of Bella Ciao | Italian song explained", 'href': 'https://www.thinkinitalian.com/bella-ciao-meaning/', 'body': "Bella Ciao is probably the most famous Italian folk song. It has been sung anywhere in the world for years, and the TV series Money Heist made it even more popular. But what does it talk about? What's the story behind its lyrics? This is a perfect chance to learn some more Italian with the meaning of Bella Ciao. Italian culture Michele"},
+...
 ]
 ```
 ___
