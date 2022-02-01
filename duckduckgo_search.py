@@ -50,9 +50,11 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
     results, cache = [], set()
     while len(results) < max_results and params["s"] < 200:
         resp = session.get('https://links.duckduckgo.com/d.js', params=params)
-        if '/506-10.js' in resp.url:
+        try:
+            data = resp.json()["results"]
+        except:
             return results
-        data = resp.json()["results"]
+        
         for r in data:
             try:
                 s = r["n"].split("s=")[1].split('&')[0]
