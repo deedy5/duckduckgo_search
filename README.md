@@ -14,6 +14,20 @@ pip install -U duckduckgo_search
 
 # Usage
 
+***Duckduckgo Search Operators***
+
+| Keywords example |	Result|
+| ---     | ---   |
+| cats dogs |	Results about cats or dogs |
+| "cats and dogs" |	Results for exact term "cats and dogs". If no results are found, show related results. |
+| cats -dogs |	Fewer dogs in results |
+| cats +dogs |	More dogs in results |
+| cats filetype:pdf |	PDFs about cats. Supported file types: pdf, doc(x), xls(x), ppt(x), html |
+| dogs site:example.com  |	Pages about dogs from example.com |
+| cats -site:example.com |	Pages about cats, excluding example.com |
+| intitle:dogs |	Page title includes the word "dogs" |
+| inurl:cats  |	Page url includes the word "cats" |
+___
 ## 1. ddg() - search by duckduckgo.com
 
 *WARNING!*: set a delay of at least **0.75** seconds between function calls.
