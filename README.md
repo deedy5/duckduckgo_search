@@ -19,7 +19,7 @@ pip install -U duckduckgo_search
 | Keywords example |	Result|
 | ---     | ---   |
 | cats dogs |	Results about cats or dogs |
-| "cats and dogs" |	Results for exact term "cats and dogs". If no results are found, show related results. |
+| "cats and dogs" |	Results for exact term "cats and dogs". If no results are found, related results are shown. |
 | cats -dogs |	Fewer dogs in results |
 | cats +dogs |	More dogs in results |
 | cats filetype:pdf |	PDFs about cats. Supported file types: pdf, doc(x), xls(x), ppt(x), html |
