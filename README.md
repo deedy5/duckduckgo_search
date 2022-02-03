@@ -1,7 +1,7 @@
 ![Python >= 3.6](https://img.shields.io/badge/python->=3.6-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) 
 ## Duckduckgo_search
 
-Search text, images, news using DuckDuckGo.com search engine 
+Search text, images, news, maps using DuckDuckGo.com search engine 
 
 ***Dependencies***
 ```python
@@ -160,3 +160,72 @@ print(r)
 ...
 ]
 ```
+___
+## 4. ddg_maps() - map search by duckduckgo.com
+```python
+from duckduckgo_search import ddg_maps
+
+def ddg_maps(keywords, place, radius=0):
+    ''' DuckDuckGo maps search
+    keywords: keywords for query;  
+    place: the city to search in,
+    radius: expand the search square by the distance in kilometers. 
+    '''
+```
+***Returns***
+```python
+[{'title': title,
+  'address': address,
+  'latitude': latitude,
+  'longitude': longitude,
+  'url': url,
+  'desc': desc,
+  'phone': phone,
+  'image': image,             
+  'source': source,
+  'links': links,
+  'hours': hours,}
+ ...
+ ]
+```
+***Example***
+```python
+from duckduckgo_search import ddg_maps
+
+keywords = 'dentists'
+place = 'Los Angeles'
+r = ddg_maps(keywords, place, radius=0)
+print(r)
+```
+```python
+[
+{
+'title': 'Harbor Community Clinic', 
+'address': '731 S Beacon St, San Pedro, CA  90731, United States', 
+'latitude': 33.7372266, 
+'longitude': -118.2806465, 
+'url': 'https://www.harborcommunityclinic.com', 
+'desc': 'Trusted Primary Care Practices serving San Pedro, CA. Contact us at 310-547-0202 or visit us at 593 W 6th St, San Pedro, CA 90731: Harbor Community Health Centers', 
+'phone': '+13107325887', 
+'image': 'https://sa1s3optim.patientpop.com/assets/images/provider/photos/2185353.png', 
+'source': 'https://maps.apple.com/place?q=Harbor%20Community%20Clinic&auid=3544348534960817847&address=731%20S%20Beacon%20St,%20San%20Pedro,%20CA%20%2090731,%20United%20States&ll=33.7372266,-118.2806465', 
+'links': {'twitter': 'https://twitter.com/harborcclinic'}, 
+'hours': {'Fri': '8:30AM–5PM', 'Mon': '8:30AM–5PM', 'Thu': '8:30AM–5PM', 'Tue': '8:30AM–5PM', 'Wed': '8:30AM–5PM', 'closes_soon': 0, 'is_open': 0, 'opens_soon': 0, 'state_switch_time': '8:30AM'}
+},
+{
+'title': 'A+ Dental', 
+'address': '531 W Seventh St, San Pedro, CA  90731, United States', 
+'latitude': 33.7377013677309, 
+'longitude': -118.288545012474, 
+'url': 'http://www.myaplusdental.com', 
+'desc': 'A+ Dental & Dr. Philip W.S. Park in San Pedro CA, are commited to the most gentle family dentistry! Open Saturdays! Call us at 310-831-0003', 
+'phone': '+13109844955', 
+'image': 'https://static.wixstatic.com/media/5dcdb2_6bddde6197044fb58565d9216d3d518e%7Emv2.jpg/v1/fit/w_2500,h_1330,al_c/5dcdb2_6bddde6197044fb58565d9216d3d518e%7Emv2.jpg', 
+'source': 'http://yelp.com/biz/pFxe1sQ5Mk9LE_L6CtcLHw', 
+'links': '', 
+'hours': {'Fri': '9AM–2PM', 'Mon': '9AM–6PM', 'Sat': '9AM–5PM', 'Thu': '9AM–6PM', 'Tue': '9AM–6PM', 'Wed': '9AM–6PM', 'closes_soon': 0, 'is_open': 0, 'opens_soon': 0, 'state_switch_time': '9AM'}
+},
+...
+]
+```
+
