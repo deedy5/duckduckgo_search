@@ -1,11 +1,12 @@
 import json
 from time import sleep
 from datetime import datetime
+from decimal import Decimal
 import requests
 from lxml import html
 
 
-__version__ = '1.0'
+__version__ = '1.1'
 
 
 session = requests.Session()
@@ -102,6 +103,7 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
     return results
 
         
+    
 def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
                color=None, type_image=None, layout=None, license_image=None, max_results=100):
     ''' DuckDuckGo images search
@@ -219,3 +221,113 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
         params['s'] += 30
         sleep(0.2)
     return sorted(results, key=lambda x: x['date'], reverse=True)
+
+
+
+def ddg_maps(keywords, place, radius=0):
+    ''' DuckDuckGo maps search
+    keywords: keywords for query;  
+    place: the city to search in,
+    radius: expand the search square by the distance in kilometers. 
+    '''
+    
+    # get vqd
+    payload = {
+        'q': keywords + place, 
+        }    
+    resp = session.post("https://duckduckgo.com", data=payload)
+    tree = html.fromstring(resp.text)
+    vqd = tree.xpath("//script[contains(text(), 'vqd=')]/text()")[0].split("vqd='")[-1].split("';")[0]
+      
+    # get place bbox
+    params = {
+        'q': place,
+        'format': 'jsonv2',
+        }
+    resp = requests.get('https://nominatim.openstreetmap.org/search.php', params=params)
+    coordinates = resp.json()[0]["boundingbox"]
+    lon_tl, lon_br = Decimal(coordinates[1]), Decimal(coordinates[0])
+    lat_tl, lat_br = Decimal(coordinates[2]), Decimal(coordinates[3])
+    print(f"{place} bbox\n{lon_tl} {lat_tl}, {lon_br} {lat_tl}")
+    lon_tl += Decimal(radius)*Decimal(0.09)
+    lat_tl -= Decimal(radius)*Decimal(0.09)
+    lon_br -= Decimal(radius)*Decimal(0.09)
+    lat_br += Decimal(radius)*Decimal(0.09)
+    lat_br_start = lat_br
+    
+    # bbox iterate
+    results, cache = [], set()
+    step = Decimal(0.09)
+    while lon_br < lon_tl:
+        while lat_br > lat_tl:
+            bbox_tl = f"{lon_br+step},{lat_br-step}"
+            bbox_br = f"{lon_br},{lat_br}"
+            #print(f"{bbox_tl=}"),
+            #print(f"{bbox_br=}", end='\n')
+            params = {
+                'q': keywords,
+                'vqd': vqd,
+                'tg': 'maps_places',
+                'rt': 'D',
+                'mkexp': 'b',
+                'wiki_info': '1',
+                'is_requery': '1',
+                'bbox_tl': bbox_tl,
+                'bbox_br': bbox_br,                    
+                'strict_bbox': '1',
+                }
+            resp = session.get('https://duckduckgo.com/local.js', params=params)
+            data = resp.json()
+
+            repeats = 0                
+            for r in data["results"]:
+                title = r["name"]
+                address = r["address"]
+                if title + address in cache:
+                    repeats += 1
+                    pass
+                else:
+                    cache.add(title + address)
+                    url = r["website"]
+                    phone = r["phone"]
+                    latitude = r["coordinates"]["latitude"]
+                    longitude = r["coordinates"]["longitude"]
+                    source = r["url"]
+                    try:
+                        image = r["embed"]["image"]
+                    except:
+                        image = ""
+                    try:
+                        links = r["embed"]["third_party_links"]
+                    except:
+                        links = ""
+                    try:
+                        desc = r["embed"]["description"]
+                    except:
+                        desc = ""
+                    hours = r["hours"]
+                    t = {'title': title,
+                         'address': address,
+                         'latitude': latitude,
+                         'longitude': longitude,
+                         'url': url,
+                         'desc': desc,
+                         'phone': phone,
+                         'image': image,             
+                         'source': source,
+                         'links': links,
+                         'hours': hours,}
+                    results.append(t)
+            print(f"Results progress: {len(results)}")
+
+            if repeats <= 10:
+                divider = 4
+            elif repeats <= 15:
+                divider == 2
+            else:
+                divider = 1    
+            lat_br -= step / divider
+        lon_br += step
+        lat_br = lat_br_start
+            
+    return results
