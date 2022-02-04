@@ -54,7 +54,7 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
   'href': href of result,
   'body': body of result,}, ...]
 ```
-***Example***
+***Example 1. Text search***
 ```python
 from duckduckgo_search import ddg
 
@@ -66,6 +66,22 @@ print(results)
 [
 {'title': 'Bella Ciao - Original Italian Lyrics & English Translation ...', 'href': 'https://dailyitalianwords.com/bella-ciao-original-italian-lyrics-english-translation/', 'body': 'Bella Ciao - English Meaning (Mondine version) In the morning as soon as I get up oh goodbye beautiful, goodbye beautiful, goodbye beautiful, bye, bye, bye In the morning as soon as I get up I have to go to the paddy fields. And between insects and mosquitoes oh goodbye beautiful, goodbye beautiful, goodbye beautiful, bye, bye, bye'},
 {'title': "What's the meaning of Bella Ciao | Italian song explained", 'href': 'https://www.thinkinitalian.com/bella-ciao-meaning/', 'body': "Bella Ciao is probably the most famous Italian folk song. It has been sung anywhere in the world for years, and the TV series Money Heist made it even more popular. But what does it talk about? What's the story behind its lyrics? This is a perfect chance to learn some more Italian with the meaning of Bella Ciao. Italian culture Michele"},
+...
+]
+```
+***Example 2. Searching for pdf files***
+```python
+from duckduckgo_search import ddg
+
+keywords = 'conditioned reflex in humans filetype:pdf'
+results = ddg(keywords, region='wt-wt', safesearch='None', time=None, max_results=300)
+print(results)
+```
+```python
+[
+{'title': 'PDF Conditioned Reflexes', 'href': 'https://antilogicalism.com/wp-content/uploads/2019/04/conditioned-reflexes.pdf', 'body': '302 CONDITIONED REFLEXES. in the strength of the reflexes, a state of ;affair.~ which lasted for many. days, the relation between the magnitudes of the reflexes and the Other dogs those of the inhibitable type suffered a functional disturbance of the cortical activities for a very considerable period.'},
+{'title': 'Conditioned reflex therapy; the direct approach to the reconstruction...', 'href': 'https://archive.org/details/conditionedrefle00salt', 'body': "Two chapters were rewritten and expanded from the author's What is hypnosis. One was reprinted from the South west review. Bibliography: p. 321-340."},
+{'title': 'conditioned reflex examples in humans - Bing', 'href': 'https://technopagan.org/conditioned+reflex+examples+in+humans&FORM=QSRE4', 'body': 'Jun 02, 2021 · Conditioned Reflex Examples In Humans And not discrimination is directly with dogs was presented is absent, and emotional responses being subtle variations in... When they hear thunder, in conditioned reflex was sent to humans are allowed early contributions ivan to know about why...'},
 ...
 ]
 ```
@@ -107,16 +123,16 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
 ```python
 from duckduckgo_search import ddg_images
 
-keywords = 'world'
-r = ddg_images(keywords='world', region='br-pt', safesearch='Off', time='Year', size='Wallpaper', 
-               color='Green', type_image='Photo',layout='Square', license_image='Public', max_results=500)
+keywords = 'liberty tree'
+r = ddg_images(keywords, region='wt-wt', safesearch='Off', size=None, 
+               color='Monochrome', type_image=None, layout=None, license_image=None, max_results=300)
 print(r)
 ```
 ```python
 [
-{'height': 1920, 'image': 'https://publicdomainpictures.net/pictures/110000/velka/arid-world.jpg', 'source': 'Bing', 'thumbnail': 'https://tse4.mm.bing.net/th?id=OIP.kCgFTRlCKn04iljW31QvNQHaHa&pid=Api', 'title': 'Arid World Free Stock Photo - Public Domain Pictures', 'url': 'https://www.publicdomainpictures.net/view-image.php?image=108025&picture=arid-world', 'width': 1920},
- 
-{'height': 2400, 'image': 'https://www.goodfreephotos.com/albums/vector-images/kawaii-earth-vector-clipart.png', 'source': 'Bing', 'thumbnail': 'https://tse4.mm.bing.net/th?id=OIP.Sq1GMsUVFlekkoof_wwx7wHaHa&pid=Api', 'title': 'Kawaii Earth Vector Clipart image - Free stock photo ...', 'url': 'https://www.goodfreephotos.com/public-domain-images/kawaii-earth-vector-clipart.png.php', 'width': 2400},
+{'height': 1000, 'image': 'https://i5.walmartimages.com/asr/fef2dbdb-3756-4401-b7ae-502ec2ea082b_1.eb37ae35a5e3d4ae59d61ecac336c226.jpeg?odnWidth=1000&odnHeight=1000&odnBg=ffffff', 'source': 'Bing', 'thumbnail': 'https://tse2.mm.bing.net/th?id=OIP.4DhDDdx9IOAwbFm6CRGpTwHaHa&pid=Api', 'title': 'Liberty Tree 1765 Nthe Large Elm Tree At Boylston Market ...', 'url': 'https://www.walmart.com/ip/Liberty-Tree-1765-Nthe-Large-Elm-Tree-Boylston-Market-Boston-Massachusetts-Named-Liberty-Tree-Sons-Liberty-Held-Meetings-Summer-1765-Wood-Engraving-A/997377547?wmlspartner=bizratecom&affcmpid=3313893407&tmode=0000', 'width': 1000},
+{'height': 2400, 'image': 'http://etc.usf.edu/clipart/13500/13570/liberty-tree_13570.tif', 'source': 'Bing', 'thumbnail': 'https://tse2.mm.bing.net/th?id=OIP.4t3AojTiUP6TZ-AFaSfCHAHaJ7&pid=Api', 'title': 'Liberty Tree | ClipArt ETC', 'url': 'http://etc.usf.edu/clipart/13500/13570/liberty-tree_13570.htm', 'width': 1790},
+{'height': 297, 'image': 'https://www.blogtalkradio.com/api/image/resize/400x297/aHR0cHM6Ly9kYXNnN3h3bWxkaXg2LmNsb3VkZnJvbnQubmV0L2hvc3RwaWNzLzc1MGZhZjVhLTJhMTUtNDE5Ni1iOTQwLTA1NTc1NjVlMGM1MV9saWJlcnR5LXRyZWVfbG9nby5qcGc/750faf5a-2a15-4196-b940-0557565e0c51_liberty-tree_logo.jpg?mode=Fill', 'source': 'Bing', 'thumbnail': 'https://tse2.mm.bing.net/th?id=OIP.IQxgK4LaaFV82m7Iz9J3sgAAAA&pid=Api', 'title': 'Liberty Tree Radio Online Radio | BlogTalkRadio', 'url': 'http://www.blogtalkradio.com/libertytreeradio', 'width': 400},
 ...
 ]
 ```
@@ -149,14 +165,15 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
 ```python
 from duckduckgo_search import ddg_news
 
-keywords = 'water'
-r = ddg_images(keywords, region='it-it')
+keywords = "russia invasion ukraine"
+r = ddg_news(keywords, region='wt-wt', safesearch='Off', time='d', max_results=100)
 print(r)
 ```
 ```python
 [
-{'date': '2022-01-23T06:55:49', 'title': 'Gli stranieri di nuovo sulle vie di Francesco', 'body': 'Assisi, l&#x27;assessore Leggio: &quot;Segnali incoraggianti dalle prenotazioni internazionali per la primavera. Recuperare un mercato azzerato&quot;', 'url': 'https://www.msn.com/it-it/news/italia/gli-stranieri-di-nuovo-sulle-vie-di-francesco/ar-AAT3dMR', 'image': 'https://immagini.quotidiano.net/?url=http%3A%2F%2Fp1014p.quotidiano.net%3A80%2Fpolopoly_fs%2F1.7280413.1642920950%21%2FhttpImage%2Fimage.jpg_gen%2Fderivatives%2Ffullsize%2Fimage.jpg&w=700&h=391&mode=fill&bg=fff', 'source': 'La Nazione on MSN.com'}, 
-{'date': '2022-01-23T04:40:00', 'title': "ROAD 6 GT: i nuovi pneumatici Michelin per le moto da Gran Turismo sono gia' un successo", 'body': 'I nuovi pneumatici Michelin sono stati svelati: ecco tutte le informazioni e le differenze rispetto al modello precedente', 'url': 'https://www.tecnoandroid.it/2022/01/23/road-6-gt-i-nuovi-pneumatici-michelin-per-le-moto-da-gran-turismo-sono-gia-un-successo-1022660', 'image': 'https://www.tecnoandroid.it/wp-content/uploads/2022/01/michelin-road-6-gt.jpg', 'source': 'TECNOANDROID'},
+{'date': '2022-02-04T06:50:00', 'title': 'Russia denies leaking U.S. security talks document to El Pais', 'body': 'Moscow has demanded guarantees from Washington and NATO that Ukraine will not be allowed to join the military bloc. Russia has amassed over 100,000 troops close to the Ukrainian borders, but denies planning an invasion.', 'url': 'https://wdez.com/2022/02/04/russia-denies-leaking-u-s-security-talks-document-to-el-pais/', 'image': 'https://storage.googleapis.com/media.mwcradio.com/mimesis/2022-02/04/2022-02-04T060600Z_1_LYNXMPEI13053_RTROPTP_3_RUSSIA-USA-SECURITY.JPG', 'source': 'WDEZ'},
+{'date': '2022-02-04T06:50:00', 'title': 'Analysis-Traders scour markets for protection amid Ukraine tensions', 'body': 'LONDON (Reuters) - Unnerved by the sabre-rattling between Russia and the West over Ukraine, traders are scouring ... a 10% probability of a full-fledged invasion. Ganry recommends a different ...', 'url': 'https://wsau.com/2022/02/04/analysis-traders-scour-markets-for-protection-amid-ukraine-tensions/', 'image': 'https://storage.googleapis.com/media.mwcradio.com/mimesis/2022-02/04/2022-02-04T061136Z_2_LYNXMPEI13058_RTROPTP_3_GLOBAL-MARKETS-TRADING.JPG', 'source': 'WSAY'},
+{'date': '2022-02-04T06:47:00', 'title': "Morning news brief: US's warning on Russia-Ukraine crisis, Johnson's top aides quitting, and more", 'body': 'Russia will produce graphic propaganda video as pretext for an invasion against Ukraine: US © Provided by WION Pentagon officials said today that Russia could fabricate a pretext for an invasion of Ukraine. "As part of this fake attack, we believe that ...', 'url': 'https://www.msn.com/en-in/news/world/morning-news-brief-us-s-warning-on-russia-ukraine-crisis-johnson-s-top-aides-quitting-and-more/ar-AATs9ml', 'image': 'https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AATsnww.img?h=315&w=600&m=6&q=60&o=t&l=f&f=jpg', 'source': 'MSN'},
 ...
 ]
 ```
