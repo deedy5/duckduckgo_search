@@ -6,11 +6,16 @@ import requests
 from lxml import html
 
 
-__version__ = '1.1'
+__version__ = '1.1.5'
 
 
 session = requests.Session()
 session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"})
+
+
+def _normalize(text):
+    body = html.fromstring(text)
+    return html.tostring(body, method='text', encoding='unicode')
 
 
 def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28):
@@ -64,12 +69,10 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
             except:
                 if r['u'] not in cache:
                     cache.add(r['u'])
-                    body = html.fromstring(r['a'])
-                    body = html.tostring(body, method='text', encoding='unicode')
                     results.append({
-                        'title': html.fromstring(r['t']).text,
+                        'title': _normalize(r['t']),
                         'href': r['u'],
-                        'body': body,
+                        'body': _normalize(r['a']),
                         })
         sleep(0.75)
 
@@ -213,7 +216,7 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
             results.append({
                 'date': datetime.utcfromtimestamp(r['date']).isoformat(),
                 'title': title,
-                'body': r['excerpt'],
+                'body': _normalize(r['excerpt']),
                 'url': r['url'],
                 'image': r.get('image', ''),
                 'source': r['source'],
