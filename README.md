@@ -245,4 +245,56 @@ print(r)
 ...
 ]
 ```
+___
+## 5. ddg_translate() - translation by duckduckgo.com
+
+```python
+from duckduckgo_search import ddg_translate
+
+def ddg_translate(keywords, from_=None, to='en'):
+    ''' DuckDuckGo translate
+    keywords: string or a list of strings to translate;  
+    from_: what language to translate from (defaults automatically),
+    to: what language to translate (defaults to English). 
+    '''
+```
+***Returns***
+```python
+[
+{'detected_language': detected_language,
+  'translated': translated text,
+  'original': original text,},
+ ...
+ ]
+```
+***Example 1. Translate the string***
+```python
+from duckduckgo_search import ddg_translate
+
+keywords = "A chain is only as strong as its weakest link"
+results = ddg_translate(keywords, to='de')
+print(results)
+```
+```python
+[
+{'detected_language': 'en', 'translated': 'Eine Kette ist nur so stark wie ihr schwächstes Glied', 'original': 'A chain is only as strong as its weakest link'}
+]
+```
+***Example 2. Translate the list of strings***
+```python
+from duckduckgo_search import ddg_translate
+
+keywords = ["Такие дела, брат", "You can lead a horse to water, but you can't make it drink.",
+            "Ein Spatz in der Hand ist besser, als eine Taube auf dem Dach."]
+results = ddg_translate(keywords, from_=None, to='tr')
+print(results)
+```
+```python
+[
+{'detected_language': 'ru', 'translated': 'Böyle şeyler, kardeşim.', 'original': 'Такие дела, брат'},
+{'detected_language': 'en', 'translated': 'Bir atı suya götürebilirsin ama içiremezsin.', 'original': "You can lead a horse to water, but you can't make it drink."},
+{'detected_language': 'de', 'translated': 'Elinizdeki serçe çatıdaki bir güvercinden daha iyidir.', 'original': 'Ein Spatz in der Hand ist besser, als eine Taube auf dem Dach.'},
+...
+]
+```
 
