@@ -6,7 +6,7 @@ import requests
 from lxml import html
 
 
-__version__ = '1.1.5'
+__version__ = '1.2'
 
 
 session = requests.Session()
@@ -333,4 +333,41 @@ def ddg_maps(keywords, place, radius=0):
         lon_br += step
         lat_br = lat_br_start
             
+    return results
+
+
+
+def ddg_translate(keywords, from_=None, to='en'):
+    ''' DuckDuckGo translate
+    keywords: string or a list of strings to translate;  
+    from_: what language to translate from (defaults automatically),
+    to: what language to translate (defaults to English). 
+    '''
+    
+    # get vqd
+    payload = {
+        'q': 'translate', 
+        }    
+    resp = session.post("https://duckduckgo.com", data=payload)
+    tree = html.fromstring(resp.text)
+    vqd = tree.xpath("//script[contains(text(), 'vqd=')]/text()")[0].split("vqd='")[-1].split("';")[0]
+    
+    # translate
+    params = {
+        'vqd': vqd,
+        'query': 'translate',
+        'from': from_,
+        'to': to,
+        }
+    
+    if isinstance(keywords, str):
+        keywords = [keywords]
+        
+    results = []
+    for data in keywords:
+        resp = session.post('https://duckduckgo.com/translation.js', params=params, data=data.encode('utf-8'))
+        result = resp.json()
+        result["original"] = data
+        results.append(result)
+        
     return results
