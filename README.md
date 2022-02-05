@@ -1,7 +1,7 @@
 ![Python >= 3.6](https://img.shields.io/badge/python->=3.6-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) 
 ## Duckduckgo_search
 
-Search text, images, news, maps using DuckDuckGo.com search engine 
+Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine.
 
 ***Dependencies***
 ```python
