@@ -248,16 +248,20 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
 
 
 
-def ddg_maps(keywords, street=None, city=None, county=None, state=None,
-             country=None, postalcode=None, radius=0):
+def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=None,
+             country=None, postalcode=None, latitude=None, longitude=None, radius=0):
     ''' DuckDuckGo maps search
     keywords: keywords for query;
+    place: simplified search - if set, the other parameters are not used;
     street: house number/street;
     city: city of search;
     county: county of search;
     state: state of search;
     country: country of search;
     postalcode: postalcode of search;
+    latitude: geographic coordinate that specifies the north–south position;
+    longitude: geographic coordinate that specifies the east–west position;
+        if latitude and longitude are set, the other parameters are not used.
     radius: expand the search square by the distance in kilometers. 
     '''
     
@@ -269,34 +273,53 @@ def ddg_maps(keywords, street=None, city=None, county=None, state=None,
     tree = html.fromstring(resp.text)
     vqd = tree.xpath("//script[contains(text(), 'vqd=')]/text()")[0].split("vqd='")[-1].split("';")[0]
       
-    # get place bbox
-    params = {
-        'street': street,
-        'city': city,
-        'county': county,
-        'state': state,
-        'country': country,
-        'postalcode': postalcode,
-        'polygon_geojson': '0',
-        'format': 'jsonv2',
-        }
-    resp = requests.get('https://nominatim.openstreetmap.org/search.php', params=params)
-    coordinates = resp.json()[0]["boundingbox"]
-    
-    lon_tl, lon_br = Decimal(coordinates[1]), Decimal(coordinates[0])
-    lat_tl, lat_br = Decimal(coordinates[2]), Decimal(coordinates[3])
-    print(f"bbox\n{lon_tl} {lat_tl}, {lon_br} {lat_br}")
-    lon_tl += Decimal(radius)*Decimal(0.09)
-    lat_tl -= Decimal(radius)*Decimal(0.09)
-    lon_br -= Decimal(radius)*Decimal(0.09)
-    lat_br += Decimal(radius)*Decimal(0.09)
+    # if longitude and latitude are specified, skip the request about bbox to the nominatim api
+    if latitude and longitude:
+        lat_t = Decimal(latitude.replace(',','.'))
+        lat_b = Decimal(latitude.replace(',','.'))
+        lon_l = Decimal(longitude.replace(',','.'))
+        lon_r = Decimal(longitude.replace(',','.'))
+        if radius == 0:
+            radius = 1
+    # otherwise request about bbox to nominatim api
+    else:
+        if place:
+            params = {
+                'q': place,
+                'polygon_geojson': '0',
+                'format': 'jsonv2',
+                }
+        else:
+             params = {
+                'street': street,
+                'city': city,
+                'county': county,
+                'state': state,
+                'country': country,
+                'postalcode': postalcode,
+                'polygon_geojson': '0',
+                'format': 'jsonv2',
+                }           
+        resp = requests.get('https://nominatim.openstreetmap.org/search.php', params=params)
+        coordinates = resp.json()[0]["boundingbox"]
+        lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
+        lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
+
+    # if a radius is specified, expand the search square
+    lat_t += Decimal(radius)*Decimal(0.008983)
+    lat_b -= Decimal(radius)*Decimal(0.008983)
+    lon_l -= Decimal(radius)*Decimal(0.008983)
+    lon_r += Decimal(radius)*Decimal(0.008983)
+    print(f"bbox coordinates\ntopleft= {lat_t} {lon_l}\nbottomright= {lat_b} {lon_r}")
+
+    # сreate a queue of search squares (bboxes)
     work_bboxes = deque()
-    work_bboxes.append((lon_tl, lat_tl, lon_br, lat_br))
+    work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
     
     # bbox iterate
     results, cache = [], set()
     while work_bboxes:
-        lon_tl, lat_tl, lon_br, lat_br = work_bboxes.pop()
+        lat_t, lon_l, lat_b, lon_r = work_bboxes.pop()
         params = {
             'q': keywords,
             'vqd': vqd,
@@ -305,8 +328,8 @@ def ddg_maps(keywords, street=None, city=None, county=None, state=None,
             'mkexp': 'b',
             'wiki_info': '1',
             'is_requery': '1',
-            'bbox_tl': f"{lon_tl},{lat_tl}",
-            'bbox_br': f"{lon_br},{lat_br}",                    
+            'bbox_tl': f"{lat_t},{lon_l}",
+            'bbox_br': f"{lat_b},{lon_r}",                    
             'strict_bbox': '1',
             }
         resp = session.get('https://duckduckgo.com/local.js', params=params)
@@ -334,12 +357,12 @@ def ddg_maps(keywords, street=None, city=None, county=None, state=None,
 
         # divide the square into 4 parts and add to the queue
         if len(data) == 20:
-            lon_middle = (lon_tl + lon_br) / 2
-            lat_middle = (lat_tl + lat_br) / 2
-            bbox1 = (lon_tl, lat_tl, lon_middle, lat_middle)
-            bbox2 = (lon_middle, lat_tl, lon_br, lat_middle)
-            bbox3 = (lon_tl, lat_middle, lon_middle, lat_br)
-            bbox4 = (lon_middle, lat_middle, lon_br, lat_br)
+            lat_middle = (lat_t + lat_b) / 2
+            lon_middle = (lon_l + lon_r) / 2            
+            bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
+            bbox2 = (lat_t, lon_middle, lat_middle, lon_r)
+            bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
+            bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
             work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
             
         print(f"Found {len(results)}")
