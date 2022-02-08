@@ -182,10 +182,20 @@ ___
 ```python
 from duckduckgo_search import ddg_maps
 
-def ddg_maps(keywords, place, radius=0):
+def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=None,
+             country=None, postalcode=None, latitude=None, longitude=None, radius=0):
     ''' DuckDuckGo maps search
-    keywords: keywords for query;  
-    place: the city to search in,
+    keywords: keywords for query;
+    place: simplified search - if set, the other parameters are not used;
+    street: house number/street;
+    city: city of search;
+    county: county of search;
+    state: state of search;
+    country: country of search;
+    postalcode: postalcode of search;
+    latitude: geographic coordinate that specifies the north–south position;
+    longitude: geographic coordinate that specifies the east–west position;
+        if latitude and longitude are set, the other parameters are not used.
     radius: expand the search square by the distance in kilometers. 
     '''
 ```
@@ -205,43 +215,93 @@ def ddg_maps(keywords, place, radius=0):
  ...
  ]
 ```
-***Example***
+***Example 1. Simple search (if place parameter is set, the other parameters are not used)***
 ```python
 from duckduckgo_search import ddg_maps
 
 keywords = 'dentists'
 place = 'Los Angeles'
-r = ddg_maps(keywords, place, radius=0)
+
+r = ddg_maps(keywords, place='Los Angeles')
 print(r)
 ```
 ```python
 [
-{
-'title': 'Harbor Community Clinic', 
-'address': '731 S Beacon St, San Pedro, CA  90731, United States', 
-'latitude': 33.7372266, 
-'longitude': -118.2806465, 
-'url': 'https://www.harborcommunityclinic.com', 
-'desc': 'Trusted Primary Care Practices serving San Pedro, CA. Contact us at 310-547-0202 or visit us at 593 W 6th St, San Pedro, CA 90731: Harbor Community Health Centers', 
-'phone': '+13107325887', 
-'image': 'https://sa1s3optim.patientpop.com/assets/images/provider/photos/2185353.png', 
-'source': 'https://maps.apple.com/place?q=Harbor%20Community%20Clinic&auid=3544348534960817847&address=731%20S%20Beacon%20St,%20San%20Pedro,%20CA%20%2090731,%20United%20States&ll=33.7372266,-118.2806465', 
-'links': {'twitter': 'https://twitter.com/harborcclinic'}, 
-'hours': {'Fri': '8:30AM–5PM', 'Mon': '8:30AM–5PM', 'Thu': '8:30AM–5PM', 'Tue': '8:30AM–5PM', 'Wed': '8:30AM–5PM', 'closes_soon': 0, 'is_open': 0, 'opens_soon': 0, 'state_switch_time': '8:30AM'}
-},
-{
-'title': 'A+ Dental', 
-'address': '531 W Seventh St, San Pedro, CA  90731, United States', 
-'latitude': 33.7377013677309, 
-'longitude': -118.288545012474, 
-'url': 'http://www.myaplusdental.com', 
-'desc': 'A+ Dental & Dr. Philip W.S. Park in San Pedro CA, are commited to the most gentle family dentistry! Open Saturdays! Call us at 310-831-0003', 
-'phone': '+13109844955', 
-'image': 'https://static.wixstatic.com/media/5dcdb2_6bddde6197044fb58565d9216d3d518e%7Emv2.jpg/v1/fit/w_2500,h_1330,al_c/5dcdb2_6bddde6197044fb58565d9216d3d518e%7Emv2.jpg', 
-'source': 'http://yelp.com/biz/pFxe1sQ5Mk9LE_L6CtcLHw', 
-'links': '', 
-'hours': {'Fri': '9AM–2PM', 'Mon': '9AM–6PM', 'Sat': '9AM–5PM', 'Thu': '9AM–6PM', 'Tue': '9AM–6PM', 'Wed': '9AM–6PM', 'closes_soon': 0, 'is_open': 0, 'opens_soon': 0, 'state_switch_time': '9AM'}
-},
+{'title': 'Venice Family Dentistry', 'address': '10913 Venice Blvd, Los Angeles, CA  90034, United States', 'latitude': 34.0159528696929, 'longitude': -118.412624001503, 'url': 'http://venicefamilydentistry.com', 'desc': 'This website is for sale! venicefamilydentistry.com is your first and best source for all of the information you’re looking for. From general topics to more of what you would expect to find here, venicefamilydentistry.com has it all. We hope you find what you are searching for!', 'phone': '+13108733331', 'image': '', 'source': 'http://yelp.com/biz/EKGhduy0WGnMBpbqJCQapg', 'links': '', 'hours': ''},
+{'title': 'Serenity Dental Care', 'address': '11262 W Washington Blvd, Culver City, CA  90230, United States', 'latitude': 34.0050049579316, 'longitude': -118.413847088814, 'url': 'https://serenitydentalcare.com', 'desc': None, 'phone': '+13103906500', 'image': None, 'source': 'http://yelp.com/biz/tD9wuIHnJhYjsPAnEGHzTQ', 'links': None, 'hours': ''},
+...
+]
+```
+***Example 2. Advanced search in city and country***
+```python
+from duckduckgo_search import ddg_maps
+
+keywords = 'dentists'
+city = 'Los Angeles'
+country = 'USA'
+r = ddg_maps(keywords, city='Denver', country='USA')
+print(r)
+```
+```python
+[
+{'title': 'Williams Family Dentistry', 'address': '4624 N Central Park Blvd, Unit 102, Denver, CO 80238, United States', 'latitude': 39.7804958556395, 'longitude': -104.88231038524, 'url': 'http://www.margiewilliamsdds.com/', 'desc': '4624 Central Park Blvd #102 (303) 945-2699 Front Desk Mon – Thu: 7AM – 6PMFri: 7AM-4PM Talented and Caring Team At Williams Family Dentistry we strive to develop long lasting relationships with our patients and neighbors. We […]', 'phone': '+13039452699', 'image': 'https://margiewilliamsdds.com/wp-content/uploads/2021/06/Dr-Group-photo-scaled.jpg', 'source': 'http://yelp.com/biz/DgmYAIM30TXvBaB-FBSvRQ', 'links': '', 'hours': ''},
+{'title': 'Dentists of Central Park', 'address': '10355 E Martin Luther King Jr Blvd, Unit 110, Denver, CO 80238, United States', 'latitude': 39.7602729, 'longitude': -104.8673477, 'url': 'https://www.dentistsofcentralpark.com', 'desc': 'Local dentist near you in Denver. Book your dental appointment for general dentistry, teeth whitening, oral surgery, or emergency dentistry.', 'phone': '+17204038351', 'image': 'https://www.dentistsofcentralpark.com/etc/designs/pds/favicon-152x152.png', 'source': 'http://yelp.com/biz/6GULzhI8Zg6V5Diqyc_rWw', 'links': {'facebook': 'https://www.facebook.com/DentistsofCentralPark/'}, 'hours': ''}
+
+...
+]
+```
+***Example 2. Advanced search in city and country***
+```python
+from duckduckgo_search import ddg_maps
+
+keywords = 'dentists'
+city = 'Los Angeles'
+country = 'USA'
+r = ddg_maps(keywords, city='Denver', country='USA')
+print(r)
+```
+```python
+[
+{'title': 'Williams Family Dentistry', 'address': '4624 N Central Park Blvd, Unit 102, Denver, CO 80238, United States', 'latitude': 39.7804958556395, 'longitude': -104.88231038524, 'url': 'http://www.margiewilliamsdds.com/', 'desc': '4624 Central Park Blvd #102 (303) 945-2699 Front Desk Mon – Thu: 7AM – 6PMFri: 7AM-4PM Talented and Caring Team At Williams Family Dentistry we strive to develop long lasting relationships with our patients and neighbors. We […]', 'phone': '+13039452699', 'image': 'https://margiewilliamsdds.com/wp-content/uploads/2021/06/Dr-Group-photo-scaled.jpg', 'source': 'http://yelp.com/biz/DgmYAIM30TXvBaB-FBSvRQ', 'links': '', 'hours': ''},
+{'title': 'Dentists of Central Park', 'address': '10355 E Martin Luther King Jr Blvd, Unit 110, Denver, CO 80238, United States', 'latitude': 39.7602729, 'longitude': -104.8673477, 'url': 'https://www.dentistsofcentralpark.com', 'desc': 'Local dentist near you in Denver. Book your dental appointment for general dentistry, teeth whitening, oral surgery, or emergency dentistry.', 'phone': '+17204038351', 'image': 'https://www.dentistsofcentralpark.com/etc/designs/pds/favicon-152x152.png', 'source': 'http://yelp.com/biz/6GULzhI8Zg6V5Diqyc_rWw', 'links': {'facebook': 'https://www.facebook.com/DentistsofCentralPark/'}, 'hours': ''}
+
+...
+]
+```
+***Example 3. Advanced search by address with increasing search square***
+```python
+from duckduckgo_search import ddg_maps
+
+keywords = 'dentists'
+street = 'Av. Dom Pedro Massa 639'
+city = 'São Gabriel da Cachoeira'
+radius = 2 #km 
+r = ddg_maps(keywords, street='Av. Dom Pedro Massa 639', city ='São Gabriel da Cachoeira', radius=2)
+print(r)
+```
+```python
+[
+{'title': 'Clínica Integrada de Odontologia', 'address': 'Avenida Presidente Castelo Branco, São Gabriel da Cachoeira - AM, 69750, Brazil', 'latitude': -0.130427164469837, 'longitude': -67.0899445932125, 'url': '', 'desc': None, 'phone': '+559734711654', 'image': None, 'source': 'https://maps.apple.com/place?q=Cl%C3%ADnica%20Integrada%20de%20Odontologia&auid=7074519049033716214&address=Avenida%20Presidente%20Castelo%20Branco,%20S%C3%A3o%20Gabriel%20da%20Cachoeira%20-%20AM,%2069750,%20Brazil&ll=-0.13042716446983657,-67.08994459321246', 'links': None, 'hours': ''},
+{'title': 'DNS Odontomedica', 'address': 'Rua Alfredo Macêdo, 102, São Gabriel da Cachoeira - AM, 69750-000, Brazil', 'latitude': -0.1242364, 'longitude': -67.0890056, 'url': 'http://www.dnsodontologica.com.br', 'desc': None, 'phone': '+559734712066', 'image': None, 'source': 'https://maps.apple.com/place?q=DNS%20Odontomedica&auid=9296844468385454246&address=Rua%20Alfredo%20Mac%C3%AAdo,%20102,%20S%C3%A3o%20Gabriel%20da%20Cachoeira%20-%20AM,%2069750-000,%20Brazil&ll=-0.1242364,-67.0890056', 'links': None, 'hours': ''},
+
+...
+]
+```
+***Example 4. Advanced search by coordinates with increasing search square***
+```python
+from duckduckgo_search import ddg_maps
+
+keywords = 'dentists'
+longitude = '-3,844749'
+latitude = '-0,728722'
+radius = 1000 #km
+r = ddg_maps(keywords, longitude='-3,844749', latitude='-0,728722', radius=1000)
+print(r)
+```
+```python
+[
+{'title': 'Blissfield Dental', 'address': 'Borno Way, Ebute Metta, Lagos, Nigeria', 'latitude': 6.49685370846362, 'longitude': 3.37770581245422, 'url': '', 'desc': None, 'phone': '+2348023134407', 'image': None, 'source': 'https://maps.apple.com/place?q=Blissfield%20Dental&auid=14057124693413493763&address=Borno%20Way,%20Ebute%20Metta,%20Lagos,%20Nigeria&ll=6.496853708463621,3.3777058124542236', 'links': None, 'hours': ''},
+{'title': 'New World Dental Clinic', 'address': 'Mango Tree Avenue, Accra, Ghana', 'latitude': 5.56883812629534, 'longitude': -0.202152729034424, 'url': '', 'desc': None, 'phone': '+233277542476', 'image': None, 'source': 'https://maps.apple.com/place?q=New%20World%20Dental%20Clinic&auid=14201475011650979408&address=Mango%20Tree%20Avenue,%20Accra,%20Ghana&ll=5.5688381262953435,-0.20215272903442383', 'links': None, 'hours': ''},
 ...
 ]
 ```
