@@ -3,18 +3,19 @@
 
 Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine.
 
-***Dependencies***
-```python
-lxml, requests
-```
 ***Install***
 ```python
-pip install -U duckduckgo_search
+pip install -I duckduckgo_search
 ```
-
-# Usage
-
-***Duckduckgo Search Operators***
+### Table of Contents  
+[Duckduckgo search operators](#duckduckgo-search-operators)  
+[1. ddg() - search by duckduckgo.com](#1-ddg---search-by-duckduckgocom)</br>
+[2. ddg_images() - image search by duckduckgo.com](#2-ddg_images---image-search-by-duckduckgocom)</br> 
+[3. ddg_news() - news search by duckduckgo.com](#3-ddg_news---news-search-by-duckduckgocom)</br>
+[4. ddg_maps() - map search by duckduckgo.com](#4-ddg_maps---map-search-by-duckduckgocom)</br>
+[5. ddg_translate() - translation by duckduckgo.com](#5-ddg_translate---translation-by-duckduckgocom)</br>
+___
+## Duckduckgo search operators
 
 | Keywords example |	Result|
 | ---     | ---   |
