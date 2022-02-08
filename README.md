@@ -237,25 +237,7 @@ print(r)
 from duckduckgo_search import ddg_maps
 
 keywords = 'dentists'
-city = 'Los Angeles'
-country = 'USA'
-r = ddg_maps(keywords, city='Denver', country='USA')
-print(r)
-```
-```python
-[
-{'title': 'Williams Family Dentistry', 'address': '4624 N Central Park Blvd, Unit 102, Denver, CO 80238, United States', 'latitude': 39.7804958556395, 'longitude': -104.88231038524, 'url': 'http://www.margiewilliamsdds.com/', 'desc': '4624 Central Park Blvd #102 (303) 945-2699 Front Desk Mon – Thu: 7AM – 6PMFri: 7AM-4PM Talented and Caring Team At Williams Family Dentistry we strive to develop long lasting relationships with our patients and neighbors. We […]', 'phone': '+13039452699', 'image': 'https://margiewilliamsdds.com/wp-content/uploads/2021/06/Dr-Group-photo-scaled.jpg', 'source': 'http://yelp.com/biz/DgmYAIM30TXvBaB-FBSvRQ', 'links': '', 'hours': ''},
-{'title': 'Dentists of Central Park', 'address': '10355 E Martin Luther King Jr Blvd, Unit 110, Denver, CO 80238, United States', 'latitude': 39.7602729, 'longitude': -104.8673477, 'url': 'https://www.dentistsofcentralpark.com', 'desc': 'Local dentist near you in Denver. Book your dental appointment for general dentistry, teeth whitening, oral surgery, or emergency dentistry.', 'phone': '+17204038351', 'image': 'https://www.dentistsofcentralpark.com/etc/designs/pds/favicon-152x152.png', 'source': 'http://yelp.com/biz/6GULzhI8Zg6V5Diqyc_rWw', 'links': {'facebook': 'https://www.facebook.com/DentistsofCentralPark/'}, 'hours': ''}
-
-...
-]
-```
-***Example 2. Advanced search in city and country***
-```python
-from duckduckgo_search import ddg_maps
-
-keywords = 'dentists'
-city = 'Los Angeles'
+city = 'Denver'
 country = 'USA'
 r = ddg_maps(keywords, city='Denver', country='USA')
 print(r)
