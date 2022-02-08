@@ -2,20 +2,41 @@ import json
 from time import sleep
 from datetime import datetime
 from decimal import Decimal
+from collections import deque
+from dataclasses import dataclass
 import requests
 from lxml import html
 
 
-__version__ = '1.2'
+__version__ = '1.3'
 
 
 session = requests.Session()
 session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"})
 
 
+
+@dataclass
+class MapsResult:
+    ''' Dataclass for ddg_maps search results '''
+    title: str = None
+    address: str = None
+    latitude: str = None
+    longitude: str = None
+    url: str = None
+    desc: str = None
+    phone: str = None
+    image: str = None 
+    source: str = None
+    links: dict = None
+    hours: dict = None
+
+        
+        
 def _normalize(text):
     body = html.fromstring(text)
     return html.tostring(body, method='text', encoding='unicode')
+
 
 
 def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28):
@@ -227,16 +248,22 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
 
 
 
-def ddg_maps(keywords, place, radius=0):
+def ddg_maps(keywords, street=None, city=None, county=None, state=None,
+             country=None, postalcode=None, radius=0):
     ''' DuckDuckGo maps search
-    keywords: keywords for query;  
-    place: the city to search in,
+    keywords: keywords for query;
+    street: house number/street;
+    city: city of search;
+    county: county of search;
+    state: state of search;
+    country: country of search;
+    postalcode: postalcode of search;
     radius: expand the search square by the distance in kilometers. 
     '''
     
     # get vqd
     payload = {
-        'q': keywords + place, 
+        'q': keywords, 
         }    
     resp = session.post("https://duckduckgo.com", data=payload)
     tree = html.fromstring(resp.text)
@@ -244,95 +271,78 @@ def ddg_maps(keywords, place, radius=0):
       
     # get place bbox
     params = {
-        'q': place,
+        'street': street,
+        'city': city,
+        'county': county,
+        'state': state,
+        'country': country,
+        'postalcode': postalcode,
+        'polygon_geojson': '0',
         'format': 'jsonv2',
         }
     resp = requests.get('https://nominatim.openstreetmap.org/search.php', params=params)
     coordinates = resp.json()[0]["boundingbox"]
+    
     lon_tl, lon_br = Decimal(coordinates[1]), Decimal(coordinates[0])
     lat_tl, lat_br = Decimal(coordinates[2]), Decimal(coordinates[3])
-    print(f"{place} bbox\n{lon_tl} {lat_tl}, {lon_br} {lat_tl}")
+    print(f"bbox\n{lon_tl} {lat_tl}, {lon_br} {lat_br}")
     lon_tl += Decimal(radius)*Decimal(0.09)
     lat_tl -= Decimal(radius)*Decimal(0.09)
     lon_br -= Decimal(radius)*Decimal(0.09)
     lat_br += Decimal(radius)*Decimal(0.09)
-    lat_br_start = lat_br
+    work_bboxes = deque()
+    work_bboxes.append((lon_tl, lat_tl, lon_br, lat_br))
     
     # bbox iterate
     results, cache = [], set()
-    step = Decimal(0.09)
-    while lon_br < lon_tl:
-        while lat_br > lat_tl:
-            bbox_tl = f"{lon_br+step},{lat_br-step}"
-            bbox_br = f"{lon_br},{lat_br}"
-            #print(f"{bbox_tl=}"),
-            #print(f"{bbox_br=}", end='\n')
-            params = {
-                'q': keywords,
-                'vqd': vqd,
-                'tg': 'maps_places',
-                'rt': 'D',
-                'mkexp': 'b',
-                'wiki_info': '1',
-                'is_requery': '1',
-                'bbox_tl': bbox_tl,
-                'bbox_br': bbox_br,                    
-                'strict_bbox': '1',
-                }
-            resp = session.get('https://duckduckgo.com/local.js', params=params)
-            data = resp.json()
-
-            repeats = 0                
-            for r in data["results"]:
-                title = r["name"]
-                address = r["address"]
-                if title + address in cache:
-                    repeats += 1
-                    pass
-                else:
-                    cache.add(title + address)
-                    url = r["website"]
-                    phone = r["phone"]
-                    latitude = r["coordinates"]["latitude"]
-                    longitude = r["coordinates"]["longitude"]
-                    source = r["url"]
-                    try:
-                        image = r["embed"]["image"]
-                    except:
-                        image = ""
-                    try:
-                        links = r["embed"]["third_party_links"]
-                    except:
-                        links = ""
-                    try:
-                        desc = r["embed"]["description"]
-                    except:
-                        desc = ""
-                    hours = r["hours"]
-                    t = {'title': title,
-                         'address': address,
-                         'latitude': latitude,
-                         'longitude': longitude,
-                         'url': url,
-                         'desc': desc,
-                         'phone': phone,
-                         'image': image,             
-                         'source': source,
-                         'links': links,
-                         'hours': hours,}
-                    results.append(t)
-            print(f"Results progress: {len(results)}")
-
-            if repeats <= 10:
-                divider = 4
-            elif repeats <= 15:
-                divider == 2
+    while work_bboxes:
+        lon_tl, lat_tl, lon_br, lat_br = work_bboxes.pop()
+        params = {
+            'q': keywords,
+            'vqd': vqd,
+            'tg': 'maps_places',
+            'rt': 'D',
+            'mkexp': 'b',
+            'wiki_info': '1',
+            'is_requery': '1',
+            'bbox_tl': f"{lon_tl},{lat_tl}",
+            'bbox_br': f"{lon_br},{lat_br}",                    
+            'strict_bbox': '1',
+            }
+        resp = session.get('https://duckduckgo.com/local.js', params=params)
+        data = resp.json()["results"]
+        
+        for res in data:
+            r = MapsResult()
+            r.title = res["name"]
+            r.address = res["address"]
+            if r.title + r.address in cache:
+                continue
             else:
-                divider = 1    
-            lat_br -= step / divider
-        lon_br += step
-        lat_br = lat_br_start
+                cache.add(r.title + r.address)
+                r.url = res["website"]
+                r.phone = res["phone"]
+                r.latitude = res["coordinates"]["latitude"]
+                r.longitude = res["coordinates"]["longitude"]
+                r.source = res["url"]
+                if res["embed"]:
+                    r.image = res["embed"].get("image", '')
+                    r.links = res["embed"].get("third_party_links", '')
+                    r.desc = res["embed"].get("description", '')
+                r.hours = res["hours"]        
+                results.append(r.__dict__)
+
+        # divide the square into 4 parts and add to the queue
+        if len(data) == 20:
+            lon_middle = (lon_tl + lon_br) / 2
+            lat_middle = (lat_tl + lat_br) / 2
+            bbox1 = (lon_tl, lat_tl, lon_middle, lat_middle)
+            bbox2 = (lon_middle, lat_tl, lon_br, lat_middle)
+            bbox3 = (lon_tl, lat_middle, lon_middle, lat_br)
+            bbox4 = (lon_middle, lat_middle, lon_br, lat_br)
+            work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
             
+        print(f"Found {len(results)}")
     return results
 
 
