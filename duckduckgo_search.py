@@ -310,7 +310,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
     lat_b -= Decimal(radius)*Decimal(0.008983)
     lon_l -= Decimal(radius)*Decimal(0.008983)
     lon_r += Decimal(radius)*Decimal(0.008983)
-    print(f"bbox coordinates\ntopleft= {lat_t} {lon_l}\nbottomright= {lat_b} {lon_r}")
+    print(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
     # сreate a queue of search squares (bboxes)
     work_bboxes = deque()
