@@ -9,11 +9,11 @@ pip install -I duckduckgo_search
 ```
 ### Table of Contents  
 [Duckduckgo search operators](#duckduckgo-search-operators)  
-[1. ddg() - search by duckduckgo.com](#1-ddg---search-by-duckduckgocom)</br>
-[2. ddg_images() - image search by duckduckgo.com](#2-ddg_images---image-search-by-duckduckgocom)</br> 
-[3. ddg_news() - news search by duckduckgo.com](#3-ddg_news---news-search-by-duckduckgocom)</br>
-[4. ddg_maps() - map search by duckduckgo.com](#4-ddg_maps---map-search-by-duckduckgocom)</br>
-[5. ddg_translate() - translation by duckduckgo.com](#5-ddg_translate---translation-by-duckduckgocom)</br>
+[1. ddg()](#1-ddg---search-by-duckduckgocom)</br>
+[2. ddg_images()](#2-ddg_images---image-search-by-duckduckgocom)</br> 
+[3. ddg_news()](#3-ddg_news---news-search-by-duckduckgocom)</br>
+[4. ddg_maps()](#4-ddg_maps---map-search-by-duckduckgocom)</br>
+[5. ddg_translate()](#5-ddg_translate---translation-by-duckduckgocom)</br>
 ___
 ## Duckduckgo search operators
 
@@ -204,6 +204,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
 ```python
 [{'title': title,
   'address': address,
+  'country_code': country code,
   'latitude': latitude,
   'longitude': longitude,
   'url': url,
@@ -228,8 +229,8 @@ print(r)
 ```
 ```python
 [
-{'title': 'Venice Family Dentistry', 'address': '10913 Venice Blvd, Los Angeles, CA  90034, United States', 'latitude': 34.0159528696929, 'longitude': -118.412624001503, 'url': 'http://venicefamilydentistry.com', 'desc': 'This website is for sale! venicefamilydentistry.com is your first and best source for all of the information you’re looking for. From general topics to more of what you would expect to find here, venicefamilydentistry.com has it all. We hope you find what you are searching for!', 'phone': '+13108733331', 'image': '', 'source': 'http://yelp.com/biz/EKGhduy0WGnMBpbqJCQapg', 'links': '', 'hours': ''},
-{'title': 'Serenity Dental Care', 'address': '11262 W Washington Blvd, Culver City, CA  90230, United States', 'latitude': 34.0050049579316, 'longitude': -118.413847088814, 'url': 'https://serenitydentalcare.com', 'desc': None, 'phone': '+13103906500', 'image': None, 'source': 'http://yelp.com/biz/tD9wuIHnJhYjsPAnEGHzTQ', 'links': None, 'hours': ''},
+{'title': 'Venice Family Dentistry', 'address': '10913 Venice Blvd, Los Angeles, CA  90034, United States', 'country_code': 'US', 'latitude': 34.0159528696929, 'longitude': -118.412624001503, 'url': 'http://venicefamilydentistry.com', 'desc': 'This website is for sale! venicefamilydentistry.com is your first and best source for all of the information you’re looking for. From general topics to more of what you would expect to find here, venicefamilydentistry.com has it all. We hope you find what you are searching for!', 'phone': '+13108733331', 'image': '', 'source': 'http://yelp.com/biz/EKGhduy0WGnMBpbqJCQapg', 'links': '', 'hours': {'Fri': '9AM–5PM', 'Mon': '9AM–5PM', 'Sat': '9AM–5PM', 'Wed': '9AM–5PM', 'closes_soon': 0, 'is_open': 0, 'opens_soon': 0, 'state_switch_time': '9AM'}},
+{'title': 'Serenity Dental Care', 'address': '11262 W Washington Blvd, Culver City, CA  90230, United States', 'country_code': 'US', 'latitude': 34.0050049579316, 'longitude': -118.413847088814, 'url': 'https://serenitydentalcare.com', 'desc': None, 'phone': '+13103906500', 'image': None, 'source': 'http://yelp.com/biz/tD9wuIHnJhYjsPAnEGHzTQ', 'links': None, 'hours': {'Fri': '8AM–2PM', 'Mon': '10AM–7PM', 'Sat': '8AM–5PM', 'Thu': '10AM–7PM', 'Tue': '10AM–7PM', 'Wed': '8AM–5PM', 'closes_soon': 0, 'is_open': 0, 'opens_soon': 0, 'state_switch_time': '8AM'}},
 ...
 ]
 ```
@@ -245,9 +246,8 @@ print(r)
 ```
 ```python
 [
-{'title': 'Williams Family Dentistry', 'address': '4624 N Central Park Blvd, Unit 102, Denver, CO 80238, United States', 'latitude': 39.7804958556395, 'longitude': -104.88231038524, 'url': 'http://www.margiewilliamsdds.com/', 'desc': '4624 Central Park Blvd #102 (303) 945-2699 Front Desk Mon – Thu: 7AM – 6PMFri: 7AM-4PM Talented and Caring Team At Williams Family Dentistry we strive to develop long lasting relationships with our patients and neighbors. We […]', 'phone': '+13039452699', 'image': 'https://margiewilliamsdds.com/wp-content/uploads/2021/06/Dr-Group-photo-scaled.jpg', 'source': 'http://yelp.com/biz/DgmYAIM30TXvBaB-FBSvRQ', 'links': '', 'hours': ''},
-{'title': 'Dentists of Central Park', 'address': '10355 E Martin Luther King Jr Blvd, Unit 110, Denver, CO 80238, United States', 'latitude': 39.7602729, 'longitude': -104.8673477, 'url': 'https://www.dentistsofcentralpark.com', 'desc': 'Local dentist near you in Denver. Book your dental appointment for general dentistry, teeth whitening, oral surgery, or emergency dentistry.', 'phone': '+17204038351', 'image': 'https://www.dentistsofcentralpark.com/etc/designs/pds/favicon-152x152.png', 'source': 'http://yelp.com/biz/6GULzhI8Zg6V5Diqyc_rWw', 'links': {'facebook': 'https://www.facebook.com/DentistsofCentralPark/'}, 'hours': ''}
-
+{'title': 'Williams Family Dentistry', 'address': '4624 N Central Park Blvd, Unit 102, Denver, CO 80238, United States', 'country_code': 'US', 'latitude': 39.7804958556395, 'longitude': -104.88231038524, 'url': 'http://www.margiewilliamsdds.com/', 'desc': '4624 Central Park Blvd #102 (303) 945-2699 Front Desk Mon – Thu: 7AM – 6PMFri: 7AM-4PM Talented and Caring Team At Williams Family Dentistry we strive to develop long lasting relationships with our patients and neighbors. We […]', 'phone': '+13039452699', 'image': 'https://margiewilliamsdds.com/wp-content/uploads/2021/06/Dr-Group-photo-scaled.jpg', 'source': 'http://yelp.com/biz/DgmYAIM30TXvBaB-FBSvRQ', 'links': '', 'hours': {'Fri': '7AM–4PM', 'Mon': '7AM–6PM', 'Thu': '7AM–6PM', 'Tue': '7AM–6PM', 'Wed': '7AM–6PM', 'closes_soon': 0, 'is_open': 1, 'opens_soon': 0, 'state_switch_time': '4PM'}},
+{'title': 'Dentists of Central Park', 'address': '10355 E Martin Luther King Jr Blvd, Unit 110, Denver, CO 80238, United States', 'country_code': 'US', 'latitude': 39.7602729, 'longitude': -104.8673477, 'url': 'https://www.dentistsofcentralpark.com', 'desc': 'Local dentist near you in Denver. Book your dental appointment for general dentistry, teeth whitening, oral surgery, or emergency dentistry.', 'phone': '+17204038351', 'image': 'https://www.dentistsofcentralpark.com/etc/designs/pds/favicon-152x152.png', 'source': 'http://yelp.com/biz/6GULzhI8Zg6V5Diqyc_rWw', 'links': {'facebook': 'https://www.facebook.com/DentistsofCentralPark/'}, 'hours': {'Fri': '7AM–7PM', 'Mon': '7AM–7PM', 'Sat': '7AM–7PM', 'Sun': '8AM–2PM', 'Thu': '7AM–7PM', 'Tue': '7AM–7PM', 'Wed': '7AM–7PM', 'closes_soon': 0, 'is_open': 1, 'opens_soon': 0, 'state_switch_time': '7PM'}},
 ...
 ]
 ```
@@ -264,8 +264,8 @@ print(r)
 ```
 ```python
 [
-{'title': 'Clínica Integrada de Odontologia', 'address': 'Avenida Presidente Castelo Branco, São Gabriel da Cachoeira - AM, 69750, Brazil', 'latitude': -0.130427164469837, 'longitude': -67.0899445932125, 'url': '', 'desc': None, 'phone': '+559734711654', 'image': None, 'source': 'https://maps.apple.com/place?q=Cl%C3%ADnica%20Integrada%20de%20Odontologia&auid=7074519049033716214&address=Avenida%20Presidente%20Castelo%20Branco,%20S%C3%A3o%20Gabriel%20da%20Cachoeira%20-%20AM,%2069750,%20Brazil&ll=-0.13042716446983657,-67.08994459321246', 'links': None, 'hours': ''},
-{'title': 'DNS Odontomedica', 'address': 'Rua Alfredo Macêdo, 102, São Gabriel da Cachoeira - AM, 69750-000, Brazil', 'latitude': -0.1242364, 'longitude': -67.0890056, 'url': 'http://www.dnsodontologica.com.br', 'desc': None, 'phone': '+559734712066', 'image': None, 'source': 'https://maps.apple.com/place?q=DNS%20Odontomedica&auid=9296844468385454246&address=Rua%20Alfredo%20Mac%C3%AAdo,%20102,%20S%C3%A3o%20Gabriel%20da%20Cachoeira%20-%20AM,%2069750-000,%20Brazil&ll=-0.1242364,-67.0890056', 'links': None, 'hours': ''},
+{'title': 'Clínica Integrada de Odontologia', 'address': 'Avenida Presidente Castelo Branco, São Gabriel da Cachoeira - AM, 69750, Brazil', 'country_code': 'BR', 'latitude': -0.130427164469837, 'longitude': -67.0899445932125, 'url': '', 'desc': None, 'phone': '+559734711654', 'image': None, 'source': 'https://maps.apple.com/place?q=Cl%C3%ADnica%20Integrada%20de%20Odontologia&auid=7074519049033716214&address=Avenida%20Presidente%20Castelo%20Branco,%20S%C3%A3o%20Gabriel%20da%20Cachoeira%20-%20AM,%2069750,%20Brazil&ll=-0.13042716446983657,-67.08994459321246', 'links': None, 'hours': ''},
+{'title': 'DNS Odontomedica', 'address': 'Rua Alfredo Macêdo, 102, São Gabriel da Cachoeira - AM, 69750-000, Brazil', 'country_code': 'BR', 'latitude': -0.1242364, 'longitude': -67.0890056, 'url': 'http://www.dnsodontologica.com.br', 'desc': None, 'phone': '+559734712066', 'image': None, 'source': 'https://maps.apple.com/place?q=DNS%20Odontomedica&auid=9296844468385454246&address=Rua%20Alfredo%20Mac%C3%AAdo,%20102,%20S%C3%A3o%20Gabriel%20da%20Cachoeira%20-%20AM,%2069750-000,%20Brazil&ll=-0.1242364,-67.0890056', 'links': None, 'hours': ''},
 
 ...
 ]
@@ -283,8 +283,8 @@ print(r)
 ```
 ```python
 [
-{'title': 'Blissfield Dental', 'address': 'Borno Way, Ebute Metta, Lagos, Nigeria', 'latitude': 6.49685370846362, 'longitude': 3.37770581245422, 'url': '', 'desc': None, 'phone': '+2348023134407', 'image': None, 'source': 'https://maps.apple.com/place?q=Blissfield%20Dental&auid=14057124693413493763&address=Borno%20Way,%20Ebute%20Metta,%20Lagos,%20Nigeria&ll=6.496853708463621,3.3777058124542236', 'links': None, 'hours': ''},
-{'title': 'New World Dental Clinic', 'address': 'Mango Tree Avenue, Accra, Ghana', 'latitude': 5.56883812629534, 'longitude': -0.202152729034424, 'url': '', 'desc': None, 'phone': '+233277542476', 'image': None, 'source': 'https://maps.apple.com/place?q=New%20World%20Dental%20Clinic&auid=14201475011650979408&address=Mango%20Tree%20Avenue,%20Accra,%20Ghana&ll=5.5688381262953435,-0.20215272903442383', 'links': None, 'hours': ''},
+{'title': 'Blissfield Dental', 'address': 'Borno Way, Ebute Metta, Lagos, Nigeria', 'country_code': 'NG', 'latitude': 6.49685370846362, 'longitude': 3.37770581245422, 'url': '', 'desc': None, 'phone': '+2348023134407', 'image': None, 'source': 'https://maps.apple.com/place?q=Blissfield%20Dental&auid=14057124693413493763&address=Borno%20Way,%20Ebute%20Metta,%20Lagos,%20Nigeria&ll=6.496853708463621,3.3777058124542236', 'links': None, 'hours': ''},
+{'title': 'pierrefabrecotedivoire', 'address': 'Rue D35, Abidjan, Côte d’Ivoire', 'country_code': 'CI', 'latitude': 5.33444294059565, 'longitude': -3.97692739963531, 'url': 'https://www.instagram.com/pierrefabrecotedivoire/', 'desc': 'Welcome back to Instagram. Sign in to check out what your friends, family & interests have been capturing & sharing around the world.', 'phone': '', 'image': 'https://www.instagram.com/static/images/ico/apple-touch-icon-180x180-precomposed.png/c06fdb2357bd.png', 'source': 'https://maps.apple.com/place?q=pierrefabrecotedivoire&auid=11515715525840432861&address=Rue%20D35,%20Abidjan,%20C%C3%B4te%20d%E2%80%99Ivoire&ll=5.334442940595645,-3.976927399635315', 'links': '', 'hours': ''},
 ...
 ]
 ```
