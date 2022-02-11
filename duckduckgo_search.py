@@ -8,11 +8,12 @@ import requests
 from lxml import html
 
 
-__version__ = '1.3.2'
+__version__ = '1.3.5'
 
 
 session = requests.Session()
-session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"})
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"}
+session.headers.update(headers)
 
 
 
@@ -301,7 +302,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
                 'polygon_geojson': '0',
                 'format': 'jsonv2',
                 }           
-        resp = requests.get('https://nominatim.openstreetmap.org/search.php', params=params)
+        resp = requests.get('https://nominatim.openstreetmap.org/search.php', params=params, headers=headers)
         coordinates = resp.json()[0]["boundingbox"]
         lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
         lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
@@ -358,7 +359,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
                 results.append(r.__dict__)
 
         # divide the square into 4 parts and add to the queue
-        if len(data) == 15:
+        if len(data) >= 15:
             lat_middle = (lat_t + lat_b) / 2
             lon_middle = (lon_l + lon_r) / 2            
             bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
