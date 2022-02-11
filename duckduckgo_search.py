@@ -8,7 +8,7 @@ import requests
 from lxml import html
 
 
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 
 
 session = requests.Session()
@@ -358,7 +358,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
                 results.append(r.__dict__)
 
         # divide the square into 4 parts and add to the queue
-        if len(data) == 20:
+        if len(data) == 15:
             lat_middle = (lat_t + lat_b) / 2
             lon_middle = (lon_l + lon_r) / 2            
             bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
