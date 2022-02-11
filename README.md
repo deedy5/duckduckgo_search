@@ -5,7 +5,7 @@ Search for words, documents, images, news, maps and text translation using the D
 
 ***Install***
 ```python
-pip install -I duckduckgo_search
+pip install -U duckduckgo_search
 ```
 ### Table of Contents  
 [Duckduckgo search operators](#duckduckgo-search-operators)  
