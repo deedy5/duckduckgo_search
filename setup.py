@@ -9,7 +9,7 @@ setup(
     version=__version__,
     author="deedy5",
     author_email="",
-    description="Duckduckgo.com search results",
+    description="Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/deedy5/duckduckgo_search",
