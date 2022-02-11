@@ -21,6 +21,7 @@ class MapsResult:
     ''' Dataclass for ddg_maps search results '''
     title: str = None
     address: str = None
+    country_code: str = None
     latitude: str = None
     longitude: str = None
     url: str = None
@@ -343,6 +344,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
                 continue
             else:
                 cache.add(r.title + r.address)
+                r.country_code = res["country_code"]
                 r.url = res["website"]
                 r.phone = res["phone"]
                 r.latitude = res["coordinates"]["latitude"]
