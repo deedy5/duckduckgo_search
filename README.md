@@ -51,9 +51,8 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
 [{'title': title of result,
   'href': href of result,
   'body': body of result,},
- {'title': title of result,
-  'href': href of result,
-  'body': body of result,}, ...]
+ ...
+ ]
 ```
 ***Example 1. Text search***
 ```python
