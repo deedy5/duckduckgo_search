@@ -8,7 +8,7 @@ import requests
 from lxml import html
 
 
-__version__ = '1.3.5'
+__version__ = '1.4'
 
 
 session = requests.Session()
@@ -36,6 +36,8 @@ class MapsResult:
         
         
 def _normalize(text):
+    if not text:
+        return text
     body = html.fromstring(text)
     return html.tostring(body, method='text', encoding='unicode')
 
