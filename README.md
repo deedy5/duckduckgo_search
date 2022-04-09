@@ -36,14 +36,15 @@ ___
 ```python
 from duckduckgo_search import ddg
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28):
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28, save_csv=False):
     ''' DuckDuckGo search
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
     time: 'd' (day), 'w' (week), 'm' (month), 'y' (year), or 'year-month-date..year-month-date';    
     max_results = 28 gives a number of results not less than 28,   
-    maximum DDG gives out about 200 results.
+                  maximum DDG gives out about 200 results,
+    save_csv: if True, save results to csv file.
     '''
 ```
 ***Returns***
@@ -91,7 +92,8 @@ ___
 from duckduckgo_search import ddg_images
 
 def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
-           color=None, type_image=None, layout=None, license_image=None, max_results=100):
+           color=None, type_image=None, layout=None, license_image=None, max_results=100,
+           save_csv=False, save_images=False):
     ''' DuckDuckGo images search
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
@@ -104,7 +106,9 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
     license_image: any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
              ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
              ModifyCommercially (Free to Modify, Share, and Use Commercially);
-    max_results: number of results, maximum ddg_images gives out 1000 results.
+    max_results: number of results, maximum ddg_images gives out 1000 results,
+    save_csv: if True, save results to csv file,
+    save_images: if True, download and save images to 'keywords' folder.
     '''
 ```
 ***Returns***
@@ -141,13 +145,14 @@ ___
 ```python
 from duckduckgo_search import ddg_news
 
-def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30):
+def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, save_csv=False):
     ''' DuckDuckGo news search
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
     time: 'd' (day), 'w' (week), 'm' (month);    
-    max_results = 30, maximum DDG_news gives out 240 results.
+    max_results = 30, maximum DDG_news gives out 240 results,
+    save_csv: if True, save results to csv file.
     '''
 ```
 ***Returns***
@@ -183,7 +188,8 @@ ___
 from duckduckgo_search import ddg_maps
 
 def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=None,
-             country=None, postalcode=None, latitude=None, longitude=None, radius=0):
+             country=None, postalcode=None, latitude=None, longitude=None, radius=0,
+             save_csv=False):
     ''' DuckDuckGo maps search
     keywords: keywords for query;
     place: simplified search - if set, the other parameters are not used;
@@ -196,7 +202,8 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
     latitude: geographic coordinate that specifies the north–south position;
     longitude: geographic coordinate that specifies the east–west position;
         if latitude and longitude are set, the other parameters are not used.
-    radius: expand the search square by the distance in kilometers. 
+    radius: expand the search square by the distance in kilometers,
+    save_csv: if True, save results to csv file.
     '''
 ```
 ***Returns***
