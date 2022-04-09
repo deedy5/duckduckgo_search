@@ -51,7 +51,7 @@ def _save_csv(csvfile, data):
 
 
 def _save_image(image_url, dir_path, filename):
-    resp = session.get(image_url, timeout=30)
+    resp = requests.get(image_url, headers=headers, timeout=30)
     if resp.status_code == 200:
         with open(os.path.join(dir_path, _slugify(filename)), 'wb') as f:
             f.write(resp.content)
@@ -242,7 +242,7 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
         path = f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         os.makedirs(path, exist_ok=True)
         futures = []
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(20) as executor:
             for r in results:
                 future = executor.submit(_save_image, r['image'], path, r['title'])
                 futures.append(future)
