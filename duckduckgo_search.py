@@ -1,14 +1,19 @@
+import csv
 import json
+import os
+import re
+import unicodedata
 from time import sleep
 from datetime import datetime
 from decimal import Decimal
 from collections import deque
 from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from lxml import html
 
 
-__version__ = '1.4'
+__version__ = '1.5'
 
 
 session = requests.Session()
@@ -33,17 +38,47 @@ class MapsResult:
     links: dict = None
     hours: dict = None
 
+
         
+def _save_csv(csvfile, data):
+    headers = data[0].keys()
+    with open(csvfile, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=headers, quoting=csv.QUOTE_MINIMAL)
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
+
+
+def _save_image(image_url, dir_path, filename):
+    resp = session.get(image_url, timeout=30)
+    if resp.status_code == 200:
+        with open(os.path.join(dir_path, _slugify(filename)), 'wb') as f:
+            f.write(resp.content)
+
+
+
+def _slugify(filename):
+    """
+    Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    
+    filename = unicodedata.normalize('NFKC', filename)
+    filename = re.sub(r'[^\w\s-]', '', filename.lower())
+    return re.sub(r'[-\s]+', '-', filename).strip('-_')
+
+
         
 def _normalize(text):
-    if not text:
-        return text
-    body = html.fromstring(text)
-    return html.tostring(body, method='text', encoding='unicode')
+    if text:
+        body = html.fromstring(text)
+        return html.tostring(body, method='text', encoding='unicode')
 
 
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28):
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28, save_csv=False):
     ''' DuckDuckGo search
     Query parameters, link: https://duckduckgo.com/params:
     keywords: keywords for query;
@@ -51,7 +86,8 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
     time: 'd' (day), 'w' (week), 'm' (month), 'y' (year);    
     max_results = 28 gives a number of results not less than 28,   
-    maximum DDG gives out about 200 results.
+                  maximum DDG gives out about 200 results,
+    save_csv: if True, save results to csv file.
     '''
 
     # get vqd
@@ -94,11 +130,15 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
             except:
                 if r['u'] not in cache:
                     cache.add(r['u'])
-                    results.append({
-                        'title': _normalize(r['t']),
-                        'href': r['u'],
-                        'body': _normalize(r['a']),
-                        })
+                    title = _normalize(r['t'])
+                    href = r['u']
+                    body = _normalize(r['a'])
+                    if body:
+                        results.append({
+                            'title': title,
+                            'href': href,
+                            'body': body,
+                            })
         sleep(0.75)
 
     ''' using html method
@@ -108,7 +148,6 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
         'p': safesearch_base[safesearch],
         'df': time
         }
-
     results = []     
     while True:
         res = session.post('https://html.duckduckgo.com/html', data=payload, **kwargs)
@@ -121,19 +160,22 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
                             'body': ''.join(element.xpath('.//a[contains(@class, "result__snippet")]//text()')),})
         if len(results) >= max_results:
             return results
-
         next_page = tree.xpath('.//div[@class="nav-link"]')[-1] 
         names = next_page.xpath('.//input[@type="hidden"]/@name')
         values = next_page.xpath('.//input[@type="hidden"]/@value')
         payload = {n: v for n, v in zip(names, values)}
         sleep(2)
     '''
+    if save_csv:
+        keywords = keywords.replace('"',"'")
+        _save_csv(f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results)        
     return results
 
         
     
 def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
-               color=None, type_image=None, layout=None, license_image=None, max_results=100):
+               color=None, type_image=None, layout=None, license_image=None, max_results=100,
+               save_csv=False, save_images=False):
     ''' DuckDuckGo images search
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
@@ -146,7 +188,8 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
     license_image: any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
              ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
              ModifyCommercially (Free to Modify, Share, and Use Commercially);
-    max_results: number of results, maximum ddg_images gives out 1000 results.
+    max_results: number of results, maximum ddg_images gives out 1000 results,
+    save_images: if True, download and save images to 'keywords' folder.
     '''
     
     # get vqd
@@ -186,17 +229,39 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
         data = res.json()
         results.extend(r for r in data['results'])
         payload['s'] += 100
+
+    if save_csv:
+        keywords = keywords.replace('"',"'")
+        _save_csv(f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results)        
+           
+    if save_images:
+        # download images
+        print('Downloading images. Wait...')
+        lenresults = len(results)
+        keywords = keywords.replace('"',"'")
+        path = f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.makedirs(path, exist_ok=True)
+        futures = []
+        with ThreadPoolExecutor() as executor:
+            for r in results:
+                future = executor.submit(_save_image, r['image'], path, r['title'])
+                futures.append(future)
+            for i, future in enumerate(as_completed(futures), start=1):
+                print(f"{i}/{lenresults}")
+                
+    print('Done')    
     return results
 
 
 
-def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30):
+def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, save_csv=False):
     ''' DuckDuckGo news search
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
     time: 'd' (day), 'w' (week), 'm' (month);    
-    max_results = 30, maximum DDG_news gives out 240 results.
+    max_results = 30, maximum DDG_news gives out 240 results,
+    save_csv: if True, save results to csv file.
     '''
     
     # get vqd
@@ -248,12 +313,16 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
                  })
         params['s'] += 30
         sleep(0.2)
-    return sorted(results, key=lambda x: x['date'], reverse=True)
+    results = sorted(results, key=lambda x: x['date'], reverse=True)
+    if save_csv:
+        keywords = keywords.replace('"',"'")
+        _save_csv(f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results) 
+    return results
 
 
 
 def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=None,
-             country=None, postalcode=None, latitude=None, longitude=None, radius=0):
+             country=None, postalcode=None, latitude=None, longitude=None, radius=0, save_csv=False):
     ''' DuckDuckGo maps search
     keywords: keywords for query;
     place: simplified search - if set, the other parameters are not used;
@@ -266,7 +335,8 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
     latitude: geographic coordinate that specifies the north–south position;
     longitude: geographic coordinate that specifies the east–west position;
         if latitude and longitude are set, the other parameters are not used.
-    radius: expand the search square by the distance in kilometers. 
+    radius: expand the search square by the distance in kilometers,
+    save_csv: if True, save results to csv file.
     '''
     
     # get vqd
@@ -352,7 +422,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
                 r.phone = res["phone"]
                 r.latitude = res["coordinates"]["latitude"]
                 r.longitude = res["coordinates"]["longitude"]
-                r.source = res["url"]
+                r.source = _normalize(res["url"])
                 if res["embed"]:
                     r.image = res["embed"].get("image", '')
                     r.links = res["embed"].get("third_party_links", '')
@@ -371,6 +441,10 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
             work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
             
         print(f"Found {len(results)}")
+        
+    if save_csv:
+        keywords = keywords.replace('"',"'")
+        _save_csv(f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results) 
     return results
 
 
