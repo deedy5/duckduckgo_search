@@ -13,7 +13,7 @@ import requests
 from lxml import html
 
 
-__version__ = '1.5.1'
+__version__ = '1.5.2'
 
 
 session = requests.Session()
@@ -166,6 +166,7 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
         payload = {n: v for n, v in zip(names, values)}
         sleep(2)
     '''
+    results = results[:max_results]
     if save_csv:
         keywords = keywords.replace('"',"'")
         _save_csv(f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results)        
@@ -224,11 +225,12 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
         }
 
     results = []     
-    while payload['s'] < max_results:
+    while payload['s'] < max_results or len(results) < max_results:
         res = session.get("https://duckduckgo.com/i.js", params=payload)
         data = res.json()
         results.extend(r for r in data['results'])
         payload['s'] += 100
+    results = results[:max_results]
 
     if save_csv:
         keywords = keywords.replace('"',"'")
@@ -290,7 +292,7 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
         }
     data_previous, cache = [], set()
     results = []     
-    while params['s'] < min(max_results, 240):
+    while params['s'] < min(max_results, 240) or len(results) < max_results:
         resp = session.get('https://duckduckgo.com/news.js', params=params)
         data = resp.json()['results']
         if data_previous and data == data_previous:
@@ -313,6 +315,7 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
                  })
         params['s'] += 30
         sleep(0.2)
+    results = results[:max_results]
     results = sorted(results, key=lambda x: x['date'], reverse=True)
     if save_csv:
         keywords = keywords.replace('"',"'")
