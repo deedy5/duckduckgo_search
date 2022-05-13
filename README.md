@@ -7,6 +7,13 @@ Search for words, documents, images, news, maps and text translation using the D
 ```python
 pip install -U duckduckgo_search
 ```
+___
+### CLI version
+to save results to csv or download images from the command line
+```
+python3 -m duckduckgo_search --help
+```
+___
 ### Table of Contents  
 [Duckduckgo search operators](#duckduckgo-search-operators)  
 [1. ddg()](#1-ddg---search-by-duckduckgocom)</br>
