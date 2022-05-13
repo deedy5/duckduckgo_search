@@ -14,7 +14,7 @@ import click
 import requests
 from lxml import html
 
-__version__ = "1.6"
+__version__ = "1.6.1"
 
 
 session = requests.Session()
