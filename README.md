@@ -1,4 +1,4 @@
-![Python >= 3.6](https://img.shields.io/badge/python->=3.6-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) 
+![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) 
 ## Duckduckgo_search
 
 Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine.
@@ -7,6 +7,13 @@ Search for words, documents, images, news, maps and text translation using the D
 ```python
 pip install -U duckduckgo_search
 ```
+___
+### CLI version
+to save results to csv or download images from the command line
+```
+python3 -m duckduckgo_search --help
+```
+___
 ### Table of Contents  
 [Duckduckgo search operators](#duckduckgo-search-operators)  
 [1. ddg()](#1-ddg---search-by-duckduckgocom)</br>
