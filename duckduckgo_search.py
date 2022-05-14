@@ -14,7 +14,7 @@ import click
 import requests
 from lxml import html
 
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 
 
 session = requests.Session()
@@ -40,11 +40,6 @@ class MapsResult:
     source: str = None
     links: dict = None
     hours: dict = None
-
-
-@click.group(chain=True)
-def cli():
-    pass
 
 
 def _save_csv(csvfile, data):
@@ -81,25 +76,6 @@ def _normalize(text):
         return html.tostring(body, method="text", encoding="unicode")
 
 
-@cli.command()
-@click.option("-k", "--keywords", help="text search, keywords for query")
-@click.option(
-    "-r",
-    "--region",
-    default="wt-wt",
-    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",
-)
-@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
-@click.option("-t", "--time", default=None, help="d, w, m, y")
-@click.option(
-    "-max",
-    "--max_results",
-    default=28,
-    help="number of results (not less than 28), maximum DDG gives out about 200 results",
-)
-@click.option(
-    "-csv", "--save_csv", default=True, help="save results to csv file, default=True"
-)
 def ddg(
     keywords,
     region="wt-wt",
@@ -211,47 +187,6 @@ def ddg(
     return results
 
 
-@cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
-@click.option(
-    "-r",
-    "--region",
-    default="wt-wt",
-    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",
-)
-@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
-@click.option("-t", "--time", default=None, help="Day, Week, Month, Year")
-@click.option("-size", "--size", default=None, help="Small, Medium, Large, Wallpaper")
-@click.option(
-    "-c",
-    "--color",
-    default=None,
-    help="color, Monochrome, Red, Orange, Yellow, Green, Blue, Purple, Pink, Brown, Black, Gray, Teal, White",
-)
-@click.option(
-    "-type", "--type_image", default=None, help="photo, clipart, gif, transparent, line"
-)
-@click.option("-l", "--layout", default=None, help="Square, Tall, Wide")
-@click.option(
-    "-lic",
-    "--license_image",
-    default=None,
-    help="""any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
-                                                                ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
-                                                                ModifyCommercially (Free to Modify, Share, and Use Commercially)""",
-)
-@click.option(
-    "-max", "--max_results", default=100, help="number of results (default=100)"
-)
-@click.option(
-    "-csv", "--save_csv", default=True, help="save results to csv file, default=True"
-)
-@click.option(
-    "-download",
-    "--save_images",
-    default=False,
-    help="download and save images to 'keywords' folder, default=False",
-)
 def ddg_images(
     keywords,
     region="wt-wt",
@@ -350,22 +285,6 @@ def ddg_images(
     return results
 
 
-@cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
-@click.option(
-    "-r",
-    "--region",
-    default="wt-wt",
-    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",
-)
-@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
-@click.option("-t", "--time", default=None, help="d, w, m, y")
-@click.option(
-    "-max", "--max_results", default=30, help="number of results (default=30)"
-)
-@click.option(
-    "-csv", "--save_csv", default=True, help="save results to csv file, default=True"
-)
 def ddg_news(
     keywords,
     region="wt-wt",
@@ -448,43 +367,6 @@ def ddg_news(
     return results
 
 
-@cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
-@click.option(
-    "-p",
-    "--place",
-    default=None,
-    help="simplified search - if set, the other parameters are not used",
-)
-@click.option("-s", "--street", default=None, help="house number/street")
-@click.option("-c", "--city", default=None, help="city of search")
-@click.option("-county", "--county", default=None, help="county of search")
-@click.option("-state", "--state", default=None, help="state of search")
-@click.option("-country", "--country", default=None, help="country of search")
-@click.option("-post", "--postalcode", default=None, help="postalcode of search")
-@click.option(
-    "-lat",
-    "--latitude",
-    default=None,
-    help="""geographic coordinate that specifies the north–south position,
-                                                        if latitude and longitude are set, the other parameters are not used""",
-)
-@click.option(
-    "-lon",
-    "--longitude",
-    default=None,
-    help="""geographic coordinate that specifies the east–west position,
-                                                        if latitude and longitude are set, the other parameters are not used""",
-)
-@click.option(
-    "-r",
-    "--radius",
-    default=0,
-    help="expand the search square by the distance in kilometers",
-)
-@click.option(
-    "-csv", "--save_csv", default=True, help="save results to csv file, default=True"
-)
 def ddg_maps(
     keywords,
     place=None,
@@ -684,6 +566,85 @@ def ddg_translate(keywords, from_=None, to="en"):
         results.append(result)
 
     return results
+
+
+@click.group(chain=True)
+def cli():
+    pass
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="text search, keywords for query")
+@click.option("-r", "--region", default="wt-wt",
+    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",)
+@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
+@click.option("-t", "--time", default=None, help="d, w, m, y")
+@click.option("-max", "--max_results", default=28,
+    help="number of results (not less than 28), maximum DDG gives out about 200 results",)
+@click.option("-csv", "--save_csv", default=True, help="save results to csv file, default=True")
+def text(*args, **kwargs):
+    return ddg(*args, **kwargs)
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-r", "--region", default="wt-wt",
+    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",)
+@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
+@click.option("-t", "--time", default=None, help="Day, Week, Month, Year")
+@click.option("-size", "--size", default=None, help="Small, Medium, Large, Wallpaper")
+@click.option("-c", "--color", default=None,
+    help="color, Monochrome, Red, Orange, Yellow, Green, Blue, Purple, Pink, Brown, Black, Gray, Teal, White",)
+@click.option("-type", "--type_image", default=None, help="photo, clipart, gif, transparent, line")
+@click.option("-l", "--layout", default=None, help="Square, Tall, Wide")
+@click.option("-lic", "--license_image", default=None,
+    help="""any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
+        ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
+        ModifyCommercially (Free to Modify, Share, and Use Commercially)""",)
+@click.option("-max", "--max_results", default=100, help="number of results (default=100)")
+@click.option("-csv", "--save_csv", default=True, help="save results to csv file, default=True")
+@click.option("-download", "--save_images", default=False,
+    help="download and save images to 'keywords' folder, default=False",)
+def images(*args, **kwargs):
+    return ddg_images(*args, **kwargs)
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-r", "--region", default="wt-wt",
+    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",)
+@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
+@click.option("-t", "--time", default=None, help="d, w, m, y")
+@click.option("-max", "--max_results", default=30,
+    help="number of results (default=30)")
+@click.option("-csv", "--save_csv", default=True,
+    help="save results to csv file, default=True")
+def news(*args, **kwargs):
+    return ddg_news(*args, **kwargs)
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-p", "--place", default=None,
+    help="simplified search - if set, the other parameters are not used",)
+@click.option("-s", "--street", default=None, help="house number/street")
+@click.option("-c", "--city", default=None, help="city of search")
+@click.option("-county", "--county", default=None, help="county of search")
+@click.option("-state", "--state", default=None, help="state of search")
+@click.option("-country", "--country", default=None, help="country of search")
+@click.option("-post", "--postalcode", default=None, help="postalcode of search")
+@click.option("-lat", "--latitude", default=None,
+    help="""geographic coordinate that specifies the north–south position,
+            if latitude and longitude are set, the other parameters are not used""",)
+@click.option("-lon", "--longitude", default=None,
+    help="""geographic coordinate that specifies the east–west position,
+            if latitude and longitude are set, the other parameters are not used""",)
+@click.option("-r", "--radius", default=0,
+    help="expand the search square by the distance in kilometers",)
+@click.option("-csv", "--save_csv", default=True,
+    help="save results to csv file, default=True")
+def maps(*args, **kwargs):
+    return ddg_maps(*args, **kwargs)
 
 
 if __name__ == "__main__":
