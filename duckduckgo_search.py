@@ -14,7 +14,7 @@ import click
 import requests
 from lxml import html
 
-__version__ = "1.6.2"
+__version__ = "1.7"
 
 
 session = requests.Session()
@@ -42,6 +42,11 @@ class MapsResult:
     hours: dict = None
 
 
+def _save_json(jsonfile, data):
+    with open(jsonfile, 'w') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 def _save_csv(csvfile, data):
     headers = data[0].keys()
     with open(csvfile, "w", newline="", encoding="utf-8") as f:
@@ -65,7 +70,7 @@ def _slugify(filename):
     trailing whitespace, dashes, and underscores.
     """
 
-    filename = unicodedata.normalize("NFKC", filename)
+    filename = unicodedata.normalize("NFC", filename)
     filename = re.sub(r"[^\w\s-]", "", filename.lower())
     return re.sub(r"[-\s]+", "-", filename).strip("-_")
 
@@ -82,8 +87,7 @@ def ddg(
     safesearch="Moderate",
     time=None,
     max_results=28,
-    p=False,
-    save_csv=False,
+    output=None,
 ):
     """DuckDuckGo search
     Query parameters, link: https://duckduckgo.com/params:
@@ -93,7 +97,7 @@ def ddg(
     time: 'd' (day), 'w' (week), 'm' (month), 'y' (year);
     max_results = 28 gives a number of results not less than 28,
                   maximum DDG gives out about 200 results,
-    save_csv: if True, save results to csv file.
+    output: csv, json, print.
     """
 
     if not keywords:
@@ -178,12 +182,21 @@ def ddg(
         sleep(2)
     """
     results = results[:max_results]
-    if save_csv:
-        keywords = keywords.replace('"', "'")
+
+    #output
+    keywords = keywords.replace('"', "'")
+    if output == 'csv':
         _save_csv(
             f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
-
+    elif output == 'json':
+        _save_json(
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+        )
+    elif output == 'print':
+        for i, x in enumerate(results, start=1):
+            print(f"{i}.", json.dumps(x, ensure_ascii=False, indent=2))
+            input()
     return results
 
 
@@ -198,8 +211,8 @@ def ddg_images(
     layout=None,
     license_image=None,
     max_results=100,
-    save_csv=False,
-    save_images=False,
+    output=None,
+    download=False,
 ):
     """DuckDuckGo images search
     keywords: keywords for query;
@@ -213,8 +226,9 @@ def ddg_images(
     license_image: any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
              ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
              ModifyCommercially (Free to Modify, Share, and Use Commercially);
-    max_results: number of results, maximum ddg_images gives out 1000 results,
-    save_images: if True, download and save images to 'keywords' folder.
+    max_results: number of results, maximum ddg_images gives out 1000 results;
+    output: csv, json, print;
+    download: if True, download and save images to 'keywords' folder.
     """
 
     if not keywords:
@@ -255,26 +269,45 @@ def ddg_images(
     while payload["s"] < max_results or len(results) < max_results:
         res = session.get("https://duckduckgo.com/i.js", params=payload)
         data = res.json()
-        results.extend(r for r in data["results"])
+        for d in data["results"]:
+            r = {
+                "title": d["title"],
+                "image": d["image"],
+                "thumbnail": d["thumbnail"],
+                "url": d["url"],
+                "height": d["height"],
+                "width": d["width"],
+                "source": d["source"],
+
+            }
+            results.append(r)
         payload["s"] += 100
     results = results[:max_results]
 
-    if save_csv:
-        keywords = keywords.replace('"', "'")
+    #output
+    keywords = keywords.replace('"', "'")
+    if output == 'csv':
         _save_csv(
-            f"ddg_images_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            results,
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
+    elif output == 'json':
+        _save_json(
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+        )
+    elif output == 'print':
+        for i, x in enumerate(results, start=1):
+            print(f"{i}.", json.dumps(x, ensure_ascii=False, indent=2))
+            input()
 
-    if save_images:
-        # download images
+    #download
+    if download:
         print("Downloading images. Wait...")
         lenresults = len(results)
         keywords = keywords.replace('"', "'")
         path = f"{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         os.makedirs(path, exist_ok=True)
         futures = []
-        with ThreadPoolExecutor(20) as executor:
+        with ThreadPoolExecutor(30) as executor:
             for r in results:
                 future = executor.submit(_save_image, r["image"], path, r["title"])
                 futures.append(future)
@@ -291,15 +324,15 @@ def ddg_news(
     safesearch="Moderate",
     time=None,
     max_results=30,
-    save_csv=False,
+    output=None,
 ):
     """DuckDuckGo news search
     keywords: keywords for query;
     safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
     region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
     time: 'd' (day), 'w' (week), 'm' (month);
-    max_results = 30, maximum DDG_news gives out 240 results,
-    save_csv: if True, save results to csv file.
+    max_results = 30, maximum DDG_news gives out 240 results;
+    output: csv, json, print.
     """
 
     if not keywords:
@@ -358,12 +391,20 @@ def ddg_news(
         sleep(0.2)
     results = results[:max_results]
     results = sorted(results, key=lambda x: x["date"], reverse=True)
-    if save_csv:
-        keywords = keywords.replace('"', "'")
+    #output
+    keywords = keywords.replace('"', "'")
+    if output == 'csv':
         _save_csv(
-            f"ddg_news_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            results,
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
+    elif output == 'json':
+        _save_json(
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+        )
+    elif output == 'print':
+        for i, x in enumerate(results, start=1):
+            print(f"{i}.", json.dumps(x, ensure_ascii=False, indent=2))
+            input()
     return results
 
 
@@ -379,7 +420,8 @@ def ddg_maps(
     latitude=None,
     longitude=None,
     radius=0,
-    save_csv=False,
+    max_results=None,
+    output=None,
 ):
     """DuckDuckGo maps search
     keywords: keywords for query;
@@ -394,7 +436,8 @@ def ddg_maps(
     longitude: geographic coordinate that specifies the east–west position;
         if latitude and longitude are set, the other parameters are not used.
     radius: expand the search square by the distance in kilometers,
-    save_csv: if True, save results to csv file.
+    max_results: maximum number of results;
+    output: csv, json, print.
     """
 
     if not keywords:
@@ -462,7 +505,8 @@ def ddg_maps(
 
     # bbox iterate
     results, cache = [], set()
-    while work_bboxes:
+    stop_find = False
+    while work_bboxes and not stop_find:
         lat_t, lon_l, lat_b, lon_r = work_bboxes.pop()
         params = {
             "q": keywords,
@@ -477,7 +521,11 @@ def ddg_maps(
             "strict_bbox": "1",
         }
         resp = session.get("https://duckduckgo.com/local.js", params=params)
-        data = resp.json()["results"]
+        try:
+            data = resp.json()["results"]
+        except:
+            stop_find = True
+            break
 
         for res in data:
             r = MapsResult()
@@ -499,6 +547,9 @@ def ddg_maps(
                     r.desc = res["embed"].get("description", "")
                 r.hours = res["hours"]
                 results.append(r.__dict__)
+                if max_results and len(results) >= max_results:
+                    stop_find = True
+                    break
 
         # divide the square into 4 parts and add to the queue
         if len(data) >= 15:
@@ -512,20 +563,29 @@ def ddg_maps(
 
         print(f"Found {len(results)}")
 
-    if save_csv:
-        keywords = keywords.replace('"', "'")
+    #output
+    keywords = keywords.replace('"', "'")
+    if output == 'csv':
         _save_csv(
-            f"ddg_maps_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            results,
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
+    elif output == 'json':
+        _save_json(
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+        )
+    elif output == 'print':
+        for i, x in enumerate(results, start=1):
+            print(f"{i}.", json.dumps(x, ensure_ascii=False, indent=2))
+            input()
     return results
 
 
-def ddg_translate(keywords, from_=None, to="en"):
+def ddg_translate(keywords, from_=None, to="en", output=None):
     """DuckDuckGo translate
     keywords: string or a list of strings to translate;
     from_: what language to translate from (defaults automatically),
-    to: what language to translate (defaults to English).
+    to: what language to translate (defaults to en),
+    output: print, csv, json.
     """
 
     if not keywords:
@@ -565,6 +625,20 @@ def ddg_translate(keywords, from_=None, to="en"):
         result["original"] = data
         results.append(result)
 
+    #output
+    keywords = keywords[0].replace('"', "'")
+    if output == 'csv':
+        _save_csv(
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
+        )
+    elif output == 'json':
+        _save_json(
+            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+        )
+    elif output == 'print':
+        for i, x in enumerate(results, start=1):
+            print(f"{i}.", json.dumps(x, ensure_ascii=False, indent=2))
+            input()
     return results
 
 
@@ -579,9 +653,9 @@ def cli():
     help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",)
 @click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
 @click.option("-t", "--time", default=None, help="d, w, m, y")
-@click.option("-max", "--max_results", default=28,
+@click.option("-m", "--max_results", default=28,
     help="number of results (not less than 28), maximum DDG gives out about 200 results",)
-@click.option("-csv", "--save_csv", default=True, help="save results to csv file, default=True")
+@click.option("-o", "--output", default='print', help="print, csv, json, default=print")
 def text(*args, **kwargs):
     return ddg(*args, **kwargs)
 
@@ -601,9 +675,9 @@ def text(*args, **kwargs):
     help="""any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
         ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
         ModifyCommercially (Free to Modify, Share, and Use Commercially)""",)
-@click.option("-max", "--max_results", default=100, help="number of results (default=100)")
-@click.option("-csv", "--save_csv", default=True, help="save results to csv file, default=True")
-@click.option("-download", "--save_images", default=False,
+@click.option("-m", "--max_results", default=100, help="number of results (default=100)")
+@click.option("-o", "--output", default='print', help="print, csv, json, default=print")
+@click.option("-d", "--download", default=False,
     help="download and save images to 'keywords' folder, default=False",)
 def images(*args, **kwargs):
     return ddg_images(*args, **kwargs)
@@ -615,10 +689,9 @@ def images(*args, **kwargs):
     help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",)
 @click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
 @click.option("-t", "--time", default=None, help="d, w, m, y")
-@click.option("-max", "--max_results", default=30,
+@click.option("-m", "--max_results", default=30,
     help="number of results (default=30)")
-@click.option("-csv", "--save_csv", default=True,
-    help="save results to csv file, default=True")
+@click.option("-o", "--output", default='print', help="print, csv, json, default=print")
 def news(*args, **kwargs):
     return ddg_news(*args, **kwargs)
 
@@ -641,10 +714,19 @@ def news(*args, **kwargs):
             if latitude and longitude are set, the other parameters are not used""",)
 @click.option("-r", "--radius", default=0,
     help="expand the search square by the distance in kilometers",)
-@click.option("-csv", "--save_csv", default=True,
-    help="save results to csv file, default=True")
+@click.option("-m", "--max_results", help="number of results (default=None)")
+@click.option("-o", "--output", default='print', help="print, csv, json, default=print")
 def maps(*args, **kwargs):
     return ddg_maps(*args, **kwargs)
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="text for translation")
+@click.option("-f", "--from_", help="de, ru, fr, etc. What language to translate from (defaults automatically)")
+@click.option("-t", "--to", default="en", help="de, ru, fr, etc. What language to translate (defaults='en')")
+@click.option("-o", "--output", default='print', help="print, csv, json, default=print")
+def translate(*args, **kwargs):
+    return ddg_translate(*args, **kwargs)
 
 
 if __name__ == "__main__":
