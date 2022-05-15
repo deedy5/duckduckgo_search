@@ -9,7 +9,6 @@ pip install -U duckduckgo_search
 ```
 ___
 ### CLI version
-to save results to csv or download images from the command line
 ```
 python3 -m duckduckgo_search --help
 ```
