@@ -19,9 +19,10 @@ ___
 [Duckduckgo search operators](#duckduckgo-search-operators)  
 [1. ddg()](#1-ddg---search-by-duckduckgocom)</br>
 [2. ddg_images()](#2-ddg_images---image-search-by-duckduckgocom)</br> 
-[3. ddg_news()](#3-ddg_news---news-search-by-duckduckgocom)</br>
-[4. ddg_maps()](#4-ddg_maps---map-search-by-duckduckgocom)</br>
-[5. ddg_translate()](#5-ddg_translate---translation-by-duckduckgocom)</br>
+[3. ddg_videos()](#3-ddg_videos---video-search-by-duckduckgocom)</br> 
+[4. ddg_news()](#4-ddg_news---news-search-by-duckduckgocom)</br>
+[5. ddg_maps()](#5-ddg_maps---map-search-by-duckduckgocom)</br>
+[6. ddg_translate()](#6-ddg_translate---translation-by-duckduckgocom)</br>
 ___
 ## Duckduckgo search operators
 
@@ -149,7 +150,67 @@ print(r)
 ]
 ```
 ___
-## 3. ddg_news() - news search by duckduckgo.com
+## 3. ddg_videos() - video search by duckduckgo.com
+```python
+from duckduckgo_search import ddg_videos
+
+def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resolution=None,
+    duration=None, license_videos=None, max_results=62, output=None):
+    """DuckDuckGo videos search
+    keywords: keywords for query;
+    safesearch: On (p = 1), Moderate (p = -1), Off (p = -2);
+    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
+    time: d, w, m (published after);
+    resolution: high, standart;
+    duration: short, medium, long;
+    license_videos: creativeCommon, youtube;
+    max_results: number of results, maximum ddg_videos gives out 1000 results;
+    output: csv, json, print.
+    """
+```
+***Returns***
+```python
+[{"content": str,
+  "description": str,
+  "duration": str,
+  "embed_html": str,
+  "embed_url": str,
+  "images": {
+    "large": str,
+    "medium": str,
+    "motion": str,
+    "small": str,
+  },
+  "provider": str,
+  "published": str,
+  "publisher": str,
+  "statistics": {
+    "viewCount": int
+  },
+  "title": str,
+  "uploader": str},
+ 
+ ...
+ ]
+```
+***Example***
+```python
+from duckduckgo_search import ddg_videos
+
+keywords = 'Earth'
+r = ddg_videos(keywords="Earth", region='wt-wt', safesearch='Off', time=None, resolution=None, 
+               duration=None, license_videos=None, max_results=62, output=None)
+print(r)
+```
+```python
+[
+{'content': 'https://www.youtube.com/watch?v=HCDVN7DCzYE', 'description': "Earth is the only planet known to maintain life. Find out the origins of our home planet and some of the key ingredients that help make this blue speck in space a unique global ecosystem. Subscribe: http://bit.ly/NatGeoSubscribe #NationalGeographic #Earth #EarthDay About National Geographic: National Geographic is the world's premium ...", 'duration': '3:33', 'embed_html': '<iframe width="1280" height="720" src="https://www.youtube.com/embed/HCDVN7DCzYE?autoplay=1" frameborder="0" allowfullscreen></iframe>', 'embed_url': 'https://www.youtube.com/embed/HCDVN7DCzYE?autoplay=1', 'images': {'large': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api', 'medium': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api', 'motion': 'https://tse2.mm.bing.net/th?id=OM2.PVGeB2TtDBxXjQ_1633563877&pid=Api', 'small': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api'}, 'provider': 'Bing', 'published': '2018-11-22T13:00:02.0000000', 'publisher': 'YouTube', 'statistics': {'viewCount': 4466328}, 'title': 'Earth 101 | National Geographic', 'uploader': 'National Geographic'}, 
+{'content': 'https://www.youtube.com/watch?v=hGpItpIlLkc', 'description': 'Chaos erupts when a new mother introducers her calf into the hippopotamus pod... Subscribe: http://bit.ly/BBCEarthSub #NaturalWorld #BBCEarth Watch more: Planet Earth http://bit.ly/PlanetEarthPlaylist Blue Planet http://bit.ly/BluePlanetPlaylist Planet Earth II http://bit.ly/PlanetEarthIIPlaylist Planet Dinosaur https://bit.ly ...', 'duration': '6:05', 'embed_html': '<iframe width="1280" height="720" src="https://www.youtube.com/embed/hGpItpIlLkc?autoplay=1" frameborder="0" allowfullscreen></iframe>', 'embed_url': 'https://www.youtube.com/embed/hGpItpIlLkc?autoplay=1', 'images': {'large': 'https://tse1.mm.bing.net/th?id=OVP.lwq6by7crgwpkXGERzXLvQHgFo&pid=Api', 'medium': 'https://tse1.mm.bing.net/th?id=OVP.lwq6by7crgwpkXGERzXLvQHgFo&pid=Api', 'motion': 'https://tse1.mm.bing.net/th?id=OM.3QweCgZ-KW53rQ&pid=Api', 'small': 'https://tse1.mm.bing.net/th?id=OVP.lwq6by7crgwpkXGERzXLvQHgFo&pid=Api'}, 'provider': 'Bing', 'published': '2022-02-20T14:00:15.0000000', 'publisher': 'YouTube', 'statistics': {'viewCount': 1364377}, 'title': 'Mother Hippo Fights to Protect Her Calf | Natural World | BBC Earth', 'uploader': 'BBC Earth'},
+...
+]
+```
+___
+## 4. ddg_news() - news search by duckduckgo.com
 ```python
 from duckduckgo_search import ddg_news
 
@@ -191,7 +252,7 @@ print(r)
 ]
 ```
 ___
-## 4. ddg_maps() - map search by duckduckgo.com
+## 5. ddg_maps() - map search by duckduckgo.com
 ```python
 from duckduckgo_search import ddg_maps
 
@@ -304,7 +365,7 @@ print(r)
 ]
 ```
 ___
-## 5. ddg_translate() - translation by duckduckgo.com
+## 6. ddg_translate() - translation by duckduckgo.com
 
 ```python
 from duckduckgo_search import ddg_translate
