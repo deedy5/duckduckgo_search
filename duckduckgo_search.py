@@ -14,7 +14,7 @@ import click
 import requests
 from lxml import html
 
-__version__ = "1.7.1"
+__version__ = "1.8"
 
 
 session = requests.Session()
@@ -288,11 +288,11 @@ def ddg_images(
     keywords = keywords.replace('"', "'")
     if output == 'csv':
         _save_csv(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
+            f"ddg_images_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
     elif output == 'json':
         _save_json(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+            f"ddg_images_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
         )
     elif output == 'print':
         for i, x in enumerate(results, start=1):
@@ -314,7 +314,99 @@ def ddg_images(
             for i, future in enumerate(as_completed(futures), start=1):
                 print(f"{i}/{lenresults}")
 
-    print("Done")
+        print("Done.")
+    return results
+
+
+def ddg_videos(
+    keywords,
+    region="wt-wt",
+    safesearch="Moderate",
+    time=None,
+    resolution=None,
+    duration=None,
+    license_videos=None,
+    max_results=62,
+    output=None,
+    download=False,
+):
+    """DuckDuckGo videos search
+    keywords: keywords for query;
+    safesearch: On (p = 1), Moderate (p = -1), Off (p = -2);
+    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
+    time: d, w, m (published after);
+    resolution: high, standart;
+    duration: short, medium, long;
+    license_videos: creativeCommon, youtube;
+    max_results: number of results, maximum ddg_videos gives out 1000 results;
+    output: csv, json, print.
+    """
+
+    if not keywords:
+        return None
+
+    # get vqd
+    payload = {
+        "q": keywords,
+    }
+    res = session.post("https://duckduckgo.com", data=payload)
+    tree = html.fromstring(res.text)
+    vqd = (
+        tree.xpath("//script[contains(text(), 'vqd=')]/text()")[0]
+        .split("vqd='")[-1]
+        .split("';")[0]
+    )
+
+    # get videos
+    safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
+
+    time = f"publishedAfter:{time}" if time else ""
+    resolution = f"videoDefinition:{resolution}" if resolution else ""
+    duration = f"videoDuration:{duration}" if duration else ""
+    license_videos = f"videoLicense:{license_videos}" if license_videos else ""
+    payload = {
+        "l": region,
+        "o": "json",
+        "s": 0,
+        "q": keywords,
+        "vqd": vqd,
+        "f": f"{time},{resolution},{duration},{license_videos}",
+        "p": safesearch_base[safesearch],
+    }
+
+    results, cache = [], set()
+    while payload["s"] < max_results or len(results) < max_results:
+        res = session.get("https://duckduckgo.com/v.js", params=payload)
+        data = res.json()
+        page_data = data.get("results", None)
+        page_results = []
+        if not page_data:
+            break
+        for e in page_data:
+            if e["content"] not in cache:
+                page_results.append(e)
+                cache.add(e["content"])
+        if not page_results:
+            break
+        results.extend(page_results)
+        payload["s"] += 62
+    results = results[:max_results]
+
+    #output
+    keywords = keywords.replace('"', "'")
+    if output == 'csv':
+        _save_csv(
+            f"ddg_videos_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
+        )
+    elif output == 'json':
+        _save_json(
+            f"ddg_videos_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+        )
+    elif output == 'print':
+        for i, x in enumerate(results, start=1):
+            print(f"{i}.", json.dumps(x, ensure_ascii=False, indent=2))
+            input()
+
     return results
 
 
@@ -395,11 +487,11 @@ def ddg_news(
     keywords = keywords.replace('"', "'")
     if output == 'csv':
         _save_csv(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
+            f"ddg_news_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
     elif output == 'json':
         _save_json(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+            f"ddg_news_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
         )
     elif output == 'print':
         for i, x in enumerate(results, start=1):
@@ -567,11 +659,11 @@ def ddg_maps(
     keywords = keywords.replace('"', "'")
     if output == 'csv':
         _save_csv(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
+            f"ddg_maps_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
     elif output == 'json':
         _save_json(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+            f"ddg_maps_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
         )
     elif output == 'print':
         for i, x in enumerate(results, start=1):
@@ -629,11 +721,11 @@ def ddg_translate(keywords, from_=None, to="en", output=None):
     keywords = keywords[0].replace('"', "'")
     if output == 'csv':
         _save_csv(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
+            f"ddg_translate_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", results
         )
     elif output == 'json':
         _save_json(
-            f"ddg_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
+            f"ddg_translate_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", results
         )
     elif output == 'print':
         for i, x in enumerate(results, start=1):
@@ -681,6 +773,21 @@ def text(*args, **kwargs):
     help="download and save images to 'keywords' folder, default=False",)
 def images(*args, **kwargs):
     return ddg_images(*args, **kwargs)
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-r", "--region", default="wt-wt",
+    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",)
+@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
+@click.option("-t", "--time", default=None, help="d, w, m (published after)")
+@click.option("-res", "--resolution", default=None, help="high, standart")
+@click.option("-d", "--duration", default=None, help="short, medium, long",)
+@click.option("-lic", "--license_videos", default=None, help="creativeCommon, youtube",)
+@click.option("-m", "--max_results", default=100, help="number of results (default=62)")
+@click.option("-o", "--output", default='print', help="print, csv, json, default=print")
+def videos(*args, **kwargs):
+    return ddg_videos(*args, **kwargs)
 
 
 @cli.command()
