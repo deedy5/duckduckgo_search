@@ -328,7 +328,6 @@ def ddg_videos(
     license_videos=None,
     max_results=62,
     output=None,
-    download=False,
 ):
     """DuckDuckGo videos search
     keywords: keywords for query;
