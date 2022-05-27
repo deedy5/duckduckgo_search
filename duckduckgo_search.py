@@ -768,7 +768,7 @@ def text(*args, **kwargs):
         ModifyCommercially (Free to Modify, Share, and Use Commercially)""",)
 @click.option("-m", "--max_results", default=100, help="number of results (default=100)")
 @click.option("-o", "--output", default='print', help="print, csv, json, default=print")
-@click.option("-d", "--download", default=False,
+@click.option("-d", "--download", is_flag=True, default=False,
     help="download and save images to 'keywords' folder, default=False",)
 def images(*args, **kwargs):
     return ddg_images(*args, **kwargs)
