@@ -14,7 +14,7 @@ import click
 import requests
 from lxml import html
 
-__version__ = "1.8"
+__version__ = "1.8.1"
 
 
 session = requests.Session()
@@ -130,10 +130,9 @@ def ddg(
     results, cache = [], set()
     while len(results) < max_results and params["s"] < 200:
         resp = session.get("https://links.duckduckgo.com/d.js", params=params)
-        try:
-            data = resp.json()["results"]
-        except:
-            return results
+        data = resp.json().get("results", None)
+        if not data:
+            break
 
         for r in data:
             try:
@@ -267,9 +266,11 @@ def ddg_images(
 
     results = []
     while payload["s"] < max_results or len(results) < max_results:
-        res = session.get("https://duckduckgo.com/i.js", params=payload)
-        data = res.json()
-        for d in data["results"]:
+        resp = session.get("https://duckduckgo.com/i.js", params=payload)
+        data = resp.json().get("results", None)
+        if not data:
+            break
+        for d in data:
             r = {
                 "title": d["title"],
                 "image": d["image"],
@@ -457,7 +458,9 @@ def ddg_news(
     results = []
     while params["s"] < min(max_results, 240) or len(results) < max_results:
         resp = session.get("https://duckduckgo.com/news.js", params=params)
-        data = resp.json()["results"]
+        data = resp.json().get("results", None)
+        if not data:
+            break
         if data_previous and data == data_previous:
             break
         else:
