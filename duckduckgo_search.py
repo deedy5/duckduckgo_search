@@ -48,12 +48,13 @@ def _save_json(jsonfile, data):
 
 
 def _save_csv(csvfile, data):
-    headers = data[0].keys()
     with open(csvfile, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=headers, quoting=csv.QUOTE_MINIMAL)
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
+        if data:
+            headers = data[0].keys()    
+            writer = csv.DictWriter(f, fieldnames=headers, quoting=csv.QUOTE_MINIMAL)
+            writer.writeheader()
+            for row in data:
+                writer.writerow(row)
 
 
 def _save_image(image_url, dir_path, filename):
