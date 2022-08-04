@@ -44,7 +44,7 @@ class MapsResult:
 
 def _save_json(jsonfile, data):
     with open(jsonfile, 'w') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, ensure_ascii=True, indent=2)
 
 
 def _save_csv(csvfile, data):
