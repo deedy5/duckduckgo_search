@@ -12,7 +12,6 @@ from time import sleep
 
 import click
 import requests
-from requests.exceptions import JSONDecodeError
 from lxml import html
 
 __version__ = "1.8.1"
@@ -131,9 +130,11 @@ def ddg(
     }
     results, cache = [], set()
     while len(results) < max_results and params["s"] < 200:
-        resp = session.get("https://links.duckduckgo.com/d.js", params=params)
-        data = resp.json().get("results", None)
-        if not data:
+        try:
+            resp = session.get("https://links.duckduckgo.com/d.js", params=params)
+            data = resp.json().get("results", None)
+        except Exception as ex:
+            print(ex)
             break
 
         for r in data:
@@ -268,12 +269,11 @@ def ddg_images(
 
     results = []
     while payload["s"] < max_results or len(results) < max_results:
-        resp = session.get("https://duckduckgo.com/i.js", params=payload)
         try:
+            resp = session.get("https://duckduckgo.com/i.js", params=payload)
             data = resp.json().get("results", None)
-        except JSONDecodeError as err:
-            data = None
-        if not data:
+        except Exception as ex:
+            print(ex)
             break
         for d in data:
             r = {
@@ -381,12 +381,13 @@ def ddg_videos(
 
     results, cache = [], set()
     while payload["s"] < max_results or len(results) < max_results:
-        res = session.get("https://duckduckgo.com/v.js", params=payload)
-        data = res.json()
-        page_data = data.get("results", None)
-        page_results = []
-        if not page_data:
+        try:
+            res = session.get("https://duckduckgo.com/v.js", params=payload)
+            page_data = res.json().get("results", None)
+        except Exception as ex:
+            print(ex)
             break
+        page_results = []
         for e in page_data:
             if e["content"] not in cache:
                 page_results.append(e)
@@ -462,9 +463,11 @@ def ddg_news(
     data_previous, cache = [], set()
     results = []
     while params["s"] < min(max_results, 240) or len(results) < max_results:
-        resp = session.get("https://duckduckgo.com/news.js", params=params)
-        data = resp.json().get("results", None)
-        if not data:
+        try:
+            resp = session.get("https://duckduckgo.com/news.js", params=params)
+            data = resp.json().get("results", None)
+        except Exception as ex:
+            print(ex)
             break
         if data_previous and data == data_previous:
             break
