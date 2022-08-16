@@ -14,12 +14,13 @@ import click
 import requests
 from lxml import html
 
-__version__ = "1.8.1"
+__version__ = "1.8.2"
 
 
 session = requests.Session()
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0",
+    "Referer": "https://duckduckgo.com/",
 }
 session.headers.update(headers)
 
@@ -44,7 +45,7 @@ class MapsResult:
 
 def _save_json(jsonfile, data):
     with open(jsonfile, 'w') as f:
-        json.dump(data, f, ensure_ascii=True, indent=2)
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 
 def _save_csv(csvfile, data):
