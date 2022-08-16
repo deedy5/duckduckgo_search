@@ -3,7 +3,7 @@ from duckduckgo_search import ddg, ddg_images, ddg_news, ddg_videos, ddg_maps
 
 def test_ddg():
     results = ddg('cat', max_results=100)
-    assert len(results) == 100
+    assert len(results) >= 70
 
 
 def test_ddg_images():
