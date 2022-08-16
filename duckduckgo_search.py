@@ -12,6 +12,7 @@ from time import sleep
 
 import click
 import requests
+from requests.exceptions import JSONDecodeError
 from lxml import html
 
 __version__ = "1.8.1"
@@ -268,7 +269,10 @@ def ddg_images(
     results = []
     while payload["s"] < max_results or len(results) < max_results:
         resp = session.get("https://duckduckgo.com/i.js", params=payload)
-        data = resp.json().get("results", None)
+        try:
+            data = resp.json().get("results", None)
+        except JSONDecodeError as err:
+            data = None
         if not data:
             break
         for d in data:
