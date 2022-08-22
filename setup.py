@@ -1,4 +1,5 @@
-from setuptools import setup
+from setuptools import find_packages, setup
+
 from duckduckgo_search import __version__
 
 with open("README.md", "r", encoding="utf-8") as fh:
@@ -14,8 +15,15 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/deedy5/duckduckgo_search",
     license="MIT",
+    packages=find_packages(exclude=[]),
     py_modules=["duckduckgo_search"],
-    install_requires=["requests>=2.27.1", "lxml>=4.7.1", "brotli>=1.0.9", "click>=8.1.3"],
+    install_requires=[
+        "requests>=2.27.1",
+        "lxml>=4.7.1",
+        "brotli>=1.0.9",
+        "click>=8.1.3",
+    ],
+    entry_points={"console_scripts": ["ddgs = duckduckgo_search.cli.ddgs:cli"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
@@ -27,9 +35,9 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: Implementation :: CPython",  
+        "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
-        'Topic :: Software Development :: Libraries :: Python Modules',
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.6",
     zip_safe=False,
