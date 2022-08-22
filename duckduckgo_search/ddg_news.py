@@ -58,7 +58,9 @@ def ddg_news(
         page_data = None
         try:
             resp = session.get("https://duckduckgo.com/news.js", params=params)
-            logger.info(f"{resp.status_code} {resp.url}")
+            logger.info(
+                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
+            )
             page_data = resp.json().get("results", None)
         except ConnectionError:
             logger.error("Connection Error.")

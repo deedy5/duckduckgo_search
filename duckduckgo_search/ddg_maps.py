@@ -111,7 +111,9 @@ def ddg_maps(
                 params=params,
                 headers=headers,
             )
-            logger.info(f"{resp.status_code} {resp.url}")
+            logger.info(
+                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
+            )
             coordinates = resp.json()[0]["boundingbox"]
             lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
             lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
@@ -153,7 +155,9 @@ def ddg_maps(
         page_data = None
         try:
             resp = session.get("https://duckduckgo.com/local.js", params=params)
-            logger.info(f"{resp.status_code} {resp.url}")
+            logger.info(
+                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
+            )
             page_data = resp.json()["results"]
         except ConnectionError:
             logger.error("Connection Error.")

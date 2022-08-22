@@ -56,7 +56,9 @@ def ddg_translate(
                 params=params,
                 data=data.encode("utf-8"),
             )
-            logger.info(f"{resp.status_code} {resp.url}")
+            logger.info(
+                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
+            )
             result = resp.json()
             result["original"] = data
             results.append(result)

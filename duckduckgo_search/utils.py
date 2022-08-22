@@ -27,7 +27,7 @@ def get_vqd(keywords):
         )
         if resp.status_code == 200:
             logger.info(
-                "get_vqd(). response=200 in %s s.", resp.elapsed.total_seconds()
+                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )
             tree = html.fromstring(resp.content)
             vqd = (

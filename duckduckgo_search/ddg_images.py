@@ -86,7 +86,9 @@ def ddg_images(
         page_data = None
         try:
             resp = session.get("https://duckduckgo.com/i.js", params=payload)
-            logger.info(f"{resp.status_code} {resp.url}")
+            logger.info(
+                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
+            )
             page_data = resp.json().get("results", None)
         except ConnectionError:
             logger.error("Connection Error.")
@@ -149,7 +151,7 @@ def ddg_images(
                 )
                 futures.append(future)
             for i, future in enumerate(as_completed(futures), start=1):
-                logger.info(f"{i}/{len(results)}")
+                logger.info("%s/%s", i, len(results))
                 print(f"{i}/{len(results)}")
 
         print("Done.")
