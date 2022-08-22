@@ -9,10 +9,13 @@ pip install -U duckduckgo_search
 ```
 ___
 ### CLI version
+```python3
+ddgs --help
 ```
+or
+```python3
 python3 -m duckduckgo_search --help
 ```
-![CLI gif](https://github.com/deedy5/duckduckgo_search/raw/main/duckduckgo_search.gif)
 
 ___
 ### Table of Contents  
