@@ -10,14 +10,14 @@ pip install -U duckduckgo_search
 ___
 ### CLI version
 ```python3
-ddgs --help
+python ddgs --help
 ```
 or
 ```python3
 python -m duckduckgo_search --help
 ```
 ```python3
-Usage: ddgs [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
+Usage: python ddgs [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
 or
 Usage: python -m duckduckgo_search [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
 
