@@ -10,27 +10,11 @@ pip install -U duckduckgo_search
 ___
 ### CLI version
 ```python3
-python ddgs --help
+ddgs --help
 ```
 or
 ```python3
 python -m duckduckgo_search --help
-```
-```python3
-Usage: python ddgs [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
-or
-Usage: python -m duckduckgo_search [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  images
-  maps
-  news
-  text
-  translate
-  videos
 ```
 ![](https://github.com/deedy5/duckduckgo_search/raw/main/docs/ddgs_demo.gif)
 
