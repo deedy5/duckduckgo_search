@@ -31,7 +31,7 @@ def test_ddg_images_save_csv_json():
 
 
 def test_ddg_images_download():
-    keywords = "cat dog"
+    keywords = "cat"
     results = ddg_images(keywords, max_results=20, download=True)
     assert len(results) >= 20
 
