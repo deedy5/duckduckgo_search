@@ -1,15 +1,12 @@
-import json
 import logging
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime
 from decimal import Decimal
-from time import sleep
 
 import requests
 from requests import ConnectionError
 
-from .utils import _normalize, _save_csv, _save_json, get_vqd, headers, session
+from .utils import _do_output, _get_vqd, _normalize, headers, session
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +70,9 @@ def ddg_maps(
         return None
 
     # get vqd
-    vqd = get_vqd(keywords)
+    vqd = _get_vqd(keywords)
     if not vqd:
-        return
-    sleep(0.75)
+        return None
 
     # if longitude and latitude are specified, skip the request about bbox to the nominatim api
     if latitude and longitude:
@@ -204,22 +200,8 @@ def ddg_maps(
             work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
 
         print(f"Found {len(results)}")
-        sleep(0.2)
 
-    # output
-    keywords = keywords.replace('"', "'")
-    if output == "csv":
-        _save_csv(
-            f"ddg_maps_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            results,
-        )
-    elif output == "json":
-        _save_json(
-            f"ddg_maps_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            results,
-        )
-    elif output == "print":
-        for i, result in enumerate(results, start=1):
-            print(f"{i}.", json.dumps(result, ensure_ascii=False, indent=2))
-            input()
+    results = results[:max_results]
+    if output:
+        _do_output(__name__, keywords, output, results)
     return results
