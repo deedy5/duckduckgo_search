@@ -1,11 +1,8 @@
-import json
 import logging
-from datetime import datetime
-from time import sleep
 
 from requests import ConnectionError
 
-from .utils import _save_csv, _save_json, get_vqd, session
+from .utils import _do_output, _get_vqd, session
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +36,12 @@ def ddg_videos(
     """
 
     if not keywords:
-        return
+        return None
 
     # get vqd
-    vqd = get_vqd(keywords)
+    vqd = _get_vqd(keywords)
     if not vqd:
-        return
-    sleep(0.75)
+        return None
 
     # get videos
     safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
@@ -93,25 +89,8 @@ def ddg_videos(
         results.extend(page_results)
         # for pagination
         payload["s"] += 62
-        sleep(0.2)
 
     results = results[:max_results]
-
-    # output
-    keywords = keywords.replace('"', "'")
-    if output == "csv":
-        _save_csv(
-            f"ddg_videos_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            results,
-        )
-    elif output == "json":
-        _save_json(
-            f"ddg_videos_{keywords}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            results,
-        )
-    elif output == "print":
-        for i, result in enumerate(results, start=1):
-            print(f"{i}.", json.dumps(result, ensure_ascii=False, indent=2))
-            input()
-
+    if output:
+        _do_output(__name__, keywords, output, results)
     return results

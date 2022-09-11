@@ -3,10 +3,10 @@ import json
 import logging
 import os
 import re
-import unicodedata
+from datetime import datetime
+from functools import lru_cache
 
 import requests
-from lxml import html
 from requests import ConnectionError, Timeout
 
 session = requests.Session()
@@ -18,8 +18,12 @@ session.headers.update(headers)
 
 logger = logging.getLogger(__name__)
 
+RE_CLEAN_HTML = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
+RE_VQD = re.compile(r"vqd=([0-9-]+)\&")
 
-def get_vqd(keywords):
+
+@lru_cache(maxsize=128)
+def _get_vqd(keywords):
     payload = {"q": keywords}
     try:
         resp = session.post(
@@ -29,14 +33,9 @@ def get_vqd(keywords):
             logger.info(
                 "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )
-            tree = html.fromstring(resp.content)
-            vqd = (
-                tree.xpath("//script[contains(text(), 'vqd=')]/text()")[0]
-                .split("vqd='")[-1]
-                .split("';")[0]
-            )
+            vqd = RE_VQD.search(resp.text)
             logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
-            return vqd
+            return vqd.group(1) if vqd else None
         logger.info("get_vqd(). response=%s", resp.status_code)
     except Timeout:
         logger.warning("Connection timeout in get_vqd().")
@@ -62,11 +61,11 @@ def _save_csv(csvfile, data):
 
 def _download_image(image_url, dir_path, filename):
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0"
     }
-    for _ in range(3):
+    for _ in range(2):
         try:
-            resp = requests.get(image_url, headers=headers, timeout=20)
+            resp = requests.get(image_url, headers=headers, timeout=10)
             if resp.status_code == 200:
                 with open(os.path.join(dir_path, filename), "wb") as file:
                     file.write(resp.content)
@@ -80,18 +79,22 @@ def _download_image(image_url, dir_path, filename):
             logger.warning("Exception. {image_url=}.", exc_info=True)
 
 
-def _slugify(filename):
-    """
-    Remove characters that aren't alphanumerics, underscores, or hyphens.
-    Convert to lowercase. Strip leading and trailing whitespace, dashes, and underscores.
-    """
-
-    filename = unicodedata.normalize("NFC", filename)
-    filename = re.sub(r"[^\w\s-]", "", filename.lower())
-    return re.sub(r"[-\s]+", "-", filename).strip("-_")
+def _normalize(raw_html):
+    if raw_html:
+        return re.sub(RE_CLEAN_HTML, "", raw_html)
 
 
-def _normalize(text):
-    if text:
-        body = html.fromstring(text)
-        return html.tostring(body, method="text", encoding="unicode")
+def _do_output(module_name, keywords, output, results):
+    keywords = keywords.replace('"', "'")
+    if output == "csv":
+        _save_csv(
+            f"{module_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}.csv", results
+        )
+    elif output == "json":
+        _save_json(
+            f"{module_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}.json", results
+        )
+    elif output == "print":
+        for i, result in enumerate(results, start=1):
+            print(f"{i}.", json.dumps(result, ensure_ascii=False, indent=4))
+            input()
