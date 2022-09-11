@@ -130,7 +130,6 @@ def ddg_images(
         futures = []
         with ThreadPoolExecutor(30) as executor:
             for i, res in enumerate(results, start=1):
-                print(i)
                 filename = res["image"].split("/")[-1].split("?")[0]
                 future = executor.submit(
                     _download_image, res["image"], path, f"{i}_{filename}"
