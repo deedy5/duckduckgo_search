@@ -22,7 +22,7 @@ RE_CLEAN_HTML = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
 RE_VQD = re.compile(r"vqd=([0-9-]+)\&")
 
 
-@lru_cache
+@lru_cache(maxsize=128)
 def _get_vqd(keywords):
     payload = {"q": keywords}
     try:
