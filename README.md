@@ -1,7 +1,7 @@
 ![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) 
 ## Duckduckgo_search
 
-Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading images to a local hard drive.
+Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine.
 
 ***Install***
 ```python
@@ -16,7 +16,22 @@ or
 ```python3
 python -m duckduckgo_search --help
 ```
-![](https://github.com/deedy5/duckduckgo_search/raw/main/docs/ddgs_demo.gif)
+```python3
+Usage: ddgs [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
+or
+Usage: python -m duckduckgo_search [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  images
+  maps
+  news
+  text
+  translate
+  videos
+```
 
 ___
 ### Table of Contents  
