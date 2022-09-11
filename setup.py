@@ -19,8 +19,6 @@ setup(
     py_modules=["duckduckgo_search"],
     install_requires=[
         "requests>=2.27.1",
-        "lxml>=4.7.1",
-        "brotli>=1.0.9",
         "click>=8.1.3",
     ],
     entry_points={"console_scripts": ["ddgs = duckduckgo_search.cli.ddgs:cli"]},
@@ -39,6 +37,6 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     zip_safe=False,
 )
