@@ -5,7 +5,7 @@ from datetime import datetime
 
 from requests import ConnectionError
 
-from .utils import _do_output, _download_image, _get_vqd, session
+from .utils import _do_output, _download_image, _get_vqd, SESSION
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +49,13 @@ def ddg_images(
             Defaults to False.
 
     Returns:
-        List[dict]: DuckDuckGo text search results.
+        Optional[List[dict]]: DuckDuckGo text search results.
     """
 
     if not keywords:
         return None
 
+    # get vqd
     vqd = _get_vqd(keywords)
     if not vqd:
         return None
@@ -82,7 +83,7 @@ def ddg_images(
     while payload["s"] < max_results or len(results) < max_results:
         page_data = None
         try:
-            resp = session.get("https://duckduckgo.com/i.js", params=payload)
+            resp = SESSION.get("https://duckduckgo.com/i.js", params=payload)
             logger.info(
                 "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )

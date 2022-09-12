@@ -2,7 +2,7 @@ import logging
 
 from requests import ConnectionError
 
-from .utils import _do_output, _get_vqd, session
+from .utils import _do_output, _get_vqd, SESSION
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ def ddg_videos(
     resolution=None,
     duration=None,
     license_videos=None,
-    max_results=62,
+    max_results=50,
     output=None,
 ):
     """DuckDuckGo videos search
@@ -28,7 +28,7 @@ def ddg_videos(
         resolution: high, standart. Defaults to None.
         duration: short, medium, long. Defaults to None.
         license_videos: creativeCommon, youtube. Defaults to None.
-        max_results: number of results, maximum ddg_videos gives out 1000 results. Defaults to 62.
+        max_results: number of results, maximum ddg_videos gives out 1000 results. Defaults to 50.
         output: csv, json, print. Defaults to None.
 
     Returns:
@@ -64,7 +64,7 @@ def ddg_videos(
     while payload["s"] < max_results or len(results) < max_results:
         page_data = None
         try:
-            resp = session.get("https://duckduckgo.com/v.js", params=payload)
+            resp = SESSION.get("https://duckduckgo.com/v.js", params=payload)
             logger.info(
                 "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )
@@ -88,7 +88,7 @@ def ddg_videos(
             break
         results.extend(page_results)
         # for pagination
-        payload["s"] += 62
+        payload["s"] += 60
 
     results = results[:max_results]
     if output:
