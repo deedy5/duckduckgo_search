@@ -8,7 +8,7 @@ from duckduckgo_search import ddg_images
 
 def test_ddg_images():
     results = ddg_images("cat", max_results=50)
-    assert len(results) >= 50
+    assert len(results) >= 45
 
 
 def test_ddg_images_save_csv_json():
