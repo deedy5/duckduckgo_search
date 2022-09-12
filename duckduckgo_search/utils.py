@@ -4,45 +4,66 @@ import logging
 import os
 import re
 from datetime import datetime
-from functools import lru_cache
+from time import sleep
 
 import requests
 from requests import ConnectionError, Timeout
 
-session = requests.Session()
-headers = {
+SESSION = requests.Session()
+HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
     "Referer": "https://duckduckgo.com/",
 }
-session.headers.update(headers)
+SESSION.headers.update(HEADERS)
 
 logger = logging.getLogger(__name__)
 
 RE_CLEAN_HTML = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
 RE_VQD = re.compile(r"vqd=([0-9-]+)\&")
+VQD_DICT = dict()
 
 
-@lru_cache(maxsize=128)
 def _get_vqd(keywords):
+    global SESSION
+
+    vqd = VQD_DICT.get(keywords, None)
+    if vqd:
+        return vqd
+
     payload = {"q": keywords}
-    try:
-        resp = session.post(
-            "https://duckduckgo.com", data=payload, headers=headers, timeout=10
-        )
-        if resp.status_code == 200:
-            logger.info(
-                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
+    for _ in range(2):
+        try:
+            resp = SESSION.post(
+                "https://duckduckgo.com", data=payload, headers=HEADERS, timeout=10
             )
-            vqd = RE_VQD.search(resp.text)
-            logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
-            return vqd.group(1) if vqd else None
-        logger.info("get_vqd(). response=%s", resp.status_code)
-    except Timeout:
-        logger.warning("Connection timeout in get_vqd().")
-    except ConnectionError:
-        logger.warning("Connection error in get_vqd().")
-    except Exception:
-        logger.exception("Exception in get_vqd().", exc_info=True)
+            if resp.status_code == 200:
+                logger.info(
+                    "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
+                )
+                vqd = RE_VQD.search(resp.text).group(1)
+                if vqd:
+                    VQD_DICT[keywords] = vqd
+                    logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
+                    return vqd
+            logger.info("get_vqd(). response=%s", resp.status_code)
+        except Timeout:
+            logger.warning("Connection timeout in get_vqd().")
+        except ConnectionError:
+            logger.warning("Connection error in get_vqd().")
+        except Exception:
+            logger.exception("Exception in get_vqd().", exc_info=True)
+
+        # refresh SESSION if not vqd
+        SESSION = requests.Session()
+        SESSION.headers.update(HEADERS)
+        logger.warning(
+            "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
+        )
+        VQD_DICT.pop(keywords, None)
+        sleep(1)
+
+    # sleep to prevent blocking
+    sleep(1)
 
 
 def _save_json(jsonfile, data):

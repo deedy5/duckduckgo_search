@@ -2,7 +2,7 @@ import logging
 
 from requests import ConnectionError
 
-from .utils import _do_output, _get_vqd, _normalize, session
+from .utils import SESSION, _do_output, _get_vqd, _normalize
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ def ddg(
     region="wt-wt",
     safesearch="Moderate",
     time=None,
-    max_results=28,
+    max_results=25,
     output=None,
 ):
     """DuckDuckGo text search. Query params: https://duckduckgo.com/params
@@ -22,16 +22,17 @@ def ddg(
         region (str, optional): country - wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch (str, optional): On(kp=1), Moderate(kp=-1), Off(kp=-2). Defaults to "Moderate".
         time (str, optional): 'd' (day), 'w' (week), 'm' (month), 'y' (year). Defaults to None.
-        max_results (int, optional): return not less than max_results, max=200. Defaults to 28.
+        max_results (int, optional): return not less than max_results, max=200. Defaults to 25.
         output (str, optional): csv, json, print. Defaults to None.
 
     Returns:
-        List[dict]: DuckDuckGo text search results.
+        Optional[List[dict]]: DuckDuckGo text search results.
     """
 
     if not keywords:
         return None
 
+    # get vqd
     vqd = _get_vqd(keywords)
     if not vqd:
         return None
@@ -47,12 +48,13 @@ def ddg(
         "o": "json",
         "vqd": vqd,
     }
+
     results, cache = [], set()
     while len(results) < max_results and params["s"] < 200:
         # request search results from duckduckgo
         page_data = None
         try:
-            resp = session.get("https://links.duckduckgo.com/d.js", params=params)
+            resp = SESSION.get("https://links.duckduckgo.com/d.js", params=params)
             logger.info(
                 "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )
@@ -68,14 +70,12 @@ def ddg(
             break
 
         page_results = []
-        for row in page_data:
-            try:
-                # pagination
-                s_param = row["n"].split("s=")[1].split("&")[0]
-                params["s"] = int(s_param) - int(s_param) % 2
+        for i, row in enumerate(page_data):
+
+            # try pagination
+            if "n" in row:
+                params["s"] += i
                 break
-            except Exception:
-                pass
 
             # collect results
             if row["u"] not in cache:
@@ -102,7 +102,7 @@ def ddg(
         }
     results = []
     while True:
-        res = session.post('https://html.duckduckgo.com/html', data=payload, **kwargs)
+        res = SESSION.post('https://html.duckduckgo.com/html', data=payload, **kwargs)
         tree = html.fromstring(res.text)
         if tree.xpath('//div[@class="no-results"]/text()'):
             return results
@@ -120,6 +120,7 @@ def ddg(
         payload = {n: v for n, v in zip(names, values)}
         sleep(2)
     """
+
     results = results[:max_results]
     if output:
         _do_output(__name__, keywords, output, results)
