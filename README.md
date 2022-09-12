@@ -1,4 +1,4 @@
-![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) 
+![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search)
 ## Duckduckgo_search
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading images to a local hard drive.
@@ -22,8 +22,8 @@ ___
 ### Table of Contents  
 [Duckduckgo search operators](#duckduckgo-search-operators)  
 [1. ddg()](#1-ddg---search-by-duckduckgocom)</br>
-[2. ddg_images()](#2-ddg_images---image-search-by-duckduckgocom)</br> 
-[3. ddg_videos()](#3-ddg_videos---video-search-by-duckduckgocom)</br> 
+[2. ddg_images()](#2-ddg_images---image-search-by-duckduckgocom)</br>
+[3. ddg_videos()](#3-ddg_videos---video-search-by-duckduckgocom)</br>
 [4. ddg_news()](#4-ddg_news---news-search-by-duckduckgocom)</br>
 [5. ddg_maps()](#5-ddg_maps---map-search-by-duckduckgocom)</br>
 [6. ddg_translate()](#6-ddg_translate---translation-by-duckduckgocom)</br>
@@ -44,21 +44,23 @@ ___
 ___
 ## 1. ddg() - search by duckduckgo.com
 
-*WARNING!*: set a delay of at least **0.75** seconds between function calls.
-
 ```python
 from duckduckgo_search import ddg
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=28, output=None):
-    ''' DuckDuckGo search
-    keywords: keywords for query;
-    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: 'd' (day), 'w' (week), 'm' (month), 'y' (year), or 'year-month-date..year-month-date';    
-    max_results = 28 gives a number of results not less than 28,   
-                  maximum DDG gives out about 200 results,
-    output: csv, json, print.
-    '''
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None):
+    """DuckDuckGo text search. Query params: https://duckduckgo.com/params
+
+    Args:
+        keywords (str): keywords for query.
+        region (str, optional): country - wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On(kp=1), Moderate(kp=-1), Off(kp=-2). Defaults to "Moderate".
+        time (str, optional): 'd' (day), 'w' (week), 'm' (month), 'y' (year). Defaults to None.
+        max_results (int, optional): return not less than max_results, max=200. Defaults to 25.
+        output (str, optional): csv, json, print. Defaults to None.
+
+    Returns:
+        Optional[List[dict]]: DuckDuckGo text search results.
+    """
 ```
 ***Returns***
 ```python
@@ -73,7 +75,7 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
 from duckduckgo_search import ddg
 
 keywords = 'Bella Ciao'
-results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=28)
+results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=25)
 print(results)
 ```
 ```python
@@ -107,22 +109,33 @@ from duckduckgo_search import ddg_images
 def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
            color=None, type_image=None, layout=None, license_image=None, max_results=100,
            output=None, download=False):
-    ''' DuckDuckGo images search
-    keywords: keywords for query;
-    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: Day, Week, Month, Year;
-    size: Small, Medium, Large, Wallpaper;
-    color: color, Monochrome, Red, Orange, Yellow, Green, Blue, Purple, Pink, Brown, Black, Gray, Teal, White;
-    type_image: photo, clipart, gif, transparent, line;
-    layout: Square, Tall, Wide;
-    license_image: any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
-             ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
-             ModifyCommercially (Free to Modify, Share, and Use Commercially);
-    max_results: number of results, maximum ddg_images gives out 1000 results,
-    output: csv, json, print;
-    download: if True, download and save images to 'keywords' folder.
-    '''
+    """DuckDuckGo images search.
+
+    Args:
+        keywords (str): keywords for query.
+        region (str, optional): country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.
+            Defaults to "wt-wt".
+        safesearch (str, optional): On (kp = 1), Moderate (kp = -1), Off (kp = -2).
+            Defaults to "Moderate".
+        time (Optional[str], optional): Day, Week, Month, Year. Defaults to None.
+        size (Optional[str], optional): Small, Medium, Large, Wallpaper. Defaults to None.
+        color (Optional[str], optional): color, Monochrome, Red, Orange, Yellow, Green, Blue,
+            Purple, Pink, Brown, Black, Gray, Teal, White. Defaults to None.
+        type_image (Optional[str], optional): photo, clipart, gif, transparent, line.
+            Defaults to None.
+        layout (Optional[str], optional): Square, Tall, Wide. Defaults to None.
+        license_image (Optional[str], optional): any (All Creative Commons), Public (PublicDomain),
+            Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
+            Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
+            Use Commercially). Defaults to None.
+        max_results (Optional[int], optional): number of results, max 1000 results. Defaults to 100.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
+        download (bool, optional): if True, download and save images to 'keywords' folder.
+            Defaults to False.
+
+    Returns:
+        Optional[List[dict]]: DuckDuckGo text search results.
+    """
 ```
 ***Returns***
 ```python
@@ -141,7 +154,7 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
 from duckduckgo_search import ddg_images
 
 keywords = 'liberty tree'
-r = ddg_images(keywords, region='wt-wt', safesearch='Off', size=None, 
+r = ddg_images(keywords, region='wt-wt', safesearch='Off', size=None,
                color='Monochrome', type_image=None, layout=None, license_image=None, max_results=300)
 print(r)
 ```
@@ -159,17 +172,22 @@ ___
 from duckduckgo_search import ddg_videos
 
 def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resolution=None,
-    duration=None, license_videos=None, max_results=62, output=None):
+    duration=None, license_videos=None, max_results=50, output=None):
     """DuckDuckGo videos search
-    keywords: keywords for query;
-    safesearch: On (p = 1), Moderate (p = -1), Off (p = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: d, w, m (published after);
-    resolution: high, standart;
-    duration: short, medium, long;
-    license_videos: creativeCommon, youtube;
-    max_results: number of results, maximum ddg_videos gives out 1000 results;
-    output: csv, json, print.
+
+    Args:
+        keywords: keywords for query.
+        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch: On (p = 1), Moderate (p = -1), Off (p = -2). Defaults to "Moderate".
+        time: d, w, m (published after). Defaults to None.
+        resolution: high, standart. Defaults to None.
+        duration: short, medium, long. Defaults to None.
+        license_videos: creativeCommon, youtube. Defaults to None.
+        max_results: number of results, maximum ddg_videos gives out 1000 results. Defaults to 50.
+        output: csv, json, print. Defaults to None.
+
+    Returns:
+        DuckDuckGo videos search results
     """
 ```
 ***Returns***
@@ -193,7 +211,7 @@ def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resol
   },
   "title": str,
   "uploader": str},
- 
+
  ...
  ]
 ```
@@ -202,13 +220,13 @@ def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resol
 from duckduckgo_search import ddg_videos
 
 keywords = 'Earth'
-r = ddg_videos(keywords="Earth", region='wt-wt', safesearch='Off', time=None, resolution=None, 
-               duration=None, license_videos=None, max_results=62, output=None)
+r = ddg_videos(keywords="Earth", region='wt-wt', safesearch='Off', time=None, resolution=None,
+               duration=None, license_videos=None, max_results=50, output=None)
 print(r)
 ```
 ```python
 [
-{'content': 'https://www.youtube.com/watch?v=HCDVN7DCzYE', 'description': "Earth is the only planet known to maintain life. Find out the origins of our home planet and some of the key ingredients that help make this blue speck in space a unique global ecosystem. Subscribe: http://bit.ly/NatGeoSubscribe #NationalGeographic #Earth #EarthDay About National Geographic: National Geographic is the world's premium ...", 'duration': '3:33', 'embed_html': '<iframe width="1280" height="720" src="https://www.youtube.com/embed/HCDVN7DCzYE?autoplay=1" frameborder="0" allowfullscreen></iframe>', 'embed_url': 'https://www.youtube.com/embed/HCDVN7DCzYE?autoplay=1', 'images': {'large': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api', 'medium': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api', 'motion': 'https://tse2.mm.bing.net/th?id=OM2.PVGeB2TtDBxXjQ_1633563877&pid=Api', 'small': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api'}, 'provider': 'Bing', 'published': '2018-11-22T13:00:02.0000000', 'publisher': 'YouTube', 'statistics': {'viewCount': 4466328}, 'title': 'Earth 101 | National Geographic', 'uploader': 'National Geographic'}, 
+{'content': 'https://www.youtube.com/watch?v=HCDVN7DCzYE', 'description': "Earth is the only planet known to maintain life. Find out the origins of our home planet and some of the key ingredients that help make this blue speck in space a unique global ecosystem. Subscribe: http://bit.ly/NatGeoSubscribe #NationalGeographic #Earth #EarthDay About National Geographic: National Geographic is the world's premium ...", 'duration': '3:33', 'embed_html': '<iframe width="1280" height="720" src="https://www.youtube.com/embed/HCDVN7DCzYE?autoplay=1" frameborder="0" allowfullscreen></iframe>', 'embed_url': 'https://www.youtube.com/embed/HCDVN7DCzYE?autoplay=1', 'images': {'large': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api', 'medium': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api', 'motion': 'https://tse2.mm.bing.net/th?id=OM2.PVGeB2TtDBxXjQ_1633563877&pid=Api', 'small': 'https://tse2.mm.bing.net/th?id=OVP.oeITkB49pZMoAG0Ds6PoXQHgFo&pid=Api'}, 'provider': 'Bing', 'published': '2018-11-22T13:00:02.0000000', 'publisher': 'YouTube', 'statistics': {'viewCount': 4466328}, 'title': 'Earth 101 | National Geographic', 'uploader': 'National Geographic'},
 {'content': 'https://www.youtube.com/watch?v=hGpItpIlLkc', 'description': 'Chaos erupts when a new mother introducers her calf into the hippopotamus pod... Subscribe: http://bit.ly/BBCEarthSub #NaturalWorld #BBCEarth Watch more: Planet Earth http://bit.ly/PlanetEarthPlaylist Blue Planet http://bit.ly/BluePlanetPlaylist Planet Earth II http://bit.ly/PlanetEarthIIPlaylist Planet Dinosaur https://bit.ly ...', 'duration': '6:05', 'embed_html': '<iframe width="1280" height="720" src="https://www.youtube.com/embed/hGpItpIlLkc?autoplay=1" frameborder="0" allowfullscreen></iframe>', 'embed_url': 'https://www.youtube.com/embed/hGpItpIlLkc?autoplay=1', 'images': {'large': 'https://tse1.mm.bing.net/th?id=OVP.lwq6by7crgwpkXGERzXLvQHgFo&pid=Api', 'medium': 'https://tse1.mm.bing.net/th?id=OVP.lwq6by7crgwpkXGERzXLvQHgFo&pid=Api', 'motion': 'https://tse1.mm.bing.net/th?id=OM.3QweCgZ-KW53rQ&pid=Api', 'small': 'https://tse1.mm.bing.net/th?id=OVP.lwq6by7crgwpkXGERzXLvQHgFo&pid=Api'}, 'provider': 'Bing', 'published': '2022-02-20T14:00:15.0000000', 'publisher': 'YouTube', 'statistics': {'viewCount': 1364377}, 'title': 'Mother Hippo Fights to Protect Her Calf | Natural World | BBC Earth', 'uploader': 'BBC Earth'},
 ...
 ]
@@ -218,15 +236,20 @@ ___
 ```python
 from duckduckgo_search import ddg_news
 
-def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=30, output=None):
-    ''' DuckDuckGo news search
-    keywords: keywords for query;
-    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: 'd' (day), 'w' (week), 'm' (month);    
-    max_results = 30, maximum DDG_news gives out 240 results,
-    output: csv, json, print.
-    '''
+def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None):
+    """DuckDuckGo news search
+
+    Args:
+        keywords: keywords for query.
+        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2). Defaults to "Moderate".
+        time: 'd' (day), 'w' (week), 'm' (month). Defaults to None.
+        max_results: maximum DDG_news gives out 240 results. Defaults to 25.
+        output: csv, json, print. Defaults to None.
+
+    Returns:
+        DuckDuckGo news search results.
+    """
 ```
 ***Returns***
 ```python
@@ -235,7 +258,7 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
   'body': body of result,
   'url': url of result,
   'image': image url,
-  'source': source of result, 
+  'source': source of result,
  ...
  ]
 ```
@@ -263,22 +286,27 @@ from duckduckgo_search import ddg_maps
 def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=None,
              country=None, postalcode=None, latitude=None, longitude=None, radius=0,
              max_results=None, output=None):
-    ''' DuckDuckGo maps search
-    keywords: keywords for query;
-    place: simplified search - if set, the other parameters are not used;
-    street: house number/street;
-    city: city of search;
-    county: county of search;
-    state: state of search;
-    country: country of search;
-    postalcode: postalcode of search;
-    latitude: geographic coordinate that specifies the north–south position;
-    longitude: geographic coordinate that specifies the east–west position;
-        if latitude and longitude are set, the other parameters are not used.
-    radius: expand the search square by the distance in kilometers;
-    max_results: maximum number of results; 
-    output: csv, json, print.
-    '''
+    """DuckDuckGo maps search
+
+    Args:
+        keywords: keywords for query
+        place: simplified search - if set, the other parameters are not used. Defaults to None.
+        street: house number/street. Defaults to None.
+        city: city of search. Defaults to None.
+        county: county of search. Defaults to None.
+        state: state of search. Defaults to None.
+        country: country of search. Defaults to None.
+        postalcode: postalcode of search. Defaults to None.
+        latitude: geographic coordinate that specifies the north–south position. Defaults to None.
+        longitude: geographic coordinate that specifies the east–west position;
+            if latitude and longitude are set, the other parameters are not used. Defaults to None.
+        radius: expand the search square by the distance in kilometers. Defaults to 0.
+        max_results: maximum number of results. Defaults to None.
+        output: csv, json, print. Defaults to None.
+
+    Returns:
+        DuckDuckGo maps search results
+    """
 ```
 ***Returns***
 ```python
@@ -290,7 +318,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
   'url': url,
   'desc': desc,
   'phone': phone,
-  'image': image,             
+  'image': image,  
   'source': source,
   'links': links,
   'hours': hours,}
@@ -338,7 +366,7 @@ from duckduckgo_search import ddg_maps
 keywords = 'dentists'
 street = 'Av. Dom Pedro Massa 639'
 city = 'São Gabriel da Cachoeira'
-radius = 2 #km 
+radius = 2 #km
 r = ddg_maps(keywords, street='Av. Dom Pedro Massa 639', city ='São Gabriel da Cachoeira', radius=2)
 print(r)
 ```
@@ -375,12 +403,17 @@ ___
 from duckduckgo_search import ddg_translate
 
 def ddg_translate(keywords, from_=None, to='en', output=None):
-    ''' DuckDuckGo translate
-    keywords: string or a list of strings to translate;  
-    from_: what language to translate from (defaults automatically);
-    to: what language to translate (defaults to English);
-    output: print, csv, json.
-    '''
+    """DuckDuckGo translate
+
+    Args:
+        keywords: string or a list of strings to translate
+        from_: what language to translate from (defaults automatically). Defaults to None.
+        to: what language to translate. Defaults to "en".
+        output: print, csv, json. Defaults to None.
+
+    Returns:
+        DuckDuckGo translate results.
+    """
 ```
 ***Returns***
 ```python
