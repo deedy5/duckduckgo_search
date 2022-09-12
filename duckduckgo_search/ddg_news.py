@@ -3,7 +3,7 @@ from datetime import datetime
 
 from requests import ConnectionError
 
-from .utils import _do_output, _get_vqd, _normalize, session
+from .utils import _do_output, _get_vqd, _normalize, SESSION
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ def ddg_news(
     region="wt-wt",
     safesearch="Moderate",
     time=None,
-    max_results=30,
+    max_results=25,
     output=None,
 ):
     """DuckDuckGo news search
@@ -23,7 +23,7 @@ def ddg_news(
         region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2). Defaults to "Moderate".
         time: 'd' (day), 'w' (week), 'm' (month). Defaults to None.
-        max_results: maximum DDG_news gives out 240 results. Defaults to 30.
+        max_results: maximum DDG_news gives out 240 results. Defaults to 25.
         output: csv, json, print. Defaults to None.
 
     Returns:
@@ -54,7 +54,7 @@ def ddg_news(
     while params["s"] < min(max_results, 240) or len(results) < max_results:
         page_data = None
         try:
-            resp = session.get("https://duckduckgo.com/news.js", params=params)
+            resp = SESSION.get("https://duckduckgo.com/news.js", params=params)
             logger.info(
                 "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )

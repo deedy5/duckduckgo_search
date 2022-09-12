@@ -6,7 +6,7 @@ from decimal import Decimal
 import requests
 from requests import ConnectionError
 
-from .utils import _do_output, _get_vqd, _normalize, headers, session
+from .utils import _do_output, _get_vqd, _normalize, SESSION
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +102,9 @@ def ddg_maps(
                 "format": "jsonv2",
             }
         try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0"
+            }
             resp = requests.get(
                 "https://nominatim.openstreetmap.org/search.php",
                 params=params,
@@ -150,7 +153,7 @@ def ddg_maps(
         }
         page_data = None
         try:
-            resp = session.get("https://duckduckgo.com/local.js", params=params)
+            resp = SESSION.get("https://duckduckgo.com/local.js", params=params)
             logger.info(
                 "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )
