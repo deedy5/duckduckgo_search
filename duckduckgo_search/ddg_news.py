@@ -3,7 +3,7 @@ from datetime import datetime
 
 from requests import ConnectionError
 
-from .utils import _do_output, _get_vqd, _normalize, SESSION
+from .utils import SESSION, _do_output, _get_vqd, _normalize
 
 logger = logging.getLogger(__name__)
 
