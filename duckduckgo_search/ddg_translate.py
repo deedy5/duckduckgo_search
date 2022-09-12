@@ -2,7 +2,7 @@ import logging
 
 from requests import ConnectionError
 
-from .utils import _do_output, _get_vqd, session
+from .utils import SESSION, VQD_DICT, _do_output, _get_vqd
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def ddg_translate(
     results = []
     for data in keywords:
         try:
-            resp = session.post(
+            resp = SESSION.post(
                 "https://duckduckgo.com/translation.js",
                 params=params,
                 data=data.encode("utf-8"),
@@ -61,6 +61,7 @@ def ddg_translate(
         except ConnectionError:
             logger.error("Connection Error.")
         except Exception:
+            VQD_DICT.pop("translate", None)
             logger.exception("Exception.", exc_info=True)
 
     if output:
