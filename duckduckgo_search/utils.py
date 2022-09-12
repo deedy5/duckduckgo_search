@@ -56,7 +56,9 @@ def _get_vqd(keywords):
         # refresh SESSION if not vqd
         SESSION = requests.Session()
         SESSION.headers.update(HEADERS)
-        logger.warning("keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords)
+        logger.warning(
+            "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
+        )
         VQD_DICT.pop(keywords, None)
         sleep(1)
 
