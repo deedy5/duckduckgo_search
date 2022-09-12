@@ -44,21 +44,23 @@ ___
 ___
 ## 1. ddg() - search by duckduckgo.com
 
-*WARNING!*: set a delay of at least **0.75** seconds between function calls.
-
 ```python
 from duckduckgo_search import ddg
 
 def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None):
-    ''' DuckDuckGo search
-    keywords: keywords for query;
-    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: 'd' (day), 'w' (week), 'm' (month), 'y' (year), or 'year-month-date..year-month-date';  
-    max_results = 25 gives a number of results not less than 25,  
-                  maximum DDG gives out about 200 results,
-    output: csv, json, print.
-    '''
+    """DuckDuckGo text search. Query params: https://duckduckgo.com/params
+
+    Args:
+        keywords (str): keywords for query.
+        region (str, optional): country - wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On(kp=1), Moderate(kp=-1), Off(kp=-2). Defaults to "Moderate".
+        time (str, optional): 'd' (day), 'w' (week), 'm' (month), 'y' (year). Defaults to None.
+        max_results (int, optional): return not less than max_results, max=200. Defaults to 25.
+        output (str, optional): csv, json, print. Defaults to None.
+
+    Returns:
+        Optional[List[dict]]: DuckDuckGo text search results.
+    """
 ```
 ***Returns***
 ```python
@@ -107,22 +109,33 @@ from duckduckgo_search import ddg_images
 def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
            color=None, type_image=None, layout=None, license_image=None, max_results=100,
            output=None, download=False):
-    ''' DuckDuckGo images search
-    keywords: keywords for query;
-    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: Day, Week, Month, Year;
-    size: Small, Medium, Large, Wallpaper;
-    color: color, Monochrome, Red, Orange, Yellow, Green, Blue, Purple, Pink, Brown, Black, Gray, Teal, White;
-    type_image: photo, clipart, gif, transparent, line;
-    layout: Square, Tall, Wide;
-    license_image: any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
-             ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share, and Use),
-             ModifyCommercially (Free to Modify, Share, and Use Commercially);
-    max_results: number of results, maximum ddg_images gives out 1000 results,
-    output: csv, json, print;
-    download: if True, download and save images to 'keywords' folder.
-    '''
+    """DuckDuckGo images search.
+
+    Args:
+        keywords (str): keywords for query.
+        region (str, optional): country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.
+            Defaults to "wt-wt".
+        safesearch (str, optional): On (kp = 1), Moderate (kp = -1), Off (kp = -2).
+            Defaults to "Moderate".
+        time (Optional[str], optional): Day, Week, Month, Year. Defaults to None.
+        size (Optional[str], optional): Small, Medium, Large, Wallpaper. Defaults to None.
+        color (Optional[str], optional): color, Monochrome, Red, Orange, Yellow, Green, Blue,
+            Purple, Pink, Brown, Black, Gray, Teal, White. Defaults to None.
+        type_image (Optional[str], optional): photo, clipart, gif, transparent, line.
+            Defaults to None.
+        layout (Optional[str], optional): Square, Tall, Wide. Defaults to None.
+        license_image (Optional[str], optional): any (All Creative Commons), Public (PublicDomain),
+            Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
+            Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
+            Use Commercially). Defaults to None.
+        max_results (Optional[int], optional): number of results, max 1000 results. Defaults to 100.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
+        download (bool, optional): if True, download and save images to 'keywords' folder.
+            Defaults to False.
+
+    Returns:
+        Optional[List[dict]]: DuckDuckGo text search results.
+    """
 ```
 ***Returns***
 ```python
@@ -161,15 +174,20 @@ from duckduckgo_search import ddg_videos
 def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resolution=None,
     duration=None, license_videos=None, max_results=50, output=None):
     """DuckDuckGo videos search
-    keywords: keywords for query;
-    safesearch: On (p = 1), Moderate (p = -1), Off (p = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: d, w, m (published after);
-    resolution: high, standart;
-    duration: short, medium, long;
-    license_videos: creativeCommon, youtube;
-    max_results: number of results, maximum ddg_videos gives out 1000 results;
-    output: csv, json, print.
+
+    Args:
+        keywords: keywords for query.
+        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch: On (p = 1), Moderate (p = -1), Off (p = -2). Defaults to "Moderate".
+        time: d, w, m (published after). Defaults to None.
+        resolution: high, standart. Defaults to None.
+        duration: short, medium, long. Defaults to None.
+        license_videos: creativeCommon, youtube. Defaults to None.
+        max_results: number of results, maximum ddg_videos gives out 1000 results. Defaults to 50.
+        output: csv, json, print. Defaults to None.
+
+    Returns:
+        DuckDuckGo videos search results
     """
 ```
 ***Returns***
@@ -219,14 +237,19 @@ ___
 from duckduckgo_search import ddg_news
 
 def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None):
-    ''' DuckDuckGo news search
-    keywords: keywords for query;
-    safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2);
-    region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.;
-    time: 'd' (day), 'w' (week), 'm' (month);  
-    max_results = 25, maximum DDG_news gives out 240 results,
-    output: csv, json, print.
-    '''
+    """DuckDuckGo news search
+
+    Args:
+        keywords: keywords for query.
+        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2). Defaults to "Moderate".
+        time: 'd' (day), 'w' (week), 'm' (month). Defaults to None.
+        max_results: maximum DDG_news gives out 240 results. Defaults to 25.
+        output: csv, json, print. Defaults to None.
+
+    Returns:
+        DuckDuckGo news search results.
+    """
 ```
 ***Returns***
 ```python
@@ -263,22 +286,27 @@ from duckduckgo_search import ddg_maps
 def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=None,
              country=None, postalcode=None, latitude=None, longitude=None, radius=0,
              max_results=None, output=None):
-    ''' DuckDuckGo maps search
-    keywords: keywords for query;
-    place: simplified search - if set, the other parameters are not used;
-    street: house number/street;
-    city: city of search;
-    county: county of search;
-    state: state of search;
-    country: country of search;
-    postalcode: postalcode of search;
-    latitude: geographic coordinate that specifies the north–south position;
-    longitude: geographic coordinate that specifies the east–west position;
-        if latitude and longitude are set, the other parameters are not used.
-    radius: expand the search square by the distance in kilometers;
-    max_results: maximum number of results;
-    output: csv, json, print.
-    '''
+    """DuckDuckGo maps search
+
+    Args:
+        keywords: keywords for query
+        place: simplified search - if set, the other parameters are not used. Defaults to None.
+        street: house number/street. Defaults to None.
+        city: city of search. Defaults to None.
+        county: county of search. Defaults to None.
+        state: state of search. Defaults to None.
+        country: country of search. Defaults to None.
+        postalcode: postalcode of search. Defaults to None.
+        latitude: geographic coordinate that specifies the north–south position. Defaults to None.
+        longitude: geographic coordinate that specifies the east–west position;
+            if latitude and longitude are set, the other parameters are not used. Defaults to None.
+        radius: expand the search square by the distance in kilometers. Defaults to 0.
+        max_results: maximum number of results. Defaults to None.
+        output: csv, json, print. Defaults to None.
+
+    Returns:
+        DuckDuckGo maps search results
+    """
 ```
 ***Returns***
 ```python
@@ -375,12 +403,17 @@ ___
 from duckduckgo_search import ddg_translate
 
 def ddg_translate(keywords, from_=None, to='en', output=None):
-    ''' DuckDuckGo translate
-    keywords: string or a list of strings to translate;  
-    from_: what language to translate from (defaults automatically);
-    to: what language to translate (defaults to English);
-    output: print, csv, json.
-    '''
+    """DuckDuckGo translate
+
+    Args:
+        keywords: string or a list of strings to translate
+        from_: what language to translate from (defaults automatically). Defaults to None.
+        to: what language to translate. Defaults to "en".
+        output: print, csv, json. Defaults to None.
+
+    Returns:
+        DuckDuckGo translate results.
+    """
 ```
 ***Returns***
 ```python
