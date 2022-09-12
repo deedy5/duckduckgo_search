@@ -2,7 +2,7 @@ import logging
 
 from requests import ConnectionError
 
-from .utils import _do_output, _get_vqd, SESSION, VQD_DICT
+from .utils import SESSION, VQD_DICT, _do_output, _get_vqd
 
 logger = logging.getLogger(__name__)
 
