@@ -28,8 +28,8 @@ def cli():
 @click.option(
     "-m",
     "--max_results",
-    default=28,
-    help="number of results (not less than 28), maximum DDG gives out about 200 results",
+    default=25,
+    help="number of results (not less than 25), maximum DDG gives out about 200 results",
 )
 @click.option("-o", "--output", default="print", help="print, csv, json, default=print")
 def text(*args, **kwargs):
@@ -104,7 +104,7 @@ def images(*args, **kwargs):
     default=None,
     help="creativeCommon, youtube",
 )
-@click.option("-m", "--max_results", default=100, help="number of results (default=62)")
+@click.option("-m", "--max_results", default=50, help="number of results (default=50)")
 @click.option("-o", "--output", default="print", help="print, csv, json, default=print")
 def videos(*args, **kwargs):
     return ddg_videos(*args, **kwargs)
@@ -120,7 +120,7 @@ def videos(*args, **kwargs):
 )
 @click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
 @click.option("-t", "--time", default=None, help="d, w, m, y")
-@click.option("-m", "--max_results", default=30, help="number of results (default=30)")
+@click.option("-m", "--max_results", default=25, help="number of results (default=25)")
 @click.option("-o", "--output", default="print", help="print, csv, json, default=print")
 def news(*args, **kwargs):
     return ddg_news(*args, **kwargs)
