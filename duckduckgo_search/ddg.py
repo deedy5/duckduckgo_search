@@ -74,7 +74,7 @@ def ddg(
 
             # try pagination
             if "n" in row:
-                params["s"] = i
+                params["s"] += i
                 break
 
             # collect results
