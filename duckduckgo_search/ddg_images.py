@@ -5,7 +5,7 @@ from datetime import datetime
 
 from requests import ConnectionError
 
-from .utils import SESSION, _do_output, _get_vqd, _normalize
+from .utils import SESSION, _do_output, _download_image, _get_vqd
 
 logger = logging.getLogger(__name__)
 
