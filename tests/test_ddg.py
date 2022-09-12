@@ -7,7 +7,7 @@ from duckduckgo_search import ddg
 
 def test_ddg():
     results = ddg("cat", max_results=50)
-    assert len(results) >= 50
+    assert len(results) >= 45
 
 
 def test_ddg_save_csv_json():
