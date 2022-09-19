@@ -42,6 +42,10 @@ def _get_vqd(keywords):
                 )
                 vqd = RE_VQD.search(resp.text).group(1)
                 if vqd:
+                    # delete the first key to reduce memory consumption (<699000 size 20Mb, >699_000 size 40Mb)
+                    if len(VQD_DICT) > 699_000:
+                        VQD_DICT.pop(next(iter(VQD_DICT)))
+                        
                     VQD_DICT[keywords] = vqd
                     logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
                     return vqd
