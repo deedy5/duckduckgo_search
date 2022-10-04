@@ -1,6 +1,8 @@
 import logging
 
+import requests
 from requests import ConnectionError
+from typing import Optional
 
 from .utils import SESSION, _do_output, _get_vqd, _normalize
 
@@ -14,6 +16,7 @@ def ddg(
     time=None,
     max_results=25,
     output=None,
+    session: Optional[requests.Session] = None,
 ):
     """DuckDuckGo text search. Query params: https://duckduckgo.com/params
 
@@ -24,6 +27,7 @@ def ddg(
         time (str, optional): 'd' (day), 'w' (week), 'm' (month), 'y' (year). Defaults to None.
         max_results (int, optional): return not less than max_results, max=200. Defaults to 25.
         output (str, optional): csv, json, print. Defaults to None.
+        session (requests.Session, optional): your session for custom settings as proxies etc.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
@@ -54,7 +58,11 @@ def ddg(
         # request search results from duckduckgo
         page_data = None
         try:
-            resp = SESSION.get("https://links.duckduckgo.com/d.js", params=params)
+            if session is None:
+                resp = SESSION.get("https://links.duckduckgo.com/d.js", params=params)
+            else:
+                resp = session.get("https://links.duckduckgo.com/d.js", params=params)
+
             logger.info(
                 "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
             )
@@ -92,34 +100,6 @@ def ddg(
         if not page_results:
             break
         results.extend(page_results)
-
-    """ using html method
-    payload = {
-        'q': keywords,
-        'l': region,
-        'p': safesearch_base[safesearch],
-        'df': time
-        }
-    results = []
-    while True:
-        res = SESSION.post('https://html.duckduckgo.com/html', data=payload, **kwargs)
-        tree = html.fromstring(res.text)
-        if tree.xpath('//div[@class="no-results"]/text()'):
-            return results
-        for element in tree.xpath('//div[contains(@class, "results_links")]'):
-            results.append({
-                'title': element.xpath('.//a[contains(@class, "result__a")]/text()')[0],
-                'href': element.xpath('.//a[contains(@class, "result__a")]/@href')[0],
-                'body': ''.join(element.xpath('.//a[contains(@class, "result__snippet")]//text()')),
-            })
-        if len(results) >= max_results:
-            return results
-        next_page = tree.xpath('.//div[@class="nav-link"]')[-1]
-        names = next_page.xpath('.//input[@type="hidden"]/@name')
-        values = next_page.xpath('.//input[@type="hidden"]/@value')
-        payload = {n: v for n, v in zip(names, values)}
-        sleep(2)
-    """
 
     results = results[:max_results]
     if output:

@@ -47,7 +47,7 @@ ___
 ```python
 from duckduckgo_search import ddg
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None):
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None, session=None):
     """DuckDuckGo text search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -57,6 +57,7 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
         time (str, optional): 'd' (day), 'w' (week), 'm' (month), 'y' (year). Defaults to None.
         max_results (int, optional): return not less than max_results, max=200. Defaults to 25.
         output (str, optional): csv, json, print. Defaults to None.
+        session (requests.Session, optional): your session for custom settings as proxies etc.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
