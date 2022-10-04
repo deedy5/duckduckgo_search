@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 def ddg(
-    keywords,
-    region="wt-wt",
-    safesearch="Moderate",
-    time=None,
-    max_results=25,
-    output=None,
+    keywords: str,
+    region: Optional[str] = "wt-wt",
+    safesearch: Optional[str] = "Moderate",
+    time: Optional[str] = None,
+    max_results: Optional[int] = 25,
+    output: Optional[str] = None,
     session: Optional[requests.Session] = None,
 ):
     """DuckDuckGo text search. Query params: https://duckduckgo.com/params
@@ -70,8 +70,8 @@ def ddg(
         except ConnectionError:
             logger.error("Connection Error.")
             break
-        except Exception:
-            logger.exception("Exception.", exc_info=True)
+        except Exception as e:
+            logger.exception(f"Exception: {e}.", exc_info=True)
             break
 
         if not page_data:
