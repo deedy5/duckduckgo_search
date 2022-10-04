@@ -20,13 +20,15 @@ python -m duckduckgo_search --help
 
 ___
 ### Table of Contents  
-[Duckduckgo search operators](#duckduckgo-search-operators)  
+[Duckduckgo search operators](#duckduckgo-search-operators)</br>
+[Using proxy](#using-proxy)</br>
 [1. ddg()](#1-ddg---search-by-duckduckgocom)</br>
 [2. ddg_images()](#2-ddg_images---image-search-by-duckduckgocom)</br>
 [3. ddg_videos()](#3-ddg_videos---video-search-by-duckduckgocom)</br>
 [4. ddg_news()](#4-ddg_news---news-search-by-duckduckgocom)</br>
 [5. ddg_maps()](#5-ddg_maps---map-search-by-duckduckgocom)</br>
 [6. ddg_translate()](#6-ddg_translate---translation-by-duckduckgocom)</br>
+
 ___
 ## Duckduckgo search operators
 
@@ -41,6 +43,20 @@ ___
 | cats -site:example.com |	Pages about cats, excluding example.com |
 | intitle:dogs |	Page title includes the word "dogs" |
 | inurl:cats  |	Page url includes the word "cats" |
+___
+### Using proxy
+```python3
+from duckduckgo_search import ddg
+from duckduckgo_search.utils import SESSION
+
+
+SESSION.proxies = {
+    "http": f"socks5h://localhost:9150",
+    "https": f"socks5h://localhost:9150"
+}
+r = ddg("Don't Worry, Be Happy")
+print(r)
+```
 ___
 ## 1. ddg() - search by duckduckgo.com
 
@@ -454,4 +470,3 @@ print(results)
 ...
 ]
 ```
-
