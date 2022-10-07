@@ -19,7 +19,6 @@ SESSION.headers.update(HEADERS)
 logger = logging.getLogger(__name__)
 
 RE_CLEAN_HTML = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
-RE_VQD = re.compile(r"vqd=([0-9-]+)\&")
 VQD_DICT = dict()
 
 
@@ -40,7 +39,8 @@ def _get_vqd(keywords):
                 logger.info(
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
-                vqd = RE_VQD.search(resp.text).group(1)
+                vqd = resp.content[resp.content.index(b'vqd=\'') + 5:]
+                vqd = vqd[:vqd.index(b'\'')].decode()
                 if vqd:
                     # delete the first key to reduce memory consumption
                     if len(VQD_DICT) >= 32768:
@@ -53,9 +53,9 @@ def _get_vqd(keywords):
             logger.warning("Connection timeout in get_vqd().")
         except ConnectionError:
             logger.warning("Connection error in get_vqd().")
-        except Exception:
-            logger.exception("Exception in get_vqd().", exc_info=True)
-
+        except Exception as ex:
+            logger.exception("Exception in get_vqd().", ex)
+        
         # refresh SESSION if not vqd
         SESSION = requests.Session()
         SESSION.headers.update(HEADERS)
