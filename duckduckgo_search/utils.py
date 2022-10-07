@@ -59,6 +59,8 @@ def _get_vqd(keywords):
 
         # refresh SESSION if not vqd
         prev_proxies = SESSION.proxies
+        SESSION.adapters.clear()
+        SESSION.close()
         SESSION = requests.Session()
         SESSION.headers.update(HEADERS)
         SESSION.proxies = prev_proxies
