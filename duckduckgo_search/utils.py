@@ -9,6 +9,7 @@ from time import sleep
 import requests
 from requests import ConnectionError, Timeout
 
+
 SESSION = requests.Session()
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
@@ -27,7 +28,7 @@ def _get_vqd(keywords):
 
     vqd = VQD_DICT.get(keywords, None)
     if vqd:
-        return vqd
+        return vqd.decode()
 
     payload = {"q": keywords}
     for _ in range(2):
@@ -40,14 +41,15 @@ def _get_vqd(keywords):
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
                 vqd = resp.content[resp.content.index(b"vqd='") + 5 :]
-                vqd = vqd[: vqd.index(b"'")].decode()
+                vqd = vqd[: vqd.index(b"'")]
+
                 if vqd:
                     # delete the first key to reduce memory consumption
                     if len(VQD_DICT) >= 32768:
                         VQD_DICT.pop(next(iter(VQD_DICT)))
                     VQD_DICT[keywords] = vqd
                     logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
-                    return vqd
+                    return vqd.decode()
             logger.info("get_vqd(). response=%s", resp.status_code)
         except Timeout:
             logger.warning("Connection timeout in get_vqd().")
