@@ -19,16 +19,15 @@ SESSION.headers.update(HEADERS)
 logger = logging.getLogger(__name__)
 
 RE_CLEAN_HTML = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
-RE_VQD = re.compile(r"vqd=([0-9-]+)\&")
 VQD_DICT = dict()
 
 
 def _get_vqd(keywords):
     global SESSION
 
-    vqd = VQD_DICT.get(keywords, None)
-    if vqd:
-        return vqd
+    vqd_bytes = VQD_DICT.get(keywords, None)
+    if vqd_bytes:
+        return vqd_bytes.decode()
 
     payload = {"q": keywords}
     for _ in range(2):
@@ -40,25 +39,29 @@ def _get_vqd(keywords):
                 logger.info(
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
-                vqd = RE_VQD.search(resp.text).group(1)
-                if vqd:
+                vqd_bytes = resp.content[resp.content.index(b"vqd='") + 5 :]
+                vqd_bytes = vqd_bytes[: vqd_bytes.index(b"'")]
+
+                if vqd_bytes:
                     # delete the first key to reduce memory consumption
                     if len(VQD_DICT) >= 32768:
                         VQD_DICT.pop(next(iter(VQD_DICT)))
-                    VQD_DICT[keywords] = vqd
-                    logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
-                    return vqd
+                    VQD_DICT[keywords] = vqd_bytes
+                    logger.info("keywords=%s. Got vqd=%s", keywords, vqd_bytes)
+                    return vqd_bytes.decode()
             logger.info("get_vqd(). response=%s", resp.status_code)
         except Timeout:
             logger.warning("Connection timeout in get_vqd().")
         except ConnectionError:
             logger.warning("Connection error in get_vqd().")
-        except Exception:
-            logger.exception("Exception in get_vqd().", exc_info=True)
+        except Exception as ex:
+            logger.exception("Exception in get_vqd().", ex)
 
         # refresh SESSION if not vqd
+        prev_proxies = SESSION.proxies
         SESSION = requests.Session()
         SESSION.headers.update(HEADERS)
+        SESSION.proxies = prev_proxies
         logger.warning(
             "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
         )
