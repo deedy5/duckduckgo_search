@@ -40,7 +40,7 @@ def _get_vqd(keywords):
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
                 vqd_bytes = resp.content[resp.content.index(b"vqd='") + 5 :]
-                vqd_bytes = vqd[: vqd.index(b"'")]
+                vqd_bytes = vqd[: vqd_bytes.index(b"'")]
 
                 if vqd_bytes:
                     # delete the first key to reduce memory consumption
