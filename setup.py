@@ -18,7 +18,7 @@ setup(
     packages=find_packages(exclude=[]),
     py_modules=["duckduckgo_search"],
     install_requires=[
-        "requests>=2.27.1",
+        "requests>=2.28.1",
         "click>=8.1.3",
     ],
     entry_points={"console_scripts": ["ddgs = duckduckgo_search.cli.ddgs:cli"]},
