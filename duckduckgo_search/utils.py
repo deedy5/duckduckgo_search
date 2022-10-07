@@ -40,14 +40,14 @@ def _get_vqd(keywords):
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
                 vqd_bytes = resp.content[resp.content.index(b"vqd='") + 5 :]
-                vqd_bytes = vqd[: vqd_bytes.index(b"'")]
+                vqd_bytes = vqd_bytes[: vqd_bytes.index(b"'")]
 
                 if vqd_bytes:
                     # delete the first key to reduce memory consumption
                     if len(VQD_DICT) >= 32768:
                         VQD_DICT.pop(next(iter(VQD_DICT)))
                     VQD_DICT[keywords] = vqd_bytes
-                    logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
+                    logger.info("keywords=%s. Got vqd=%s", keywords, vqd_bytes)
                     return vqd_bytes.decode()
             logger.info("get_vqd(). response=%s", resp.status_code)
         except Timeout:
