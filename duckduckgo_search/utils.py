@@ -39,8 +39,8 @@ def _get_vqd(keywords):
                 logger.info(
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
-                vqd = resp.content[resp.content.index(b'vqd=\'') + 5:]
-                vqd = vqd[:vqd.index(b'\'')].decode()
+                vqd = resp.content[resp.content.index(b"vqd='") + 5 :]
+                vqd = vqd[: vqd.index(b"'")].decode()
                 if vqd:
                     # delete the first key to reduce memory consumption
                     if len(VQD_DICT) >= 32768:
@@ -55,10 +55,12 @@ def _get_vqd(keywords):
             logger.warning("Connection error in get_vqd().")
         except Exception as ex:
             logger.exception("Exception in get_vqd().", ex)
-        
+
         # refresh SESSION if not vqd
+        prev_proxies = SESSION.proxies
         SESSION = requests.Session()
         SESSION.headers.update(HEADERS)
+        SESSION.proxies = prev_proxies
         logger.warning(
             "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
         )
