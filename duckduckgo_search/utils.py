@@ -25,9 +25,9 @@ VQD_DICT = dict()
 def _get_vqd(keywords):
     global SESSION
 
-    vqd = VQD_DICT.get(keywords, None)
-    if vqd:
-        return vqd.decode()
+    vqd_bytes = VQD_DICT.get(keywords, None)
+    if vqd_bytes:
+        return vqd_bytes.decode()
 
     payload = {"q": keywords}
     for _ in range(2):
@@ -39,16 +39,16 @@ def _get_vqd(keywords):
                 logger.info(
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
-                vqd = resp.content[resp.content.index(b"vqd='") + 5 :]
-                vqd = vqd[: vqd.index(b"'")]
+                vqd_bytes = resp.content[resp.content.index(b"vqd='") + 5 :]
+                vqd_bytes = vqd[: vqd.index(b"'")]
 
-                if vqd:
+                if vqd_bytes:
                     # delete the first key to reduce memory consumption
                     if len(VQD_DICT) >= 32768:
                         VQD_DICT.pop(next(iter(VQD_DICT)))
-                    VQD_DICT[keywords] = vqd
+                    VQD_DICT[keywords] = vqd_bytes
                     logger.info("keywords=%s. Got vqd=%s", keywords, vqd)
-                    return vqd.decode()
+                    return vqd_bytes.decode()
             logger.info("get_vqd(). response=%s", resp.status_code)
         except Timeout:
             logger.warning("Connection timeout in get_vqd().")
