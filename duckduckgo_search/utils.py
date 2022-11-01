@@ -27,6 +27,8 @@ def _get_vqd(keywords):
 
     vqd_bytes = VQD_DICT.get(keywords, None)
     if vqd_bytes:
+        # move_to_end (LRU cache)
+        VQD_DICT[keywords] = VQD_DICT.pop(keywords)
         return vqd_bytes.decode()
 
     payload = {"q": keywords}
@@ -39,8 +41,9 @@ def _get_vqd(keywords):
                 logger.info(
                     "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
                 )
-                vqd_bytes = resp.content[resp.content.index(b"vqd='") + 5 :]
-                vqd_bytes = vqd_bytes[: vqd_bytes.index(b"'")]
+                vqd_index_start = resp.content.index(b"vqd='") + 5
+                vqd_index_end = resp.content.index(b"'", vqd_index_start)
+                vqd_bytes = resp.content[vqd_index_start:vqd_index_end]
 
                 if vqd_bytes:
                     # delete the first key to reduce memory consumption
