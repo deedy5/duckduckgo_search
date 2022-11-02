@@ -38,7 +38,7 @@ def ddg_news(
 
     # get news
     safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
-    params = {
+    payload = {
         "l": region,
         "o": "json",
         "noamp": "1",
@@ -49,10 +49,10 @@ def ddg_news(
         "s": 0,
     }
     results, cache = [], set()
-    while params["s"] < min(max_results, 240) or len(results) < max_results:
+    while payload["s"] < min(max_results, 240) or len(results) < max_results:
         page_data = None
         try:
-            resp = SESSION.get("https://duckduckgo.com/news.js", params=params)
+            resp = SESSION.get("https://duckduckgo.com/news.js", params=payload)
             resp.raise_for_status()
             page_data = resp.json().get("results", None)
         except Exception:
@@ -81,7 +81,7 @@ def ddg_news(
             break
         results.extend(page_results)
         # pagination
-        params["s"] += 30
+        payload["s"] += 30
 
     results = sorted(results[:max_results], key=lambda x: x["date"], reverse=True)
     if output:
