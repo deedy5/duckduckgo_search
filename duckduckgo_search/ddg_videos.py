@@ -59,7 +59,7 @@ def ddg_videos(
     }
 
     results, cache = [], set()
-    while len(results) < max_results or payload["s"] < 1000:
+    while payload["s"] < min(max_results, 1000) or len(results) < max_results:
         page_data = None
         try:
             resp = SESSION.get("https://duckduckgo.com/v.js", params=payload)
