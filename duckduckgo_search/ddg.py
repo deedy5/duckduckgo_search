@@ -37,7 +37,7 @@ def ddg(
 
     # search
     safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
-    params = {
+    payload = {
         "q": keywords,
         "l": region,
         "p": safesearch_base[safesearch],
@@ -48,11 +48,11 @@ def ddg(
     }
 
     results, cache = [], set()
-    while params["s"] < min(max_results, 200) or len(results) < max_results:
+    while payload["s"] < min(max_results, 200) or len(results) < max_results:
         # request search results from duckduckgo
         page_data = None
         try:
-            resp = SESSION.get("https://links.duckduckgo.com/d.js", params=params)
+            resp = SESSION.get("https://links.duckduckgo.com/d.js", params=payload)
             resp.raise_for_status()
             page_data = resp.json().get("results", None)
         except Exception:
@@ -67,7 +67,7 @@ def ddg(
 
             # try pagination
             if "n" in row:
-                params["s"] += i
+                payload["s"] += i
                 break
 
             # collect results
