@@ -78,7 +78,7 @@ def ddg_images(
     }
 
     results, cache = [], set()
-    while params["s"] < min(max_results, 1000) or len(results) < max_results:
+    while payload["s"] < min(max_results, 1000) or len(results) < max_results:
         page_data = None
         try:
             resp = SESSION.get("https://duckduckgo.com/i.js", params=payload)
