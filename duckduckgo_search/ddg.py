@@ -48,7 +48,7 @@ def ddg(
     }
 
     results, cache = [], set()
-    while len(results) < max_results or params["s"] < 200:
+    while params["s"] < min(max_results, 200) or len(results) < max_results:
         # request search results from duckduckgo
         page_data = None
         try:
