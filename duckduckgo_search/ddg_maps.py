@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 import requests
-from requests import ConnectionError
 
 from .utils import SESSION, _do_output, _get_vqd, _normalize
 
@@ -44,7 +43,7 @@ def ddg_maps(
     max_results=None,
     output=None,
 ):
-    """DuckDuckGo maps search
+    """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
     Args:
         keywords: keywords for query
@@ -110,17 +109,12 @@ def ddg_maps(
                 params=params,
                 headers=headers,
             )
-            logger.info(
-                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
-            )
+            resp.raise_for_status()
             coordinates = resp.json()[0]["boundingbox"]
             lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
             lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
-        except ConnectionError:
-            logger.error("Connection Error.")
-            return
         except Exception:
-            logger.exception("Exception.", exc_info=True)
+            logger.exception("")
             return
 
     # if a radius is specified, expand the search square
@@ -154,15 +148,10 @@ def ddg_maps(
         page_data = None
         try:
             resp = SESSION.get("https://duckduckgo.com/local.js", params=params)
-            logger.info(
-                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
-            )
+            resp.raise_for_status()
             page_data = resp.json()["results"]
-        except ConnectionError:
-            logger.error("Connection Error.")
-            break
         except Exception:
-            logger.exception("Exception.", exc_info=True)
+            logger.exception("")
             break
 
         if not page_data:
