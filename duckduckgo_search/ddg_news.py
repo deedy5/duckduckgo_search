@@ -49,7 +49,7 @@ def ddg_news(
         "s": 0,
     }
     results, cache = [], set()
-    while len(results) < max_results or params["s"] < 240:
+    while params["s"] < min(max_results, 240) or len(results) < max_results:
         page_data = None
         try:
             resp = SESSION.get("https://duckduckgo.com/news.js", params=params)
