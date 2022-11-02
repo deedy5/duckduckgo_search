@@ -83,7 +83,8 @@ def ddg_news(
         # pagination
         payload["s"] += 30
 
-    results = sorted(results[:max_results], key=lambda x: x["date"], reverse=True)
+    results.sort(key=lambda x: x["date"], reverse=True)
+    results = results[:max_results]
     if output:
         _do_output(__name__, keywords, output, results)
     return results
