@@ -3,8 +3,6 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
-from requests import ConnectionError
-
 from .utils import SESSION, _do_output, _download_image, _get_vqd
 
 logger = logging.getLogger(__name__)
@@ -24,7 +22,7 @@ def ddg_images(
     output=None,
     download=False,
 ):
-    """DuckDuckGo images search.
+    """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
     Args:
         keywords (str): keywords for query.
@@ -80,19 +78,14 @@ def ddg_images(
     }
 
     results, cache = [], set()
-    while payload["s"] < max_results or len(results) < max_results:
+    while payload["s"] < min(max_results, 1000) or len(results) < max_results:
         page_data = None
         try:
             resp = SESSION.get("https://duckduckgo.com/i.js", params=payload)
-            logger.info(
-                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
-            )
+            resp.raise_for_status()
             page_data = resp.json().get("results", None)
-        except ConnectionError:
-            logger.error("Connection Error.")
-            break
         except Exception:
-            logger.exception("Exception.", exc_info=True)
+            logger.exception("")
             break
 
         if not page_data:

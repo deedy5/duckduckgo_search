@@ -7,16 +7,15 @@ from datetime import datetime
 from time import sleep
 
 import requests
-from requests import ConnectionError, Timeout
 
-SESSION = requests.Session()
+logger = logging.getLogger(__name__)
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
     "Referer": "https://duckduckgo.com/",
 }
+SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
-
-logger = logging.getLogger(__name__)
 
 RE_CLEAN_HTML = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
 VQD_DICT = dict()
@@ -37,28 +36,20 @@ def _get_vqd(keywords):
             resp = SESSION.post(
                 "https://duckduckgo.com", data=payload, headers=HEADERS, timeout=10
             )
-            if resp.status_code == 200:
-                logger.info(
-                    "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
-                )
-                vqd_index_start = resp.content.index(b"vqd='") + 5
-                vqd_index_end = resp.content.index(b"'", vqd_index_start)
-                vqd_bytes = resp.content[vqd_index_start:vqd_index_end]
+            resp.raise_for_status()
+            vqd_index_start = resp.content.index(b"vqd='") + 5
+            vqd_index_end = resp.content.index(b"'", vqd_index_start)
+            vqd_bytes = resp.content[vqd_index_start:vqd_index_end]
 
-                if vqd_bytes:
-                    # delete the first key to reduce memory consumption
-                    if len(VQD_DICT) >= 32768:
-                        VQD_DICT.pop(next(iter(VQD_DICT)))
-                    VQD_DICT[keywords] = vqd_bytes
-                    logger.info("keywords=%s. Got vqd=%s", keywords, vqd_bytes)
-                    return vqd_bytes.decode()
-            logger.info("get_vqd(). response=%s", resp.status_code)
-        except Timeout:
-            logger.warning("Connection timeout in get_vqd().")
-        except ConnectionError:
-            logger.warning("Connection error in get_vqd().")
-        except Exception as ex:
-            logger.exception("Exception in get_vqd().", ex)
+            if vqd_bytes:
+                # delete the first key to reduce memory consumption
+                if len(VQD_DICT) > 32768:
+                    VQD_DICT.pop(next(iter(VQD_DICT)))
+                VQD_DICT[keywords] = vqd_bytes
+                return vqd_bytes.decode()
+
+        except Exception:
+            logger.exception("")
 
         # refresh SESSION if not vqd
         prev_proxies = SESSION.proxies
@@ -70,10 +61,10 @@ def _get_vqd(keywords):
             "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
         )
         VQD_DICT.pop(keywords, None)
-        sleep(1)
+        sleep(0.25)
 
     # sleep to prevent blocking
-    sleep(1)
+    sleep(0.25)
 
 
 def _save_json(jsonfile, data):
@@ -102,12 +93,8 @@ def _download_image(image_url, dir_path, filename):
                     file.write(resp.content)
                     logger.info("Image downloaded. image_url=%s", image_url)
                 break
-        except Timeout:
-            logger.warning("Connection timeout. image_url=%s", image_url)
-        except ConnectionError:
-            logger.warning("Connection error. image_url=%s", image_url)
         except Exception:
-            logger.warning("Exception. {image_url=}.", exc_info=True)
+            logger.exception("")
 
 
 def _normalize(raw_html):
