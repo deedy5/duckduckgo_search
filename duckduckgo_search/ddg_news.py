@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime
 
-from requests import ConnectionError
-
 from .utils import SESSION, _do_output, _get_vqd, _normalize
 
 logger = logging.getLogger(__name__)
@@ -16,7 +14,7 @@ def ddg_news(
     max_results=25,
     output=None,
 ):
-    """DuckDuckGo news search
+    """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
     Args:
         keywords: keywords for query.
@@ -51,19 +49,14 @@ def ddg_news(
         "s": 0,
     }
     results, cache = [], set()
-    while params["s"] < min(max_results, 240) or len(results) < max_results:
+    while len(results) < max_results or params["s"] < 240:
         page_data = None
         try:
             resp = SESSION.get("https://duckduckgo.com/news.js", params=params)
-            logger.info(
-                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
-            )
+            resp.raise_for_status()
             page_data = resp.json().get("results", None)
-        except ConnectionError:
-            logger.error("Connection Error.")
-            break
         except Exception:
-            logger.exception("Exception.", exc_info=True)
+            logger.exception("")
             break
 
         if not page_data:
