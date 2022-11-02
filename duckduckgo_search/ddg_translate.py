@@ -32,7 +32,7 @@ def ddg_translate(
         return None
 
     # translate
-    params = {
+    payload = {
         "vqd": vqd,
         "query": "translate",
         "from": from_,
@@ -47,7 +47,7 @@ def ddg_translate(
         try:
             resp = SESSION.post(
                 "https://duckduckgo.com/translation.js",
-                params=params,
+                params=payload,
                 data=data.encode("utf-8"),
             )
             resp.raise_for_status()
