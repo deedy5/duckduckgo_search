@@ -1,7 +1,5 @@
 import logging
 
-from requests import ConnectionError
-
 from .utils import SESSION, VQD_DICT, _do_output, _get_vqd
 
 logger = logging.getLogger(__name__)
@@ -52,17 +50,13 @@ def ddg_translate(
                 params=params,
                 data=data.encode("utf-8"),
             )
-            logger.info(
-                "%s %s %s", resp.status_code, resp.url, resp.elapsed.total_seconds()
-            )
+            resp.raise_for_status()
             result = resp.json()
             result["original"] = data
             results.append(result)
-        except ConnectionError:
-            logger.error("Connection Error.")
         except Exception:
             VQD_DICT.pop("translate", None)
-            logger.exception("Exception.", exc_info=True)
+            logger.exception("")
 
     if output:
         keywords = keywords[0]
