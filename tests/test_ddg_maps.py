@@ -10,6 +10,6 @@ def test_ddg_maps():
 
 # if results not found
 def test_ddg_maps_not_results():
-    random_chars = "".join(chr(randrange(65, 90)) for i in range(50))
+    random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
     r = ddg_maps(keywords=random_chars, place="United States", max_results=50)
     assert len(r) == 0
