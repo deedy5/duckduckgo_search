@@ -17,11 +17,11 @@ def ddg(
 
     Args:
         keywords (str): keywords for query.
-        region (str, optional): country - wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On(kp=1), Moderate(kp=-1), Off(kp=-2). Defaults to "Moderate".
-        time (str, optional): 'd' (day), 'w' (week), 'm' (month), 'y' (year). Defaults to None.
-        max_results (int, optional): return not less than max_results, max=200. Defaults to 25.
-        output (str, optional): csv, json, print. Defaults to None.
+        region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        time (Optional[str], optional): d, w, m, y. Defaults to None.
+        max_results (int, optional): maximum number of results, max=200. Defaults to 25.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
