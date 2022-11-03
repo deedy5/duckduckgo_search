@@ -46,23 +46,23 @@ def ddg_maps(
     """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
     Args:
-        keywords: keywords for query
-        place: simplified search - if set, the other parameters are not used. Defaults to None.
-        street: house number/street. Defaults to None.
-        city: city of search. Defaults to None.
-        county: county of search. Defaults to None.
-        state: state of search. Defaults to None.
-        country: country of search. Defaults to None.
-        postalcode: postalcode of search. Defaults to None.
-        latitude: geographic coordinate that specifies the north–south position. Defaults to None.
-        longitude: geographic coordinate that specifies the east–west position;
+        keywords (str): keywords for query
+        place (Optional[str], optional): if set, the other parameters are not used. Defaults to None.
+        street (Optional[str], optional): house number/street. Defaults to None.
+        city (Optional[str], optional): city of search. Defaults to None.
+        county (Optional[str], optional): county of search. Defaults to None.
+        state (Optional[str], optional): state of search. Defaults to None.
+        country (Optional[str], optional): country of search. Defaults to None.
+        postalcode (Optional[str], optional): postalcode of search. Defaults to None.
+        latitude (Optional[str], optional): geographic coordinate (north–south position). Defaults to None.
+        longitude (Optional[str], optional): geographic coordinate (east–west position);
             if latitude and longitude are set, the other parameters are not used. Defaults to None.
-        radius: expand the search square by the distance in kilometers. Defaults to 0.
-        max_results: maximum number of results. Defaults to None.
-        output: csv, json, print. Defaults to None.
+        radius (int, optional): expand the search square by the distance in kilometers. Defaults to 0.
+        max_results (Optional[int], optional): maximum number of results. Defaults to None.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
 
     Returns:
-        DuckDuckGo maps search results
+        Optional[List[dict]]: DuckDuckGo maps search results
     """
 
     if not keywords:

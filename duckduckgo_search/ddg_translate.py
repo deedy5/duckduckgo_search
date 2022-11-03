@@ -14,13 +14,13 @@ def ddg_translate(
     """DuckDuckGo translate
 
     Args:
-        keywords: string or a list of strings to translate
-        from_: what language to translate from (defaults automatically). Defaults to None.
-        to: what language to translate. Defaults to "en".
-        output: print, csv, json. Defaults to None.
+        keywords (str): string or a list of strings to translate
+        from_ (Optional[str], optional): translate from (defaults automatically). Defaults to None.
+        to (str): what language to translate. Defaults to "en".
+        output (Optional[str], optional): print, csv, json. Defaults to None.
 
     Returns:
-        DuckDuckGo translate results.
+        Optional[List[dict]]: DuckDuckGo translate results.
     """
 
     if not keywords:

@@ -17,15 +17,15 @@ def ddg_news(
     """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
     Args:
-        keywords: keywords for query.
-        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2). Defaults to "Moderate".
-        time: 'd' (day), 'w' (week), 'm' (month). Defaults to None.
-        max_results: maximum DDG_news gives out 240 results. Defaults to 25.
-        output: csv, json, print. Defaults to None.
+        keywords (str): keywords for query.
+        region (str): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str): On, Moderate, Off. Defaults to "Moderate".
+        time (Optional[str], optional): d, w, m. Defaults to None.
+        max_results (int, optional): maximum number of results, max=240. Defaults to 25.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
 
     Returns:
-        DuckDuckGo news search results.
+        Optional[List[dict]]: DuckDuckGo news search results.
     """
 
     if not keywords:
@@ -83,7 +83,8 @@ def ddg_news(
         # pagination
         payload["s"] += 30
 
-    results = sorted(results[:max_results], key=lambda x: x["date"], reverse=True)
+    results.sort(key=lambda x: x["date"], reverse=True)
+    results = results[:max_results]
     if output:
         _do_output(__name__, keywords, output, results)
     return results

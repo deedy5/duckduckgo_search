@@ -71,7 +71,7 @@ def test_ddg_images_args():
 
 
 def test_ddg_images_not_results():
-    random_chars = "".join(chr(randrange(65, 90)) for i in range(50))
+    random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
     r = ddg_images(
         keywords=random_chars,
         region="ru-ru",
