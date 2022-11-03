@@ -19,18 +19,18 @@ def ddg_videos(
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
     Args:
-        keywords: keywords for query.
-        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch: On (p = 1), Moderate (p = -1), Off (p = -2). Defaults to "Moderate".
-        time: d, w, m (published after). Defaults to None.
-        resolution: high, standart. Defaults to None.
-        duration: short, medium, long. Defaults to None.
-        license_videos: creativeCommon, youtube. Defaults to None.
-        max_results: number of results, maximum ddg_videos gives out 1000 results. Defaults to 50.
-        output: csv, json, print. Defaults to None.
+        keywords (str): keywords for query.
+        region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        time (Optional[str], optional): d, w, m. Defaults to None.
+        resolution (Optional[str], optional): high, standart. Defaults to None.
+        duration (Optional[str], optional): short, medium, long. Defaults to None.
+        license_videos (Optional[str], optional): creativeCommon, youtube. Defaults to None.
+        max_results (int, optional): maximum number of results, max=1000. Defaults to 50.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
 
     Returns:
-        DuckDuckGo videos search results
+        Optional[List[dict]]: DuckDuckGo videos search results
     """
 
     if not keywords:
