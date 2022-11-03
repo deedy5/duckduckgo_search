@@ -30,7 +30,7 @@ def test_ddg_news_save_csv_json():
 
 # results not found
 def test_ddg_news_not_results():
-    random_chars = "".join(chr(randrange(65, 90)) for i in range(50))
+    random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
     results = ddg_news(
         random_chars, region="us-en", safesearch="Off", time="d", max_results=50
     )
