@@ -21,6 +21,7 @@ def ddg_images(
     max_results=100,
     output=None,
     download=False,
+    dl_dir=None
 ):
     """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
@@ -43,6 +44,9 @@ def ddg_images(
         output (Optional[str], optional): csv, json, print. Defaults to None.
         download (bool, optional): if True, download and save images to 'keywords' folder.
             Defaults to False.
+        dl_dir (Optional[str], optional): Download directory if downloading. 
+            Default None (which will create f"ddg_images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+ 
 
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
@@ -117,7 +121,7 @@ def ddg_images(
     if download:
         print("Downloading images. Wait...")
         keywords = keywords.replace('"', "'")
-        path = f"ddg_images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+        path = str(dl_dir) if dl_dir else f"ddg_images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
         os.makedirs(path, exist_ok=True)
         futures = []
         with ThreadPoolExecutor(30) as executor:
