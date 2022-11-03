@@ -33,9 +33,7 @@ def _get_vqd(keywords):
     payload = {"q": keywords}
     for _ in range(2):
         try:
-            resp = SESSION.post(
-                "https://duckduckgo.com", data=payload, headers=HEADERS, timeout=10
-            )
+            resp = SESSION.post("https://duckduckgo.com", data=payload, timeout=10)
             resp.raise_for_status()
             vqd_index_start = resp.content.index(b"vqd='") + 5
             vqd_index_end = resp.content.index(b"'", vqd_index_start)
