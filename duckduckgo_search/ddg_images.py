@@ -26,10 +26,8 @@ def ddg_images(
 
     Args:
         keywords (str): keywords for query.
-        region (str, optional): country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.
-            Defaults to "wt-wt".
-        safesearch (str, optional): On (kp = 1), Moderate (kp = -1), Off (kp = -2).
-            Defaults to "Moderate".
+        region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
         time (Optional[str], optional): Day, Week, Month, Year. Defaults to None.
         size (Optional[str], optional): Small, Medium, Large, Wallpaper. Defaults to None.
         color (Optional[str], optional): color, Monochrome, Red, Orange, Yellow, Green, Blue,
@@ -41,7 +39,7 @@ def ddg_images(
             Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
             Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
             Use Commercially). Defaults to None.
-        max_results (Optional[int], optional): number of results, max 1000 results. Defaults to 100.
+        max_results (int, optional): maximum number of results, max=1000. Defaults to 100.
         output (Optional[str], optional): csv, json, print. Defaults to None.
         download (bool, optional): if True, download and save images to 'keywords' folder.
             Defaults to False.
