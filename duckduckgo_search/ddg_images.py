@@ -57,7 +57,7 @@ def ddg_images(
         return None
 
     # get images
-    safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
+    safesearch_base = {"On": 1, "Moderate": 1, "Off": -1}
 
     time = f"time:{time}" if time else ""
     size = f"size:{size}" if size else ""
