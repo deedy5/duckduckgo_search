@@ -165,7 +165,7 @@ ___
 ```python
 from duckduckgo_search import ddg
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None):
+def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None, download=False):
     """DuckDuckGo text search. Query params: https://duckduckgo.com/params
 
     Args:
