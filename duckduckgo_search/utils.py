@@ -79,17 +79,17 @@ def _save_csv(csvfile, data):
             writer.writerows(data)
 
 
-def _download_image(image_url, dir_path, filename):
+def _download_file(url, dir_path, filename):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0"
     }
     for _ in range(2):
         try:
-            resp = requests.get(image_url, headers=headers, timeout=10)
+            resp = requests.get(url, headers=headers, timeout=10)
             if resp.status_code == 200:
                 with open(os.path.join(dir_path, filename), "wb") as file:
                     file.write(resp.content)
-                    logger.info("Image downloaded. image_url=%s", image_url)
+                    logger.info("File downloaded url=%s", url)
                 break
         except Exception:
             logger.exception("")
