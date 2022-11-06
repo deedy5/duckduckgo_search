@@ -1,6 +1,9 @@
 import logging
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 
-from .utils import SESSION, _do_output, _get_vqd, _normalize
+from .utils import SESSION, _do_output, _download_file, _get_vqd, _normalize
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +15,7 @@ def ddg(
     time=None,
     max_results=25,
     output=None,
+    download=False,
 ):
     """DuckDuckGo text search. Query params: https://duckduckgo.com/params
 
@@ -22,6 +26,8 @@ def ddg(
         time (Optional[str], optional): d, w, m, y. Defaults to None.
         max_results (int, optional): maximum number of results, max=200. Defaults to 25.
         output (Optional[str], optional): csv, json, print. Defaults to None.
+        download (bool, optional): if True, download and save dociments to 'keywords' folder.
+            Defaults to False.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
@@ -115,6 +121,27 @@ def ddg(
     """
 
     results = results[:max_results]
+    keywords = keywords.replace(" filetype:", "_")
     if output:
         _do_output(__name__, keywords, output, results)
+
+    # download documents
+    if download:
+        print("Downloading documents. Wait...")
+        keywords = keywords.replace('"', "'")
+        path = f"ddg_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+        os.makedirs(path, exist_ok=True)
+        futures = []
+        with ThreadPoolExecutor(30) as executor:
+            for i, res in enumerate(results, start=1):
+                filename = res["href"].split("/")[-1].split("?")[0]
+                future = executor.submit(
+                    _download_file, res["href"], path, f"{i}_{filename}"
+                )
+                futures.append(future)
+            for i, future in enumerate(as_completed(futures), start=1):
+                logger.info("%s/%s", i, len(results))
+                print(f"{i}/{len(results)}")
+
+        print("Done.")
     return results

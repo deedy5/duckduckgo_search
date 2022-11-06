@@ -1,6 +1,7 @@
 import click
 
 from duckduckgo_search import (
+    __version__,
     ddg,
     ddg_images,
     ddg_maps,
@@ -13,6 +14,12 @@ from duckduckgo_search import (
 @click.group(chain=True)
 def cli():
     pass
+
+
+@cli.command()
+def version():
+    print(__version__)
+    return __version__
 
 
 @cli.command()
@@ -29,9 +36,18 @@ def cli():
     "-m",
     "--max_results",
     default=25,
-    help="number of results (not less than 25), maximum DDG gives out about 200 results",
+    help="maximum number of results, max=200.",
 )
-@click.option("-o", "--output", default="print", help="print, csv, json, default=print")
+@click.option(
+    "-o", "--output", default="print", help="print, csv, json, None, default=print"
+)
+@click.option(
+    "-d",
+    "--download",
+    is_flag=True,
+    default=False,
+    help="download and save documents to 'keywords' folder, default=False",
+)
 def text(*args, **kwargs):
     return ddg(*args, **kwargs)
 
@@ -67,9 +83,11 @@ def text(*args, **kwargs):
         and Use), ModifyCommercially (Free to Modify, Share, and Use Commercially)""",
 )
 @click.option(
-    "-m", "--max_results", default=100, help="number of results (default=100)"
+    "-m", "--max_results", default=100, help="maximum number of results, max=1000"
 )
-@click.option("-o", "--output", default="print", help="print, csv, json, default=print")
+@click.option(
+    "-o", "--output", default="print", help="print, csv, json, None, default=print"
+)
 @click.option(
     "-d",
     "--download",
@@ -104,7 +122,9 @@ def images(*args, **kwargs):
     default=None,
     help="creativeCommon, youtube",
 )
-@click.option("-m", "--max_results", default=50, help="number of results (default=50)")
+@click.option(
+    "-m", "--max_results", default=50, help="maximum number of results, max=1000"
+)
 @click.option("-o", "--output", default="print", help="print, csv, json, default=print")
 def videos(*args, **kwargs):
     return ddg_videos(*args, **kwargs)
@@ -120,7 +140,9 @@ def videos(*args, **kwargs):
 )
 @click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
 @click.option("-t", "--time", default=None, help="d, w, m, y")
-@click.option("-m", "--max_results", default=25, help="number of results (default=25)")
+@click.option(
+    "-m", "--max_results", default=25, help="maximum number of results, max=240"
+)
 @click.option("-o", "--output", default="print", help="print, csv, json, default=print")
 def news(*args, **kwargs):
     return ddg_news(*args, **kwargs)
