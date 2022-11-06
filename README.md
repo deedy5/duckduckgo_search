@@ -1,14 +1,16 @@
 ![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search)
-## Duckduckgo_search
+# Duckduckgo_search
 
-Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading images to a local hard drive.
+Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
-***Install***
+### Install
 ```python
 pip install -U duckduckgo_search
 ```
 ___
-### CLI version
+<details>
+  <summary><b>CLI version</b></summary>
+
 ```python3
 ddgs --help
 ```
@@ -18,19 +20,28 @@ python -m duckduckgo_search --help
 ```
 ![](https://github.com/deedy5/duckduckgo_search/raw/main/docs/ddgs_demo.gif)
 
-___
-### Table of Contents  
-[Duckduckgo search operators](#duckduckgo-search-operators)</br>
-[Using proxy](#using-proxy)</br>
-[1. ddg()](#1-ddg---search-by-duckduckgocom)</br>
-[2. ddg_images()](#2-ddg_images---image-search-by-duckduckgocom)</br>
-[3. ddg_videos()](#3-ddg_videos---video-search-by-duckduckgocom)</br>
-[4. ddg_news()](#4-ddg_news---news-search-by-duckduckgocom)</br>
-[5. ddg_maps()](#5-ddg_maps---map-search-by-duckduckgocom)</br>
-[6. ddg_translate()](#6-ddg_translate---translation-by-duckduckgocom)</br>
+**CLI examples:**
 
+*download pdf files:*
+```python3
+ddgs text -k "russia filetype:pdf" -m 250 -o None -d
+```
+*download images:*
+```python3
+ddgs images -k "lady in red" -m 1000 -s Off -o None -d
+```
+*get latest news:*
+```python3
+ddgs news -k "ukraine war" -s Off -t d -m 50
+```
 ___
-## Duckduckgo search operators
+</details>
+
+
+
+
+<details>
+  <summary><b>Duckduckgo search operators</b></summary>
 
 | Keywords example |	Result|
 | ---     | ---   |
@@ -44,7 +55,91 @@ ___
 | intitle:dogs |	Page title includes the word "dogs" |
 | inurl:cats  |	Page url includes the word "cats" |
 ___
-### Using proxy
+</details>
+
+
+
+
+<details>
+  <summary><b>Regions</b></summary>
+  
+    xa-ar for Arabia
+    xa-en for Arabia (en)
+    ar-es for Argentina
+    au-en for Australia
+    at-de for Austria
+    be-fr for Belgium (fr)
+    be-nl for Belgium (nl)
+    br-pt for Brazil
+    bg-bg for Bulgaria
+    ca-en for Canada
+    ca-fr for Canada (fr)
+    ct-ca for Catalan
+    cl-es for Chile
+    cn-zh for China
+    co-es for Colombia
+    hr-hr for Croatia
+    cz-cs for Czech Republic
+    dk-da for Denmark
+    ee-et for Estonia
+    fi-fi for Finland
+    fr-fr for France
+    de-de for Germany
+    gr-el for Greece
+    hk-tzh for Hong Kong
+    hu-hu for Hungary
+    in-en for India
+    id-id for Indonesia
+    id-en for Indonesia (en)
+    ie-en for Ireland
+    il-he for Israel
+    it-it for Italy
+    jp-jp for Japan
+    kr-kr for Korea
+    lv-lv for Latvia
+    lt-lt for Lithuania
+    xl-es for Latin America
+    my-ms for Malaysia
+    my-en for Malaysia (en)
+    mx-es for Mexico
+    nl-nl for Netherlands
+    nz-en for New Zealand
+    no-no for Norway
+    pe-es for Peru
+    ph-en for Philippines
+    ph-tl for Philippines (tl)
+    pl-pl for Poland
+    pt-pt for Portugal
+    ro-ro for Romania
+    ru-ru for Russia
+    sg-en for Singapore
+    sk-sk for Slovak Republic
+    sl-sl for Slovenia
+    za-en for South Africa
+    es-es for Spain
+    se-sv for Sweden
+    ch-de for Switzerland (de)
+    ch-fr for Switzerland (fr)
+    ch-it for Switzerland (it)
+    tw-tzh for Taiwan
+    th-th for Thailand
+    tr-tr for Turkey
+    ua-uk for Ukraine
+    uk-en for United Kingdom
+    us-en for United States
+    ue-es for United States (es)
+    ve-es for Venezuela
+    vn-vi for Vietnam
+    wt-wt for No region
+___
+</details>
+
+
+
+
+<details>
+  <summary><b>Using proxy</b></summary>
+  
 ```python3
 from duckduckgo_search import ddg
 from duckduckgo_search.utils import SESSION
@@ -58,7 +153,14 @@ r = ddg("Don't Worry, Be Happy")
 print(r)
 ```
 ___
-## 1. ddg() - search by duckduckgo.com
+</details>
+
+
+___
+
+
+<details>
+  <summary><b>1. ddg() - search by duckduckgo.com</b></summary>
 
 ```python
 from duckduckgo_search import ddg
@@ -68,11 +170,13 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
 
     Args:
         keywords (str): keywords for query.
-        region (str, optional): country - wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On(kp=1), Moderate(kp=-1), Off(kp=-2). Defaults to "Moderate".
-        time (str, optional): 'd' (day), 'w' (week), 'm' (month), 'y' (year). Defaults to None.
-        max_results (int, optional): return not less than max_results, max=200. Defaults to 25.
-        output (str, optional): csv, json, print. Defaults to None.
+        region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        time (Optional[str], optional): d, w, m, y. Defaults to None.
+        max_results (int, optional): maximum number of results, max=200. Defaults to 25.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
+        download (bool, optional): if True, download and save dociments to 'keywords' folder.
+            Defaults to False.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
@@ -118,7 +222,14 @@ print(results)
 ]
 ```
 ___
-## 2. ddg_images() - image search by duckduckgo.com
+</details>
+
+
+
+
+<details>
+  <summary><b>2. ddg_images() - image search by duckduckgo.com</b></summary>
+  
 ```python
 from duckduckgo_search import ddg_images
 
@@ -183,7 +294,14 @@ print(r)
 ]
 ```
 ___
-## 3. ddg_videos() - video search by duckduckgo.com
+</details>
+
+
+
+
+<details>
+  <summary><b>3. ddg_videos() - video search by duckduckgo.com</b></summary>
+  
 ```python
 from duckduckgo_search import ddg_videos
 
@@ -192,18 +310,18 @@ def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resol
     """DuckDuckGo videos search
 
     Args:
-        keywords: keywords for query.
-        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch: On (p = 1), Moderate (p = -1), Off (p = -2). Defaults to "Moderate".
-        time: d, w, m (published after). Defaults to None.
-        resolution: high, standart. Defaults to None.
-        duration: short, medium, long. Defaults to None.
-        license_videos: creativeCommon, youtube. Defaults to None.
-        max_results: number of results, maximum ddg_videos gives out 1000 results. Defaults to 50.
-        output: csv, json, print. Defaults to None.
+        keywords (str): keywords for query.
+        region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        time (Optional[str], optional): d, w, m. Defaults to None.
+        resolution (Optional[str], optional): high, standart. Defaults to None.
+        duration (Optional[str], optional): short, medium, long. Defaults to None.
+        license_videos (Optional[str], optional): creativeCommon, youtube. Defaults to None.
+        max_results (int, optional): maximum number of results, max=1000. Defaults to 50.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
 
     Returns:
-        DuckDuckGo videos search results
+        Optional[List[dict]]: DuckDuckGo videos search results
     """
 ```
 ***Returns***
@@ -248,7 +366,14 @@ print(r)
 ]
 ```
 ___
-## 4. ddg_news() - news search by duckduckgo.com
+</details>
+
+
+
+
+<details>
+  <summary><b>4. ddg_news() - news search by duckduckgo.com</b></summary>
+  
 ```python
 from duckduckgo_search import ddg_news
 
@@ -256,15 +381,15 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
     """DuckDuckGo news search
 
     Args:
-        keywords: keywords for query.
-        region: country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch: On (kp = 1), Moderate (kp = -1), Off (kp = -2). Defaults to "Moderate".
-        time: 'd' (day), 'w' (week), 'm' (month). Defaults to None.
-        max_results: maximum DDG_news gives out 240 results. Defaults to 25.
-        output: csv, json, print. Defaults to None.
+        keywords (str): keywords for query.
+        region (str): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str): On, Moderate, Off. Defaults to "Moderate".
+        time (Optional[str], optional): d, w, m. Defaults to None.
+        max_results (int, optional): maximum number of results, max=240. Defaults to 25.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
 
     Returns:
-        DuckDuckGo news search results.
+        Optional[List[dict]]: DuckDuckGo news search results.
     """
 ```
 ***Returns***
@@ -295,7 +420,14 @@ print(r)
 ]
 ```
 ___
-## 5. ddg_maps() - map search by duckduckgo.com
+</details>
+
+
+
+
+<details>
+  <summary><b>5. ddg_maps() - map search by duckduckgo.com</b></summary>
+
 ```python
 from duckduckgo_search import ddg_maps
 
@@ -305,23 +437,23 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
     """DuckDuckGo maps search
 
     Args:
-        keywords: keywords for query
-        place: simplified search - if set, the other parameters are not used. Defaults to None.
-        street: house number/street. Defaults to None.
-        city: city of search. Defaults to None.
-        county: county of search. Defaults to None.
-        state: state of search. Defaults to None.
-        country: country of search. Defaults to None.
-        postalcode: postalcode of search. Defaults to None.
-        latitude: geographic coordinate that specifies the north–south position. Defaults to None.
-        longitude: geographic coordinate that specifies the east–west position;
+        keywords (str): keywords for query
+        place (Optional[str], optional): if set, the other parameters are not used. Defaults to None.
+        street (Optional[str], optional): house number/street. Defaults to None.
+        city (Optional[str], optional): city of search. Defaults to None.
+        county (Optional[str], optional): county of search. Defaults to None.
+        state (Optional[str], optional): state of search. Defaults to None.
+        country (Optional[str], optional): country of search. Defaults to None.
+        postalcode (Optional[str], optional): postalcode of search. Defaults to None.
+        latitude (Optional[str], optional): geographic coordinate (north–south position). Defaults to None.
+        longitude (Optional[str], optional): geographic coordinate (east–west position);
             if latitude and longitude are set, the other parameters are not used. Defaults to None.
-        radius: expand the search square by the distance in kilometers. Defaults to 0.
-        max_results: maximum number of results. Defaults to None.
-        output: csv, json, print. Defaults to None.
+        radius (int, optional): expand the search square by the distance in kilometers. Defaults to 0.
+        max_results (Optional[int], optional): maximum number of results. Defaults to None.
+        output (Optional[str], optional): csv, json, print. Defaults to None.
 
     Returns:
-        DuckDuckGo maps search results
+        Optional[List[dict]]: DuckDuckGo maps search results
     """
 ```
 ***Returns***
@@ -413,7 +545,13 @@ print(r)
 ]
 ```
 ___
-## 6. ddg_translate() - translation by duckduckgo.com
+</details>
+
+
+
+
+<details>
+  <summary><b>6. ddg_translate() - translation by duckduckgo.com</b></summary>
 
 ```python
 from duckduckgo_search import ddg_translate
@@ -422,13 +560,13 @@ def ddg_translate(keywords, from_=None, to='en', output=None):
     """DuckDuckGo translate
 
     Args:
-        keywords: string or a list of strings to translate
-        from_: what language to translate from (defaults automatically). Defaults to None.
-        to: what language to translate. Defaults to "en".
-        output: print, csv, json. Defaults to None.
+        keywords (str): string or a list of strings to translate
+        from_ (Optional[str], optional): translate from (defaults automatically). Defaults to None.
+        to (str): what language to translate. Defaults to "en".
+        output (Optional[str], optional): print, csv, json. Defaults to None.
 
     Returns:
-        DuckDuckGo translate results.
+        Optional[List[dict]]: DuckDuckGo translate results.
     """
 ```
 ***Returns***
@@ -470,3 +608,5 @@ print(results)
 ...
 ]
 ```
+___
+</details>
