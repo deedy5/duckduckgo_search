@@ -3,7 +3,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
-from .utils import SESSION, _do_output, _download_image, _get_vqd
+from .utils import SESSION, _do_output, _download_file, _get_vqd
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ def ddg_images(
             for i, res in enumerate(results, start=1):
                 filename = res["image"].split("/")[-1].split("?")[0]
                 future = executor.submit(
-                    _download_image, res["image"], path, f"{i}_{filename}"
+                    _download_file, res["image"], path, f"{i}_{filename}"
                 )
                 futures.append(future)
             for i, future in enumerate(as_completed(futures), start=1):
