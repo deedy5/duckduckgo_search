@@ -1,5 +1,6 @@
 import os
 import os.path
+import shutil
 from random import randrange
 
 from duckduckgo_search import ddg
@@ -26,6 +27,30 @@ def test_ddg_save_csv_json():
                 not_files = False
     if not_files:
         raise AssertionError("csv or json files not found")
+
+
+def test_ddg_download():
+    keywords = "cat"
+    results = ddg(keywords, max_results=10, download=True)
+    assert len(results) >= 10
+
+    # delete files contains keyword in name
+    files = False
+    for dir in os.listdir("."):
+        if f"ddg_{keywords}" in dir:
+            for filename in os.listdir(dir):
+                filename = f"{os.getcwd()}/{dir}/{filename}"
+                if os.path.isfile(filename):
+                    os.remove(filename)
+                    files = True
+    if not files:
+        raise AssertionError("Files not found")
+
+    # delete folder contains keyword in name
+    for dir in os.listdir():
+        if f"ddg_{keywords}" in dir:
+            if os.path.isdir(dir):
+                shutil.rmtree(dir)
 
 
 # results not found
