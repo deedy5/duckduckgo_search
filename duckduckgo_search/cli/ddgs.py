@@ -1,16 +1,6 @@
 import click
-
-from duckduckgo_search import (
-    __version__,
-    ddg,
-    ddg_answers,
-    ddg_images,
-    ddg_maps,
-    ddg_news,
-    ddg_translate,
-    ddg_videos,
-)
-
+from duckduckgo_search import (__version__, ddg, ddg_answers, ddg_images,
+                               ddg_maps, ddg_news, ddg_translate, ddg_videos)
 
 COLORS = {
     0: "black",
