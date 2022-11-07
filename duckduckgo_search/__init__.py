@@ -7,6 +7,7 @@ using the DuckDuckGo.com search engine.
 import logging
 
 from .ddg import ddg
+from .ddg_answers import ddg_answers
 from .ddg_images import ddg_images
 from .ddg_maps import ddg_maps
 from .ddg_news import ddg_news
