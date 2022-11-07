@@ -3,12 +3,50 @@ import click
 from duckduckgo_search import (
     __version__,
     ddg,
+    ddg_answers,
     ddg_images,
     ddg_maps,
     ddg_news,
     ddg_translate,
     ddg_videos,
 )
+
+
+COLORS = {
+    0: "black",
+    1: "red",
+    2: "green",
+    3: "yellow",
+    4: "blue",
+    5: "magenta",
+    6: "cyan",
+    7: "bright_black",
+    8: "bright_red",
+    9: "bright_green",
+    10: "bright_yellow",
+    11: "bright_blue",
+    12: "bright_magenta",
+    13: "bright_cyan",
+}
+
+
+def print_data(data):
+    if data:
+        for i, e in enumerate(data, start=1):
+            click.secho(f"{i}. {'-' * 78}", bg="black", fg="white")
+            for j, (k, v) in enumerate(e.items(), start=1):
+                if v:
+                    text = click.wrap_text(
+                        f"{v}",
+                        width=78,
+                        initial_indent="",
+                        subsequent_indent=" " * 12,
+                        preserve_paragraphs=True,
+                    )
+                else:
+                    text = v
+                click.secho(f"{k:<12}{text}", bg="black", fg=COLORS[j], overline=True)
+            input()
 
 
 @click.group(chain=True)
@@ -38,9 +76,7 @@ def version():
     default=25,
     help="maximum number of results, max=200.",
 )
-@click.option(
-    "-o", "--output", default="print", help="print, csv, json, None, default=print"
-)
+@click.option("-o", "--output", default="print", help="csv or json, default=print")
 @click.option(
     "-d",
     "--download",
@@ -48,8 +84,22 @@ def version():
     default=False,
     help="download and save documents to 'keywords' folder, default=False",
 )
-def text(*args, **kwargs):
-    return ddg(*args, **kwargs)
+def text(output, *args, **kwargs):
+    data = ddg(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="answers search, keywords for query")
+@click.option(
+    "-rt", "--related", default=False, is_flag=True, help="Add related topics"
+)
+@click.option("-o", "--output", default="print", help="csv or json, default=print")
+def answers(output, *args, **kwargs):
+    data = ddg_answers(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
 
 
 @cli.command()
@@ -86,7 +136,10 @@ def text(*args, **kwargs):
     "-m", "--max_results", default=100, help="maximum number of results, max=1000"
 )
 @click.option(
-    "-o", "--output", default="print", help="print, csv, json, None, default=print"
+    "-o",
+    "--output",
+    default="print",
+    help="csv or json, default=print",
 )
 @click.option(
     "-d",
@@ -95,8 +148,10 @@ def text(*args, **kwargs):
     default=False,
     help="download and save images to 'keywords' folder, default=False",
 )
-def images(*args, **kwargs):
-    return ddg_images(*args, **kwargs)
+def images(output, *args, **kwargs):
+    data = ddg_images(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
 
 
 @cli.command()
@@ -125,9 +180,11 @@ def images(*args, **kwargs):
 @click.option(
     "-m", "--max_results", default=50, help="maximum number of results, max=1000"
 )
-@click.option("-o", "--output", default="print", help="print, csv, json, default=print")
-def videos(*args, **kwargs):
-    return ddg_videos(*args, **kwargs)
+@click.option("-o", "--output", default="print", help="csv or json, default=print")
+def videos(output, *args, **kwargs):
+    data = ddg_videos(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
 
 
 @cli.command()
@@ -143,9 +200,11 @@ def videos(*args, **kwargs):
 @click.option(
     "-m", "--max_results", default=25, help="maximum number of results, max=240"
 )
-@click.option("-o", "--output", default="print", help="print, csv, json, default=print")
-def news(*args, **kwargs):
-    return ddg_news(*args, **kwargs)
+@click.option("-o", "--output", default="print", help="csv or json, default=print")
+def news(output, *args, **kwargs):
+    data = ddg_news(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
 
 
 @cli.command()
@@ -183,9 +242,11 @@ def news(*args, **kwargs):
     help="expand the search square by the distance in kilometers",
 )
 @click.option("-m", "--max_results", help="number of results (default=None)")
-@click.option("-o", "--output", default="print", help="print, csv, json, default=print")
-def maps(*args, **kwargs):
-    return ddg_maps(*args, **kwargs)
+@click.option("-o", "--output", default="print", help="csv or json, default=print")
+def maps(output, *args, **kwargs):
+    data = ddg_maps(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
 
 
 @cli.command()
@@ -201,9 +262,11 @@ def maps(*args, **kwargs):
     default="en",
     help="de, ru, fr, etc. What language to translate (defaults='en')",
 )
-@click.option("-o", "--output", default="print", help="print, csv, json, default=print")
-def translate(*args, **kwargs):
-    return ddg_translate(*args, **kwargs)
+@click.option("-o", "--output", default="print", help="csv or json, default=print")
+def translate(output, *args, **kwargs):
+    data = ddg_translate(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
 
 
 if __name__ == "__main__":
