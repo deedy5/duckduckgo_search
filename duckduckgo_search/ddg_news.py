@@ -22,7 +22,7 @@ def ddg_news(
         safesearch (str): On, Moderate, Off. Defaults to "Moderate".
         time (Optional[str], optional): d, w, m. Defaults to None.
         max_results (int, optional): maximum number of results, max=240. Defaults to 25.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo news search results.
