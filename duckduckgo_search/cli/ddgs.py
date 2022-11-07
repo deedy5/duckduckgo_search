@@ -1,4 +1,6 @@
 import click
+
+# isort: off
 from duckduckgo_search import (
     __version__,
     ddg,
@@ -9,6 +11,8 @@ from duckduckgo_search import (
     ddg_translate,
     ddg_videos,
 )
+
+# isort: on
 
 COLORS = {
     0: "black",
