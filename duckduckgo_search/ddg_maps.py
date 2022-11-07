@@ -59,7 +59,7 @@ def ddg_maps(
             if latitude and longitude are set, the other parameters are not used. Defaults to None.
         radius (int, optional): expand the search square by the distance in kilometers. Defaults to 0.
         max_results (Optional[int], optional): maximum number of results. Defaults to None.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo maps search results
