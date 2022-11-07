@@ -27,7 +27,7 @@ def ddg_videos(
         duration (Optional[str], optional): short, medium, long. Defaults to None.
         license_videos (Optional[str], optional): creativeCommon, youtube. Defaults to None.
         max_results (int, optional): maximum number of results, max=1000. Defaults to 50.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo videos search results
