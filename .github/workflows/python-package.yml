@@ -36,7 +36,7 @@ jobs:
         flake8 duckduckgo_search --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --ignore=E999
     - name: isort
       run: |
-        isort duckduckgo_search --profile black --check
+        isort duckduckgo_search --multi-line 3 --profile black --python-version 37 --check
     - name: Black
       run: |
         black --check --diff --target-version=py37 duckduckgo_search
