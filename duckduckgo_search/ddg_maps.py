@@ -2,6 +2,7 @@ import logging
 from collections import deque
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Optional, Dict
 
 import requests
 
@@ -14,18 +15,18 @@ logger = logging.getLogger(__name__)
 class MapsResult:
     """Dataclass for ddg_maps search results"""
 
-    title = None
-    address = None
-    country_code = None
-    latitude = None
-    longitude = None
-    url = None
-    desc = None
-    phone = None
-    image = None
-    source = None
-    links = None
-    hours = None
+    title: Optional[str] = None
+    address: Optional[str] = None
+    country_code: Optional[str] = None
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+    url: Optional[str] = None
+    desc: Optional[str] = None
+    phone: Optional[str] = None
+    image: Optional[str] = None
+    source: Optional[str] = None
+    links: Optional[str] = None
+    hours: Optional[Dict] = None
 
 
 def ddg_maps(
@@ -157,6 +158,7 @@ def ddg_maps(
         if not page_data:
             break
 
+        max_results = int(max_results)
         for res in page_data:
             result = MapsResult()
             result.title = res["name"]
