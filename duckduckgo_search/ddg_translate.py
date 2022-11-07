@@ -17,7 +17,7 @@ def ddg_translate(
         keywords (str): string or a list of strings to translate
         from_ (Optional[str], optional): translate from (defaults automatically). Defaults to None.
         to (str): what language to translate. Defaults to "en".
-        output (Optional[str], optional): print, csv, json. Defaults to None.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo translate results.
