@@ -15,7 +15,7 @@ def ddg_answers(
     Args:
         keywords (str): keywords for query.
         related (bool, optional): add related topics to results. Defaults to False.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo instant answers results.
