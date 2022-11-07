@@ -66,27 +66,46 @@ def version():
     "-r",
     "--region",
     default="wt-wt",
-    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",
+    help="wt-wt, us-en, uk-en, ru-ru, etc. - search region https://duckduckgo.com/params",
+
+
 )
-@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
-@click.option("-t", "--time", default=None, help="d, w, m, y")
+@click.option(
+    "-s",
+    "--safesearch",
+    default="Moderate",
+    type=click.Choice(["On", "Moderate", "Off"]),
+    help="Safe Search",
+)
+@click.option(
+    "-t",
+    "--time",
+    default=None,
+    type=click.Choice(["d", "w", "m", "y"]),
+    help="search results for the last day, week, month, year",
+)
 @click.option(
     "-m",
     "--max_results",
     default=25,
-    help="maximum number of results, max=200.",
+    help="maximum number of results, max=200, default=25",
 )
-@click.option("-o", "--output", default="print", help="csv or json, default=print")
+@click.option(
+    "-o",
+    "--output",
+    default="print",
+    help="csv, json (save the results to a csv or json file)",
+)
 @click.option(
     "-d",
     "--download",
     is_flag=True,
     default=False,
-    help="download and save documents to 'keywords' folder, default=False",
+    help="download results to 'keywords' folder",
 )
-def text(output, *args, **kwargs):
-    data = ddg(output=output, *args, **kwargs)
-    if output == "print":
+def text(output, download, *args, **kwargs):
+    data = ddg(output=output, download=download, *args, **kwargs)
+    if output == "print" and not download:
         print_data(data)
 
 
@@ -95,7 +114,12 @@ def text(output, *args, **kwargs):
 @click.option(
     "-rt", "--related", default=False, is_flag=True, help="Add related topics"
 )
-@click.option("-o", "--output", default="print", help="csv or json, default=print")
+@click.option(
+    "-o",
+    "--output",
+    default="print",
+    help="csv, json (save the results to a csv or json file)",
+)
 def answers(output, *args, **kwargs):
     data = ddg_answers(output=output, *args, **kwargs)
     if output == "print":
@@ -108,49 +132,92 @@ def answers(output, *args, **kwargs):
     "-r",
     "--region",
     default="wt-wt",
-    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",
+    help="wt-wt, us-en, uk-en, ru-ru, etc. - search region https://duckduckgo.com/params",
 )
-@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
-@click.option("-t", "--time", default=None, help="Day, Week, Month, Year")
-@click.option("-size", "--size", default=None, help="Small, Medium, Large, Wallpaper")
+@click.option(
+    "-s",
+    "--safesearch",
+    default="Moderate",
+    type=click.Choice(["On", "Moderate", "Off"]),
+    help="Safe Search",
+)
+@click.option(
+    "-t",
+    "--time",
+    default=None,
+    type=click.Choice(["Day", "Week", "Month", "Year"]),
+    help="search results for the last day, week, month, year",
+)
+@click.option(
+    "-size",
+    "--size",
+    default=None,
+    type=click.Choice(["Small, Medium, Large, Wallpaper"]),
+    help="",
+)
 @click.option(
     "-c",
     "--color",
     default=None,
-    help="""color, Monochrome, Red, Orange, Yellow, Green, Blue, Purple, Pink, Brown, Black, Gray,
-            Teal, White""",
+    type=click.Choice(
+        [
+            "color",
+            "Monochrome",
+            "Red",
+            "Orange",
+            "Yellow",
+            "Green",
+            "Blue",
+            "Purple",
+            "Pink",
+            "Brown",
+            "Black",
+            "Gray",
+            "Teal",
+            "White",
+        ]
+    ),
 )
 @click.option(
-    "-type", "--type_image", default=None, help="photo, clipart, gif, transparent, line"
+    "-type",
+    "--type_image",
+    default=None,
+    type=click.Choice(["photo", "clipart", "gif", "transparent", "line"]),
 )
-@click.option("-l", "--layout", default=None, help="Square, Tall, Wide")
+@click.option(
+    "-l", "--layout", default=None, type=click.Choice(["Square", "Tall", "Wide"])
+)
 @click.option(
     "-lic",
     "--license_image",
     default=None,
+    type=click.Choice(["any", "Public", "Share", "Modify", "ModifyCommercially"]),
     help="""any (All Creative Commons), Public (Public Domain), Share (Free to Share and Use),
         ShareCommercially (Free to Share and Use Commercially), Modify (Free to Modify, Share,
         and Use), ModifyCommercially (Free to Modify, Share, and Use Commercially)""",
 )
 @click.option(
-    "-m", "--max_results", default=100, help="maximum number of results, max=1000"
+    "-m",
+    "--max_results",
+    default=100,
+    help="maximum number of results, max=1000, default=100",
 )
 @click.option(
     "-o",
     "--output",
     default="print",
-    help="csv or json, default=print",
+    help="csv, json (save the results to a csv or json file)",
 )
 @click.option(
     "-d",
     "--download",
     is_flag=True,
     default=False,
-    help="download and save images to 'keywords' folder, default=False",
+    help="download and save images to 'keywords' folder",
 )
-def images(output, *args, **kwargs):
-    data = ddg_images(output=output, *args, **kwargs)
-    if output == "print":
+def images(output, download, *args, **kwargs):
+    data = ddg_images(output=output, download=download, *args, **kwargs)
+    if output == "print" and not download:
         print_data(data)
 
 
@@ -160,27 +227,49 @@ def images(output, *args, **kwargs):
     "-r",
     "--region",
     default="wt-wt",
-    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",
+    help="wt-wt, us-en, uk-en, ru-ru, etc. - search region https://duckduckgo.com/params",
 )
-@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
-@click.option("-t", "--time", default=None, help="d, w, m (published after)")
-@click.option("-res", "--resolution", default=None, help="high, standart")
+@click.option(
+    "-s",
+    "--safesearch",
+    default="Moderate",
+    type=click.Choice(["On", "Moderate", "Off"]),
+    help="Safe Search",
+)
+@click.option(
+    "-t",
+    "--time",
+    default=None,
+    type=click.Choice(["d", "w", "m"]),
+    help="search results for the last day, week, month",
+)
+@click.option(
+    "-res", "--resolution", default=None, type=click.Choice(["high", "standart"])
+)
 @click.option(
     "-d",
     "--duration",
     default=None,
-    help="short, medium, long",
+    type=click.Choice(["short", "medium", "long"]),
 )
 @click.option(
     "-lic",
     "--license_videos",
     default=None,
-    help="creativeCommon, youtube",
+    type=click.Choice(["creativeCommon", "youtube"]),
 )
 @click.option(
-    "-m", "--max_results", default=50, help="maximum number of results, max=1000"
+    "-m",
+    "--max_results",
+    default=50,
+    help="maximum number of results, max=1000, default=50",
 )
-@click.option("-o", "--output", default="print", help="csv or json, default=print")
+@click.option(
+    "-o",
+    "--output",
+    default="print",
+    help="csv, json (save the results to a csv or json file)",
+)
 def videos(output, *args, **kwargs):
     data = ddg_videos(output=output, *args, **kwargs)
     if output == "print":
@@ -193,14 +282,34 @@ def videos(output, *args, **kwargs):
     "-r",
     "--region",
     default="wt-wt",
-    help="country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.",
+    help="wt-wt, us-en, uk-en, ru-ru, etc. - search region https://duckduckgo.com/params",
 )
-@click.option("-s", "--safesearch", default="Moderate", help="On, Moderate, Off")
-@click.option("-t", "--time", default=None, help="d, w, m, y")
 @click.option(
-    "-m", "--max_results", default=25, help="maximum number of results, max=240"
+    "-s",
+    "--safesearch",
+    default="Moderate",
+    type=click.Choice(["On", "Moderate", "Off"]),
+    help="Safe Search",
 )
-@click.option("-o", "--output", default="print", help="csv or json, default=print")
+@click.option(
+    "-t",
+    "--time",
+    default=None,
+    type=click.Choice(["d", "w", "m", "y"]),
+    help="d, w, m, y",
+)
+@click.option(
+    "-m",
+    "--max_results",
+    default=25,
+    help="maximum number of results, max=240, default=25",
+)
+@click.option(
+    "-o",
+    "--output",
+    default="print",
+    help="csv, json (save the results to a csv or json file)",
+)
 def news(output, *args, **kwargs):
     data = ddg_news(output=output, *args, **kwargs)
     if output == "print":
@@ -241,8 +350,13 @@ def news(output, *args, **kwargs):
     default=0,
     help="expand the search square by the distance in kilometers",
 )
-@click.option("-m", "--max_results", help="number of results (default=None)")
-@click.option("-o", "--output", default="print", help="csv or json, default=print")
+@click.option("-m", "--max_results", help="number of results, default=None")
+@click.option(
+    "-o",
+    "--output",
+    default="print",
+    help="csv, json (save the results to a csv or json file)",
+)
 def maps(output, *args, **kwargs):
     data = ddg_maps(output=output, *args, **kwargs)
     if output == "print":
@@ -254,15 +368,20 @@ def maps(output, *args, **kwargs):
 @click.option(
     "-f",
     "--from_",
-    help="de, ru, fr, etc. What language to translate from (defaults automatically)",
+    help="What language to translate from (defaults automatically)",
 )
 @click.option(
     "-t",
     "--to",
     default="en",
-    help="de, ru, fr, etc. What language to translate (defaults='en')",
+    help="de, ru, fr, etc. What language to translate, defaults='en'",
 )
-@click.option("-o", "--output", default="print", help="csv or json, default=print")
+@click.option(
+    "-o",
+    "--output",
+    default="print",
+    help="csv, json (save the results to a csv or json file)",
+)
 def translate(output, *args, **kwargs):
     data = ddg_translate(output=output, *args, **kwargs)
     if output == "print":
