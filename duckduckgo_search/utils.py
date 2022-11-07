@@ -110,7 +110,9 @@ def _do_output(module_name, keywords, output, results):
         _save_json(
             f"{module_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}.json", results
         )
+    """
     elif output == "print":
         for i, result in enumerate(results, start=1):
             print(f"{i}.", json.dumps(result, ensure_ascii=False, indent=4))
             input()
+    """
