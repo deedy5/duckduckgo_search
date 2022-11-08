@@ -152,7 +152,7 @@ def answers(output, *args, **kwargs):
     "-size",
     "--size",
     default=None,
-    type=click.Choice(["Small, Medium, Large, Wallpaper"]),
+    type=click.Choice(["Small", "Medium", "Large", "Wallpaper"]),
     help="",
 )
 @click.option(
