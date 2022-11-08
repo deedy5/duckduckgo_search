@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+import shutil
 from datetime import datetime
 from time import sleep
 
@@ -85,11 +86,12 @@ def _download_file(url, dir_path, filename):
     }
     for _ in range(2):
         try:
-            resp = requests.get(url, headers=headers, timeout=10)
-            if resp.status_code == 200:
+            with requests.get(url, headers=headers, stream=True, timeout=10) as resp:
+                resp.raise_for_status()
+                resp.raw.decode_content = True
                 with open(os.path.join(dir_path, filename), "wb") as file:
-                    file.write(resp.content)
-                    logger.info("File downloaded url=%s", url)
+                    shutil.copyfileobj(resp.raw, file)
+                logger.info(f"File downloaded {url}")
                 break
         except Exception:
             logger.exception("")
