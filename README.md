@@ -228,7 +228,60 @@ ___
 
 
 <details>
-  <summary><b>2. ddg_images() - image search by duckduckgo.com</b></summary>
+  <summary><b>2. ddg_answers() - instant answers by duckduckgo.com</b></summary>
+
+```python
+from duckduckgo_search import ddg_answers
+
+def ddg_answers(
+    keywords,
+    related=False,
+    output=None,
+):
+    """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
+    Args:
+        keywords (str): keywords for query.
+        related (bool, optional): add related topics to results. Defaults to False.
+        output (Optional[str], optional): csv, json. Defaults to None.
+    Returns:
+        Optional[List[dict]]: DuckDuckGo instant answers results.
+    """
+```
+
+***Returns***
+```python
+[{'icon': Optional[str],
+  'text': Optional[str],
+  'topic': Optional[str],
+  'url': Optional[str],},
+ ...
+ ]
+```
+
+***Example 1. Answers***
+```python
+from duckduckgo_search import ddg_answers
+
+keywords = 'ford company'
+results = ddg_answers(keywords, related=True)
+print(results)
+```
+```python
+[
+{'icon': None, 'text': "Ford Motor Company is an American multinational automobile manufacturer headquartered in Dearborn, Michigan, United States. It was founded by Henry Ford and incorporated on June 16, 1903. The company sells automobiles and commercial vehicles under the Ford brand, and luxury cars under its Lincoln luxury brand. Ford also owns Brazilian SUV manufacturer Troller, an 8% stake in Aston Martin of the United Kingdom and a 32% stake in China's Jiangling Motors. It also has joint ventures in China, Taiwan, Thailand, Turkey, and Russia. The company is listed on the New York Stock Exchange and is controlled by the Ford family; they have minority ownership but the majority of the voting power. Ford introduced methods for large-scale manufacturing of cars and large-scale management of an industrial workforce using elaborately engineered manufacturing sequences typified by moving assembly lines; by 1914, these methods were known around the world as Fordism.", 'topic': None, 'url': 'https://en.wikipedia.org/wiki/Ford_Motor_Company'}
+{'icon': None, 'text': 'Ford Motor Company Category', 'topic': None, 'url': 'https://duckduckgo.com/c/Ford_Motor_Company'}
+{'icon': None, 'text': "Ford's Garage - Ford's Garage is an American chain of casual dining restaurants founded in 2012. The first restaurant was opened in Fort Myers, Florida. As of July 2022, the company had 21 restaurants in four states, the majority of which are operated by 23 Restaurant Services.", 'topic': None, 'url': "https://duckduckgo.com/Ford's_Garage"}
+...
+]
+```
+___
+</details>
+
+
+
+
+<details>
+  <summary><b>3. ddg_images() - image search by duckduckgo.com</b></summary>
   
 ```python
 from duckduckgo_search import ddg_images
@@ -300,7 +353,7 @@ ___
 
 
 <details>
-  <summary><b>3. ddg_videos() - video search by duckduckgo.com</b></summary>
+  <summary><b>4. ddg_videos() - video search by duckduckgo.com</b></summary>
   
 ```python
 from duckduckgo_search import ddg_videos
@@ -372,7 +425,7 @@ ___
 
 
 <details>
-  <summary><b>4. ddg_news() - news search by duckduckgo.com</b></summary>
+  <summary><b>5. ddg_news() - news search by duckduckgo.com</b></summary>
   
 ```python
 from duckduckgo_search import ddg_news
@@ -426,7 +479,7 @@ ___
 
 
 <details>
-  <summary><b>5. ddg_maps() - map search by duckduckgo.com</b></summary>
+  <summary><b>6. ddg_maps() - map search by duckduckgo.com</b></summary>
 
 ```python
 from duckduckgo_search import ddg_maps
@@ -551,7 +604,7 @@ ___
 
 
 <details>
-  <summary><b>6. ddg_translate() - translation by duckduckgo.com</b></summary>
+  <summary><b>7. ddg_translate() - translation by duckduckgo.com</b></summary>
 
 ```python
 from duckduckgo_search import ddg_translate
