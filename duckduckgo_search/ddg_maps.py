@@ -158,7 +158,6 @@ def ddg_maps(
         if not page_data:
             break
 
-        max_results = int(max_results)
         for res in page_data:
             result = MapsResult()
             result.title = res["name"]
