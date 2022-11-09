@@ -84,17 +84,15 @@ def _download_file(url, dir_path, filename):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0"
     }
-    for _ in range(2):
-        try:
-            with requests.get(url, headers=headers, stream=True, timeout=10) as resp:
-                resp.raise_for_status()
-                resp.raw.decode_content = True
-                with open(os.path.join(dir_path, filename), "wb") as file:
-                    shutil.copyfileobj(resp.raw, file)
-                logger.info(f"File downloaded {url}")
-                break
-        except Exception:
-            logger.exception("")
+    try:
+        with requests.get(url, headers=headers, stream=True, timeout=10) as resp:
+            resp.raise_for_status()
+            resp.raw.decode_content = True
+            with open(os.path.join(dir_path, filename), "wb") as file:
+                shutil.copyfileobj(resp.raw, file)
+            logger.info(f"File downloaded {url}")
+    except Exception:
+        logger.exception("")
 
 
 def _normalize(raw_html):
