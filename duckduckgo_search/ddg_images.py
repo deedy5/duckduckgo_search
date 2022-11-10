@@ -119,8 +119,8 @@ def ddg_images(
                 fs.append(executor.submit(get_ddg_images_page, page))
                 sleep(min(iterations / 17, 0.4))  # sleep to prevent blocking
             for r in as_completed(fs):
-                if res := r.result():
-                    results.extend(res)
+                if r.result():
+                    results.extend(r.result())
         results = results[:max_results]
     else:
         results = get_ddg_images_page(page=page)
