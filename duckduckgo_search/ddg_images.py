@@ -2,6 +2,7 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from time import sleep
 
 from .utils import SESSION, _do_output, _download_file, _get_vqd
 
@@ -18,7 +19,8 @@ def ddg_images(
     type_image=None,
     layout=None,
     license_image=None,
-    max_results=100,
+    max_results=None,
+    page=1,
     output=None,
     download=False,
 ):
@@ -39,7 +41,9 @@ def ddg_images(
             Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
             Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
             Use Commercially). Defaults to None.
-        max_results (int, optional): maximum number of results, max=1000. Defaults to 100.
+        max_results (Optional[int], optional): maximum number of results, max=1000. Defaults to None.
+            if max_results is set, then the parameter page is not taken into account.
+        page (int, optional): page for pagination. Defaults to 1.
         output (Optional[str], optional): csv, json. Defaults to None.
         download (bool, optional): if True, download and save images to 'keywords' folder.
             Defaults to False.
@@ -47,6 +51,33 @@ def ddg_images(
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
     """
+
+    def get_ddg_images_page(page):
+        payload["s"] = max(PAGINATION_STEP * (page - 1), 0)
+        page_data = None
+        try:
+            resp = SESSION.get("https://duckduckgo.com/i.js", params=payload)
+            resp.raise_for_status()
+            page_data = resp.json().get("results", None)
+        except Exception:
+            logger.exception("")
+        if page_data:
+            page_results = []
+            for row in page_data:
+                if row["image"] not in cache:
+                    cache.add(row["image"])
+                    page_results.append(
+                        {
+                            "title": row["title"],
+                            "image": row["image"],
+                            "thumbnail": row["thumbnail"],
+                            "url": row["url"],
+                            "height": row["height"],
+                            "width": row["width"],
+                            "source": row["source"],
+                        }
+                    )
+            return page_results
 
     if not keywords:
         return None
@@ -56,9 +87,10 @@ def ddg_images(
     if not vqd:
         return None
 
-    # get images
-    safesearch_base = {"On": 1, "Moderate": 1, "Off": -1}
+    PAGINATION_STEP, MAX_API_RESULTS = 100, 1000
 
+    # prepare payload
+    safesearch_base = {"On": 1, "Moderate": 1, "Off": -1}
     time = f"time:{time}" if time else ""
     size = f"size:{size}" if size else ""
     color = f"color:{color}" if color else ""
@@ -68,48 +100,32 @@ def ddg_images(
     payload = {
         "l": region,
         "o": "json",
-        "s": 0,
+        "s": max(PAGINATION_STEP * (page - 1), 0),
         "q": keywords,
         "vqd": vqd,
         "f": f"{time},{size},{color},{type_image},{layout},{license_image}",
         "p": safesearch_base[safesearch],
     }
 
-    results, cache = [], set()
-    while payload["s"] < min(max_results, 1000) or len(results) < max_results:
-        page_data = None
-        try:
-            resp = SESSION.get("https://duckduckgo.com/i.js", params=payload)
-            resp.raise_for_status()
-            page_data = resp.json().get("results", None)
-        except Exception:
-            logger.exception("")
-            break
+    # get results
+    cache = set()
+    if max_results:
+        results = []
+        max_results = min(max_results, MAX_API_RESULTS)
+        iterations = max(int(max_results / PAGINATION_STEP), 1)
+        with ThreadPoolExecutor(iterations) as executor:
+            fs = []
+            for page in range(1, iterations + 1):
+                fs.append(executor.submit(get_ddg_images_page, page))
+                sleep(min(iterations / 17, 0.4))  # sleep to prevent blocking
+            for r in as_completed(fs):
+                if res := r.result():
+                    results.extend(res)
+        results = results[:max_results]
+    else:
+        results = get_ddg_images_page(page=page)
 
-        if not page_data:
-            break
-
-        page_results = []
-        for row in page_data:
-            if row["image"] not in cache:
-                cache.add(row["image"])
-                result = {
-                    "title": row["title"],
-                    "image": row["image"],
-                    "thumbnail": row["thumbnail"],
-                    "url": row["url"],
-                    "height": row["height"],
-                    "width": row["width"],
-                    "source": row["source"],
-                }
-                page_results.append(result)
-        if not page_results:
-            break
-        results.extend(page_results)
-        # pagination
-        payload["s"] += 100
-
-    results = results[:max_results]
+    # save to csv or json file
     if output:
         _do_output(__name__, keywords, output, results)
 
