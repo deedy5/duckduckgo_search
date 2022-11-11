@@ -111,8 +111,8 @@ def ddg_images(
     cache = set()
     if max_results:
         results = []
-        max_results = min(max_results, MAX_API_RESULTS)
-        iterations = max(int(max_results / PAGINATION_STEP), 1)
+        max_results = min(abs(max_results), MAX_API_RESULTS)
+        iterations = (max_results - 1) // PAGINATION_STEP + 1  # == math.ceil()
         with ThreadPoolExecutor(iterations) as executor:
             fs = []
             for page in range(1, iterations + 1):
