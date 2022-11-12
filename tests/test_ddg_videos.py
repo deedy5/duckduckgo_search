@@ -7,17 +7,17 @@ from duckduckgo_search import ddg_videos
 
 def test_ddg_videos():
     results = ddg_videos("cat")
-    assert len(results) >= 50
+    assert len(results) >= 45
 
     
 def test_ddg_videos_pagination():
     results = ddg_videos("cat", page=2)
-    assert len(results) >= 50
+    assert len(results) >= 45
     
 
 def test_ddg_videos_max_results():
     results = ddg_videos("cat", max_results=100)
-    assert len(results) >= 90
+    assert len(results) >= 75
 
 
 def test_ddg_videos_save_csv_json():
