@@ -61,8 +61,8 @@ def ddg_images(
             page_data = resp.json().get("results", None)
         except Exception:
             logger.exception("")
+        page_results = []
         if page_data:
-            page_results = []
             for row in page_data:
                 if row["image"] not in cache:
                     cache.add(row["image"])
@@ -77,7 +77,7 @@ def ddg_images(
                             "source": row["source"],
                         }
                     )
-            return page_results
+        return page_results
 
     if not keywords:
         return None
@@ -113,7 +113,7 @@ def ddg_images(
         results = []
         max_results = min(abs(max_results), MAX_API_RESULTS)
         iterations = (max_results - 1) // PAGINATION_STEP + 1  # == math.ceil()
-        with ThreadPoolExecutor(iterations) as executor:
+        with ThreadPoolExecutor(min(iterations, 4)) as executor:
             fs = []
             for page in range(1, iterations + 1):
                 fs.append(executor.submit(get_ddg_images_page, page))
@@ -122,7 +122,7 @@ def ddg_images(
                 if r.result():
                     results.extend(r.result())
     else:
-        results = get_ddg_images_page(page=page)
+        results = get_ddg_images_page(page)
 
     results = results[:max_results]
 
@@ -149,4 +149,5 @@ def ddg_images(
                 print(f"{i}/{len(results)}")
 
         print("Done.")
+
     return results
