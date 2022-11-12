@@ -6,17 +6,17 @@ from duckduckgo_search import ddg_videos
 
 
 def test_ddg_videos():
-    results = ddg("cat")
+    results = ddg_videos("cat")
     assert len(results) >= 50
 
     
 def test_ddg_videos_pagination():
-    results = ddg("cat", page=2)
+    results = ddg_videos("cat", page=2)
     assert len(results) >= 50
     
 
 def test_ddg_videos_max_results():
-    results = ddg("cat", max_results=100)
+    results = ddg_videos("cat", max_results=100)
     assert len(results) >= 90
 
 
