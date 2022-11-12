@@ -18,7 +18,7 @@ def test_ddg_images_pagination():
 
 def test_ddg_images_max_results():
     results = ddg_images("cat", max_results=200)
-    assert len(results) >= 200
+    assert len(results) >= 180
 
 
 def test_ddg_images_save_csv_json():
