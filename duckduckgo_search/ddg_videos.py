@@ -52,7 +52,6 @@ def ddg_videos(
                 if row["content"] not in cache:
                     page_results.append(row)
                     cache.add(row["content"])
-            print(f"{len(page_results)=}")
             return page_results
 
     if not keywords:
