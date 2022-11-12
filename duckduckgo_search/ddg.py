@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def ddg(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     max_results=None,
     page=1,
@@ -77,7 +77,7 @@ def ddg(
     payload = {
         "q": keywords,
         "l": region,
-        "p": safesearch_base[safesearch],
+        "p": safesearch_base[safesearch].capitalize(),
         "s": 0,
         "df": time,
         "o": "json",
