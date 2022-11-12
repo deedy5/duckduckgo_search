@@ -128,7 +128,7 @@ def ddg_images(
 
     # save to csv or json file
     if output:
-        _do_output(__file__, keywords, output, results)
+        _do_output("ddg_images", keywords, output, results)
 
     # download images
     if download:
