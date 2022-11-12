@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def ddg_videos(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     resolution=None,
     duration=None,
@@ -24,7 +24,7 @@ def ddg_videos(
     Args:
         keywords (str): keywords for query.
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str, optional): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): d, w, m. Defaults to None.
         resolution (Optional[str], optional): high, standart. Defaults to None.
         duration (Optional[str], optional): short, medium, long. Defaults to None.
@@ -78,7 +78,7 @@ def ddg_videos(
         "q": keywords,
         "vqd": vqd,
         "f": f"{time},{resolution},{duration},{license_videos}",
-        "p": safesearch_base[safesearch],
+        "p": safesearch_base[safesearch].capitalize(),
     }
 
     # get results
