@@ -6,17 +6,17 @@ from duckduckgo_search import ddg_news
 
 
 def test_ddg_news():
-    results = ddg("cat")
+    results = ddg_news("cat")
     assert len(results) >= 25
 
     
 def test_ddg_news_pagination():
-    results = ddg("cat", page=2)
+    results = ddg_news("cat", page=2)
     assert len(results) >= 25
     
 
 def test_ddg_news_max_results():
-    results = ddg("cat", max_results=60)
+    results = ddg_news("cat", max_results=60)
     assert len(results) >= 50
 
 
