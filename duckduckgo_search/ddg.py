@@ -1,8 +1,7 @@
 import logging
 import os
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, as_completed, wait
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from time import sleep, monotonic
 
 from .utils import SESSION, _do_output, _download_file, _get_vqd, _normalize
 
