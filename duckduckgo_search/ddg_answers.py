@@ -89,6 +89,6 @@ def ddg_answers(
                     )
 
     if output:
-        _do_output(__name__, keywords, output, results)
+        _do_output(__file__, keywords, output, results)
 
     return results
