@@ -77,7 +77,7 @@ def ddg(
     payload = {
         "q": keywords,
         "l": region,
-        "p": safesearch_base[safesearch].capitalize(),
+        "p": safesearch_base[safesearch.capitalize()],
         "s": 0,
         "df": time,
         "o": "json",
