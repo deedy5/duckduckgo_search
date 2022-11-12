@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def ddg_news(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     max_results=None,
     page=1,
@@ -22,7 +22,7 @@ def ddg_news(
     Args:
         keywords (str): keywords for query.
         region (str): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): d, w, m. Defaults to None.
         max_results (Optional[int], optional): maximum number of results, max=240. Defaults to None.
             if max_results is set, then the parameter page is not taken into account.
@@ -77,7 +77,7 @@ def ddg_news(
         "noamp": "1",
         "q": keywords,
         "vqd": vqd,
-        "p": safesearch_base[safesearch],
+        "p": safesearch_base[safesearch].capitalize(),
         "df": time,
         "s": 0,
     }
