@@ -28,11 +28,11 @@ ddgs text -k "russia filetype:pdf" -m 250 -o None -d
 ```
 *download images:*
 ```python3
-ddgs images -k "lady in red" -m 1000 -s Off -o None -d
+ddgs images -k "lady in red" -m 1000 -s off -o None -d
 ```
 *get latest news:*
 ```python3
-ddgs news -k "ukraine war" -s Off -t d -m 50
+ddgs news -k "ukraine war" -s off -t d -m 50
 ```
 ___
 </details>
