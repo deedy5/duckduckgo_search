@@ -78,7 +78,7 @@ def ddg_videos(
         "q": keywords,
         "vqd": vqd,
         "f": f"{time},{resolution},{duration},{license_videos}",
-        "p": safesearch_base[safesearch].capitalize(),
+        "p": safesearch_base[safesearch.capitalize()],
     }
 
     # get results
