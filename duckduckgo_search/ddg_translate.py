@@ -60,5 +60,5 @@ def ddg_translate(
 
     if output:
         keywords = keywords[0]
-        _do_output(__name__, keywords, output, results)
+        _do_output(__file__, keywords, output, results)
     return results
