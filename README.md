@@ -165,7 +165,16 @@ ___
 ```python
 from duckduckgo_search import ddg
 
-def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None, download=False):
+def ddg(
+    keywords,
+    region="wt-wt",
+    safesearch="Moderate",
+    time=None,
+    max_results=None,
+    page=1,
+    output=None,
+    download=False,
+):
     """DuckDuckGo text search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -173,8 +182,10 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
         time (Optional[str], optional): d, w, m, y. Defaults to None.
-        max_results (int, optional): maximum number of results, max=200. Defaults to 25.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        max_results (Optional[int], optional): maximum number of results, max=200. Defaults to None.
+            if max_results is set, then the parameter page is not taken into account.
+        page (int, optional): page for pagination. Defaults to 1.
+        output (Optional[str], optional): csv, json. Defaults to None.
         download (bool, optional): if True, download and save dociments to 'keywords' folder.
             Defaults to False.
 
@@ -184,9 +195,9 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
 ```
 ***Returns***
 ```python
-[{'title': title of result,
-  'href': href of result,
-  'body': body of result,},
+[{'title': str,
+  'href': str,
+  'body': str,},
  ...
  ]
 ```
@@ -195,7 +206,7 @@ def ddg(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=
 from duckduckgo_search import ddg
 
 keywords = 'Bella Ciao'
-results = ddg(keywords, region='wt-wt', safesearch='Moderate', time='y', max_results=25)
+results = ddg(keywords, region='wt-wt', safesearch='Off', time='y')
 print(results)
 ```
 ```python
@@ -210,7 +221,7 @@ print(results)
 from duckduckgo_search import ddg
 
 keywords = 'conditioned reflex in humans filetype:pdf'
-results = ddg(keywords, region='wt-wt', safesearch='None', time=None, max_results=300)
+results = ddg(keywords, safesearch='Off', max_results=200)
 print(results)
 ```
 ```python
@@ -286,17 +297,27 @@ ___
 ```python
 from duckduckgo_search import ddg_images
 
-def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=None,
-           color=None, type_image=None, layout=None, license_image=None, max_results=100,
-           output=None, download=False):
-    """DuckDuckGo images search.
+def ddg_images(
+    keywords,
+    region="wt-wt",
+    safesearch="Moderate",
+    time=None,
+    size=None,
+    color=None,
+    type_image=None,
+    layout=None,
+    license_image=None,
+    max_results=None,
+    page=1,
+    output=None,
+    download=False,
+):
+    """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
     Args:
         keywords (str): keywords for query.
-        region (str, optional): country of results - wt-wt (Global), us-en, uk-en, ru-ru, etc.
-            Defaults to "wt-wt".
-        safesearch (str, optional): On (kp = 1), Moderate (kp = -1), Off (kp = -2).
-            Defaults to "Moderate".
+        region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
         time (Optional[str], optional): Day, Week, Month, Year. Defaults to None.
         size (Optional[str], optional): Small, Medium, Large, Wallpaper. Defaults to None.
         color (Optional[str], optional): color, Monochrome, Red, Orange, Yellow, Green, Blue,
@@ -308,8 +329,10 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
             Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
             Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
             Use Commercially). Defaults to None.
-        max_results (Optional[int], optional): number of results, max 1000 results. Defaults to 100.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        max_results (Optional[int], optional): maximum number of results, max=1000. Defaults to None.
+            if max_results is set, then the parameter page is not taken into account.
+        page (int, optional): page for pagination. Defaults to 1.
+        output (Optional[str], optional): csv, json. Defaults to None.
         download (bool, optional): if True, download and save images to 'keywords' folder.
             Defaults to False.
 
@@ -319,13 +342,13 @@ def ddg_images(keywords, region='wt-wt', safesearch='Moderate', time=None, size=
 ```
 ***Returns***
 ```python
-[{'height': image height,
-  'image': image url,
-  'source': image source,
-  'thumbnail': image thumbnail,
-  'title': image title,
-  'url': url where the image was found,
-  'width': image width },  
+[{'height': int,
+  'image': str,
+  'source': str,
+  'thumbnail': str,
+  'title': str,
+  'url': str,
+  'width': int },  
  ...
  ]
 ```
@@ -358,9 +381,19 @@ ___
 ```python
 from duckduckgo_search import ddg_videos
 
-def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resolution=None,
-    duration=None, license_videos=None, max_results=50, output=None):
-    """DuckDuckGo videos search
+def ddg_videos(
+    keywords,
+    region="wt-wt",
+    safesearch="Moderate",
+    time=None,
+    resolution=None,
+    duration=None,
+    license_videos=None,
+    max_results=None,
+    page=1,
+    output=None,
+):
+    """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
     Args:
         keywords (str): keywords for query.
@@ -370,8 +403,10 @@ def ddg_videos(keywords, region="wt-wt", safesearch="Moderate", time=None, resol
         resolution (Optional[str], optional): high, standart. Defaults to None.
         duration (Optional[str], optional): short, medium, long. Defaults to None.
         license_videos (Optional[str], optional): creativeCommon, youtube. Defaults to None.
-        max_results (int, optional): maximum number of results, max=1000. Defaults to 50.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        max_results (Optional[int], optional): maximum number of results, max=1000. Defaults to None.
+            if max_results is set, then the parameter page is not taken into account.
+        page (int, optional): page for pagination. Defaults to 1.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo videos search results
@@ -430,16 +465,26 @@ ___
 ```python
 from duckduckgo_search import ddg_news
 
-def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_results=25, output=None):
-    """DuckDuckGo news search
+def ddg_news(
+    keywords,
+    region="wt-wt",
+    safesearch="Moderate",
+    time=None,
+    max_results=None,
+    page=1,
+    output=None,
+):
+    """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
     Args:
         keywords (str): keywords for query.
         region (str): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch (str): On, Moderate, Off. Defaults to "Moderate".
         time (Optional[str], optional): d, w, m. Defaults to None.
-        max_results (int, optional): maximum number of results, max=240. Defaults to 25.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        max_results (Optional[int], optional): maximum number of results, max=240. Defaults to None.
+            if max_results is set, then the parameter page is not taken into account.
+        page (int, optional): page for pagination. Defaults to 1.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo news search results.
@@ -447,12 +492,12 @@ def ddg_news(keywords, region='wt-wt', safesearch='Moderate', time=None, max_res
 ```
 ***Returns***
 ```python
-[{'date': datetime in isoformat,
-  'title': title of result,
-  'body': body of result,
-  'url': url of result,
-  'image': image url,
-  'source': source of result,
+[{'date': str,
+  'title': str,
+  'body': str,
+  'url': str,
+  'image': str,
+  'source': str,
  ...
  ]
 ```
@@ -484,10 +529,22 @@ ___
 ```python
 from duckduckgo_search import ddg_maps
 
-def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=None,
-             country=None, postalcode=None, latitude=None, longitude=None, radius=0,
-             max_results=None, output=None):
-    """DuckDuckGo maps search
+def ddg_maps(
+    keywords,
+    place=None,
+    street=None,
+    city=None,
+    county=None,
+    state=None,
+    country=None,
+    postalcode=None,
+    latitude=None,
+    longitude=None,
+    radius=0,
+    max_results=None,
+    output=None,
+):
+    """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
     Args:
         keywords (str): keywords for query
@@ -503,7 +560,7 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
             if latitude and longitude are set, the other parameters are not used. Defaults to None.
         radius (int, optional): expand the search square by the distance in kilometers. Defaults to 0.
         max_results (Optional[int], optional): maximum number of results. Defaults to None.
-        output (Optional[str], optional): csv, json, print. Defaults to None.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo maps search results
@@ -511,18 +568,18 @@ def ddg_maps(keywords, place=None, street=None, city=None, county=None, state=No
 ```
 ***Returns***
 ```python
-[{'title': title,
-  'address': address,
-  'country_code': country code,
-  'latitude': latitude,
-  'longitude': longitude,
-  'url': url,
-  'desc': desc,
-  'phone': phone,
-  'image': image,  
-  'source': source,
-  'links': links,
-  'hours': hours,}
+[{'title': str,
+  'address': str,
+  'country_code': str,
+  'latitude': float,
+  'longitude': float,
+  'url': str,
+  'desc': str,
+  'phone': str,
+  'image': str,  
+  'source': str,
+  'links': dict,
+  'hours': dict,}
  ...
  ]
 ```
@@ -609,14 +666,19 @@ ___
 ```python
 from duckduckgo_search import ddg_translate
 
-def ddg_translate(keywords, from_=None, to='en', output=None):
+def ddg_translate(
+    keywords,
+    from_=None,
+    to="en",
+    output=None,
+):
     """DuckDuckGo translate
 
     Args:
         keywords (str): string or a list of strings to translate
         from_ (Optional[str], optional): translate from (defaults automatically). Defaults to None.
         to (str): what language to translate. Defaults to "en".
-        output (Optional[str], optional): print, csv, json. Defaults to None.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo translate results.
@@ -625,9 +687,9 @@ def ddg_translate(keywords, from_=None, to='en', output=None):
 ***Returns***
 ```python
 [
-{'detected_language': detected_language,
-  'translated': translated text,
-  'original': original text,},
+{'detected_language': str,
+  'translated': str,
+  'original': str,},
  ...
  ]
 ```
