@@ -73,8 +73,8 @@ def version():
 @click.option(
     "-s",
     "--safesearch",
-    default="Moderate",
-    type=click.Choice(["On", "Moderate", "Off"]),
+    default="moderate",
+    type=click.Choice(["on", "moderate", "off"]),
     help="Safe Search",
 )
 @click.option(
@@ -137,8 +137,8 @@ def answers(output, *args, **kwargs):
 @click.option(
     "-s",
     "--safesearch",
-    default="Moderate",
-    type=click.Choice(["On", "Moderate", "Off"]),
+    default="moderate",
+    type=click.Choice(["on", "moderate", "off"]),
     help="Safe Search",
 )
 @click.option(
@@ -232,8 +232,8 @@ def images(output, download, *args, **kwargs):
 @click.option(
     "-s",
     "--safesearch",
-    default="Moderate",
-    type=click.Choice(["On", "Moderate", "Off"]),
+    default="moderate",
+    type=click.Choice(["on", "moderate", "off"]),
     help="Safe Search",
 )
 @click.option(
@@ -287,8 +287,8 @@ def videos(output, *args, **kwargs):
 @click.option(
     "-s",
     "--safesearch",
-    default="Moderate",
-    type=click.Choice(["On", "Moderate", "Off"]),
+    default="moderate",
+    type=click.Choice(["on", "moderate", "off"]),
     help="Safe Search",
 )
 @click.option(

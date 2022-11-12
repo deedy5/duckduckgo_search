@@ -7,16 +7,26 @@ from duckduckgo_search import ddg
 
 
 def test_ddg():
+    results = ddg("cat")
+    assert len(results) >= 15
+
+    
+def test_ddg_pagination():
+    results = ddg("cat", page=2)
+    assert len(results) >= 15
+    
+
+def test_ddg_max_results():
     results = ddg("cat", max_results=50)
-    assert len(results) >= 45
+    assert len(results) >= 35
 
 
 def test_ddg_save_csv_json():
     keywords = "cat"
-    results = ddg(keywords, max_results=20, output="json")
-    assert len(results) >= 20
-    results = ddg(keywords, max_results=20, output="csv")
-    assert len(results) >= 20
+    results = ddg(keywords, output="json")
+    assert len(results) >= 15
+    results = ddg(keywords, output="csv")
+    assert len(results) >= 15
 
     # delete files and folders contains keyword in name
     not_files = True
@@ -31,7 +41,7 @@ def test_ddg_save_csv_json():
 
 def test_ddg_download():
     keywords = "cat"
-    results = ddg(keywords, max_results=10, download=True)
+    results = ddg(keywords, download=True)
     assert len(results) >= 10
 
     # delete files contains keyword in name
@@ -56,5 +66,5 @@ def test_ddg_download():
 # results not found
 def test_ddg_not_results():
     random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
-    results = ddg(random_chars, safesearch="Off", time="d", max_results=50)
+    results = ddg(random_chars, safesearch="Off", time="d")
     assert len(results) == 0

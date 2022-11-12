@@ -6,8 +6,18 @@ from duckduckgo_search import ddg_news
 
 
 def test_ddg_news():
-    results = ddg_news("cat", max_results=50)
-    assert len(results) >= 35
+    results = ddg_news("cat")
+    assert len(results) >= 20
+
+    
+def test_ddg_news_pagination():
+    results = ddg_news("cat", page=2)
+    assert len(results) >= 20
+    
+
+def test_ddg_news_max_results():
+    results = ddg_news("cat", max_results=60)
+    assert len(results) >= 40
 
 
 def test_ddg_news_save_csv_json():
@@ -32,6 +42,6 @@ def test_ddg_news_save_csv_json():
 def test_ddg_news_not_results():
     random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
     results = ddg_news(
-        random_chars, region="us-en", safesearch="Off", time="d", max_results=50
+        random_chars, region="us-en", safesearch="Off", time="d",
     )
     assert len(results) == 0

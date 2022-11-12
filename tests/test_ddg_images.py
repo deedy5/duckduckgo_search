@@ -7,17 +7,27 @@ from duckduckgo_search import ddg_images
 
 
 def test_ddg_images():
-    results = ddg_images("cat", max_results=50)
-    assert len(results) >= 45
+    results = ddg_images("cat")
+    assert len(results) >= 75
+
+    
+def test_ddg_images_pagination():
+    results = ddg_images("cat", page=2)
+    assert len(results) >= 75
+    
+
+def test_ddg_images_max_results():
+    results = ddg_images("cat", max_results=200)
+    assert len(results) >= 150
 
 
 def test_ddg_images_save_csv_json():
     keywords = "cat"
-    results = ddg_images(keywords, max_results=20, output="json")
-    assert len(results) >= 20
+    results = ddg_images(keywords, output="json")
+    assert len(results) >= 75
 
-    results = ddg_images(keywords, max_results=20, output="csv")
-    assert len(results) >= 20
+    results = ddg_images(keywords, output="csv")
+    assert len(results) >= 75
 
     # delete files contains keyword in name
     not_files = True
@@ -32,8 +42,8 @@ def test_ddg_images_save_csv_json():
 
 def test_ddg_images_download():
     keywords = "cat"
-    results = ddg_images(keywords, max_results=20, download=True)
-    assert len(results) >= 20
+    results = ddg_images(keywords, max_results=10, download=True)
+    assert len(results) >= 10
 
     # delete files contains keyword in name
     files = False

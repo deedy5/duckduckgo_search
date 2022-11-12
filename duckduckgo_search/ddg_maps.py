@@ -196,5 +196,5 @@ def ddg_maps(
 
     results = results[:max_results]
     if output:
-        _do_output(__name__, keywords, output, results)
+        _do_output("ddg_maps", keywords, output, results)
     return results

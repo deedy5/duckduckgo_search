@@ -1,4 +1,6 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from time import sleep
 
 from .utils import SESSION, _do_output, _get_vqd
 
@@ -8,12 +10,13 @@ logger = logging.getLogger(__name__)
 def ddg_videos(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     resolution=None,
     duration=None,
     license_videos=None,
-    max_results=50,
+    max_results=None,
+    page=1,
     output=None,
 ):
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
@@ -21,17 +24,36 @@ def ddg_videos(
     Args:
         keywords (str): keywords for query.
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str, optional): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): d, w, m. Defaults to None.
         resolution (Optional[str], optional): high, standart. Defaults to None.
         duration (Optional[str], optional): short, medium, long. Defaults to None.
         license_videos (Optional[str], optional): creativeCommon, youtube. Defaults to None.
-        max_results (int, optional): maximum number of results, max=1000. Defaults to 50.
+        max_results (Optional[int], optional): maximum number of results, max=1000. Defaults to None.
+            if max_results is set, then the parameter page is not taken into account.
+        page (int, optional): page for pagination. Defaults to 1.
         output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo videos search results
     """
+
+    def get_ddg_videos_page(page):
+        payload["s"] = max(PAGINATION_STEP * (page - 1), 0)
+        page_data = None
+        try:
+            resp = SESSION.get("https://duckduckgo.com/v.js", params=payload)
+            resp.raise_for_status()
+            page_data = resp.json().get("results", None)
+        except Exception:
+            logger.exception("")
+        page_results = []
+        if page_data:
+            for row in page_data:
+                if row["content"] not in cache:
+                    page_results.append(row)
+                    cache.add(row["content"])
+        return page_results
 
     if not keywords:
         return None
@@ -41,9 +63,10 @@ def ddg_videos(
     if not vqd:
         return None
 
-    # get videos
-    safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
+    PAGINATION_STEP, MAX_API_RESULTS = 60, 1000
 
+    # prepare payload
+    safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
     time = f"publishedAfter:{time}" if time else ""
     resolution = f"videoDefinition:{resolution}" if resolution else ""
     duration = f"videoDuration:{duration}" if duration else ""
@@ -55,35 +78,30 @@ def ddg_videos(
         "q": keywords,
         "vqd": vqd,
         "f": f"{time},{resolution},{duration},{license_videos}",
-        "p": safesearch_base[safesearch],
+        "p": safesearch_base[safesearch.capitalize()],
     }
 
-    results, cache = [], set()
-    while payload["s"] < min(max_results, 1000) or len(results) < max_results:
-        page_data = None
-        try:
-            resp = SESSION.get("https://duckduckgo.com/v.js", params=payload)
-            resp.raise_for_status()
-            page_data = resp.json().get("results", None)
-        except Exception:
-            logger.exception("")
-            break
-
-        if not page_data:
-            break
-
-        page_results = []
-        for row in page_data:
-            if row["content"] not in cache:
-                page_results.append(row)
-                cache.add(row["content"])
-        if not page_results:
-            break
-        results.extend(page_results)
-        # pagination
-        payload["s"] += 60
+    # get results
+    cache = set()
+    if max_results:
+        results = []
+        max_results = min(abs(max_results), MAX_API_RESULTS)
+        iterations = (max_results - 1) // PAGINATION_STEP + 1  # == math.ceil()
+        with ThreadPoolExecutor(min(iterations, 4)) as executor:
+            fs = []
+            for page in range(1, iterations + 1):
+                fs.append(executor.submit(get_ddg_videos_page, page))
+                sleep(min(iterations / 17, 0.3))  # sleep to prevent blocking
+            for r in as_completed(fs):
+                if r.result():
+                    results.extend(r.result())
+    else:
+        results = get_ddg_videos_page(page)
 
     results = results[:max_results]
+
     if output:
-        _do_output(__name__, keywords, output, results)
+        # save to csv or json file
+        _do_output("ddg_videos", keywords, output, results)
+
     return results
