@@ -121,9 +121,10 @@ def ddg_images(
             for r in as_completed(fs):
                 if r.result():
                     results.extend(r.result())
-        results = results[:max_results]
     else:
         results = get_ddg_images_page(page=page)
+
+    results = results[:max_results]
 
     # save to csv or json file
     if output:
