@@ -6,8 +6,18 @@ from duckduckgo_search import ddg_videos
 
 
 def test_ddg_videos():
-    results = ddg_videos("cat", max_results=50)
-    assert len(results) == 50
+    results = ddg("cat")
+    assert len(results) >= 50
+
+    
+def test_ddg_videos_pagination():
+    results = ddg("cat", page=2)
+    assert len(results) >= 50
+    
+
+def test_ddg_videos_max_results():
+    results = ddg("cat", max_results=100)
+    assert len(results) >= 90
 
 
 def test_ddg_videos_save_csv_json():
@@ -38,6 +48,5 @@ def test_ddg_videos_not_results():
         resolution="high",
         duration="short",
         license_videos="youtube",
-        max_results=62,
     )
     assert len(r) == 0
