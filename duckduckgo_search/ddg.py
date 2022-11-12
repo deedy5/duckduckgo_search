@@ -2,6 +2,7 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from time import sleep
 
 from .utils import SESSION, _do_output, _download_file, _get_vqd, _normalize
 
@@ -25,7 +26,7 @@ def ddg(
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
         time (Optional[str], optional): d, w, m, y. Defaults to None.
-        max_results (int, optional): maximum number of results, max=200. Defaults to None.
+        max_results (Optional[int], optional): maximum number of results, max=200. Defaults to None.
             if max_results is set, then the parameter page is not taken into account.
         page (int, optional): page for pagination. Defaults to 1.
         output (Optional[str], optional): csv, json. Defaults to None.
@@ -37,7 +38,7 @@ def ddg(
     """
 
     def get_ddg_page(page):
-        nonlocal payload
+        payload["s"] = max(PAGINATION_STEP * (page - 1), 0)
         page_data = None
         try:
             resp = SESSION.get("https://links.duckduckgo.com/d.js", params=payload)
@@ -45,12 +46,10 @@ def ddg(
             page_data = resp.json().get("results", None)
         except Exception:
             logger.exception("")
+        page_results = []
         if page_data:
-            page_results = []
-            for i, row in enumerate(page_data):
-                if "n" in row:
-                    payload["s"] += i  # pagination step
-                elif row["u"] not in cache:
+            for row in page_data:
+                if "n" not in row and row["u"] not in cache:
                     cache.add(row["u"])
                     body = _normalize(row["a"])
                     if body:
@@ -61,7 +60,7 @@ def ddg(
                                 "body": body,
                             }
                         )
-            return page_results
+        return page_results
 
     if not keywords:
         return None
@@ -71,7 +70,7 @@ def ddg(
     if not vqd:
         return None
 
-    MAX_API_RESULTS = 200
+    PAGINATION_STEP, MAX_API_RESULTS = 25, 200
 
     # prepare payload
     safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
@@ -90,12 +89,16 @@ def ddg(
     if max_results:
         results, page = [], 1
         max_results = min(abs(max_results), MAX_API_RESULTS)
-        while len(results) <= max_results:
-            result = get_ddg_page(page)
-            if result:
-                results.extend(result)
-            else:
-                break
+        iterations = (max_results - 1) // PAGINATION_STEP + 1  # == math.ceil()
+        with ThreadPoolExecutor(min(iterations, 4)) as executor:
+            fs = []
+            for page in range(1, iterations + 1):
+                fs.append(executor.submit(get_ddg_page, page))
+                sleep(min(iterations / 17, 0.3))  # sleep to prevent blocking
+            for r in as_completed(fs):
+                if r.result():
+                    results.extend(r.result())
+
     else:
         results = get_ddg_page(page)
 
@@ -123,8 +126,8 @@ def ddg(
             for i, future in enumerate(as_completed(futures), start=1):
                 logger.info("%s/%s", i, len(results))
                 print(f"{i}/{len(results)}")
-
         print("Done.")
+
     return results
 
 
