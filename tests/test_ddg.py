@@ -8,12 +8,12 @@ from duckduckgo_search import ddg
 
 def test_ddg():
     results = ddg("cat")
-    assert len(results) >= 20
+    assert len(results) >= 15
 
     
 def test_ddg_pagination():
     results = ddg("cat", page=2)
-    assert len(results) >= 20
+    assert len(results) >= 15
     
 
 def test_ddg_max_results():
@@ -24,9 +24,9 @@ def test_ddg_max_results():
 def test_ddg_save_csv_json():
     keywords = "cat"
     results = ddg(keywords, output="json")
-    assert len(results) >= 20
+    assert len(results) >= 15
     results = ddg(keywords, output="csv")
-    assert len(results) >= 20
+    assert len(results) >= 15
 
     # delete files and folders contains keyword in name
     not_files = True
