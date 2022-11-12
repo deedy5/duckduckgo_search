@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def ddg_images(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     size=None,
     color=None,
@@ -29,7 +29,7 @@ def ddg_images(
     Args:
         keywords (str): keywords for query.
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str, optional): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): Day, Week, Month, Year. Defaults to None.
         size (Optional[str], optional): Small, Medium, Large, Wallpaper. Defaults to None.
         color (Optional[str], optional): color, Monochrome, Red, Orange, Yellow, Green, Blue,
@@ -104,7 +104,7 @@ def ddg_images(
         "q": keywords,
         "vqd": vqd,
         "f": f"{time},{size},{color},{type_image},{layout},{license_image}",
-        "p": safesearch_base[safesearch],
+        "p": safesearch_base[safesearch].capitalize(),
     }
 
     # get results
