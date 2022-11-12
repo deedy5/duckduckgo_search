@@ -7,17 +7,17 @@ from duckduckgo_search import ddg_images
 
 
 def test_ddg_images():
-    results = ddg("cat")
+    results = ddg_images("cat")
     assert len(results) >= 90
 
     
 def test_ddg_images_pagination():
-    results = ddg("cat", page=2)
+    results = ddg_images("cat", page=2)
     assert len(results) >= 90
     
 
 def test_ddg_images_max_results():
-    results = ddg("cat", max_results=200)
+    results = ddg_images("cat", max_results=200)
     assert len(results) >= 200
 
 
