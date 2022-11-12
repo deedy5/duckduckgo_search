@@ -1,7 +1,8 @@
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, as_completed, wait
 from datetime import datetime
+from time import sleep, monotonic
 
 from .utils import SESSION, _do_output, _download_file, _get_vqd, _normalize
 
@@ -13,7 +14,8 @@ def ddg(
     region="wt-wt",
     safesearch="Moderate",
     time=None,
-    max_results=25,
+    max_results=None,
+    page=1,
     output=None,
     download=False,
 ):
@@ -24,7 +26,9 @@ def ddg(
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
         time (Optional[str], optional): d, w, m, y. Defaults to None.
-        max_results (int, optional): maximum number of results, max=200. Defaults to 25.
+        max_results (int, optional): maximum number of results, max=200. Defaults to None.
+            if max_results is set, then the parameter page is not taken into account.
+        page (int, optional): page for pagination. Defaults to 1.
         output (Optional[str], optional): csv, json. Defaults to None.
         download (bool, optional): if True, download and save dociments to 'keywords' folder.
             Defaults to False.
@@ -32,6 +36,33 @@ def ddg(
     Returns:
         Optional[List[dict]]: DuckDuckGo text search results.
     """
+
+    def get_ddg_page(page):
+        nonlocal payload
+        page_data = None
+        try:
+            resp = SESSION.get("https://links.duckduckgo.com/d.js", params=payload)
+            resp.raise_for_status()
+            page_data = resp.json().get("results", None)
+        except Exception:
+            logger.exception("")
+        if page_data:
+            page_results = []
+            for i, row in enumerate(page_data):
+                if "n" in row:
+                    payload["s"] += i  # pagination step
+                elif row["u"] not in cache:
+                    cache.add(row["u"])
+                    body = _normalize(row["a"])
+                    if body:
+                        page_results.append(
+                            {
+                                "title": _normalize(row["t"]),
+                                "href": row["u"],
+                                "body": body,
+                            }
+                        )
+            return page_results
 
     if not keywords:
         return None
@@ -41,7 +72,9 @@ def ddg(
     if not vqd:
         return None
 
-    # search
+    MAX_API_RESULTS = 200
+
+    # prepare payload
     safesearch_base = {"On": 1, "Moderate": -1, "Off": -2}
     payload = {
         "q": keywords,
@@ -53,46 +86,50 @@ def ddg(
         "vqd": vqd,
     }
 
-    results, cache = [], set()
-    while payload["s"] < min(max_results, 200) or len(results) < max_results:
-        # request search results from duckduckgo
-        page_data = None
-        try:
-            resp = SESSION.get("https://links.duckduckgo.com/d.js", params=payload)
-            resp.raise_for_status()
-            page_data = resp.json().get("results", None)
-        except Exception:
-            logger.exception("")
-            break
-
-        if not page_data:
-            break
-
-        page_results = []
-        for i, row in enumerate(page_data):
-
-            # try pagination
-            if "n" in row:
-                payload["s"] += i
+    # get results
+    cache = set()
+    if max_results:
+        results, page = [], 1
+        max_results = min(abs(max_results), MAX_API_RESULTS)
+        while len(results) <= max_results:
+            result = get_ddg_page(page)
+            if result:
+                results.extend(result)
+            else:
                 break
+    else:
+        results = get_ddg_page(page)
 
-            # collect results
-            if row["u"] not in cache:
-                cache.add(row["u"])
-                body = _normalize(row["a"])
-                if body:
-                    page_results.append(
-                        {
-                            "title": _normalize(row["t"]),
-                            "href": row["u"],
-                            "body": body,
-                        }
-                    )
-        if not page_results:
-            break
-        results.extend(page_results)
+    results = results[:max_results]
+    keywords = keywords.replace(" filetype:", "_")
 
-    """ using html method
+    # save to csv or json file
+    if output:
+        _do_output(__name__, keywords, output, results)
+
+    # download documents
+    if download:
+        print("Downloading documents. Wait...")
+        keywords = keywords.replace('"', "'")
+        path = f"ddg_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+        os.makedirs(path, exist_ok=True)
+        futures = []
+        with ThreadPoolExecutor(30) as executor:
+            for i, res in enumerate(results, start=1):
+                filename = res["href"].split("/")[-1].split("?")[0]
+                future = executor.submit(
+                    _download_file, res["href"], path, f"{i}_{filename}"
+                )
+                futures.append(future)
+            for i, future in enumerate(as_completed(futures), start=1):
+                logger.info("%s/%s", i, len(results))
+                print(f"{i}/{len(results)}")
+
+        print("Done.")
+    return results
+
+
+""" using html method
     payload = {
         'q': keywords,
         'l': region,
@@ -118,30 +155,4 @@ def ddg(
         values = next_page.xpath('.//input[@type="hidden"]/@value')
         payload = {n: v for n, v in zip(names, values)}
         sleep(2)
-    """
-
-    results = results[:max_results]
-    keywords = keywords.replace(" filetype:", "_")
-    if output:
-        _do_output(__name__, keywords, output, results)
-
-    # download documents
-    if download:
-        print("Downloading documents. Wait...")
-        keywords = keywords.replace('"', "'")
-        path = f"ddg_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
-        os.makedirs(path, exist_ok=True)
-        futures = []
-        with ThreadPoolExecutor(30) as executor:
-            for i, res in enumerate(results, start=1):
-                filename = res["href"].split("/")[-1].split("?")[0]
-                future = executor.submit(
-                    _download_file, res["href"], path, f"{i}_{filename}"
-                )
-                futures.append(future)
-            for i, future in enumerate(as_completed(futures), start=1):
-                logger.info("%s/%s", i, len(results))
-                print(f"{i}/{len(results)}")
-
-        print("Done.")
-    return results
+"""
