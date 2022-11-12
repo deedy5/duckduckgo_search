@@ -24,7 +24,7 @@ def ddg(
     Args:
         keywords (str): keywords for query.
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str, optional): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): d, w, m, y. Defaults to None.
         max_results (Optional[int], optional): maximum number of results, max=200. Defaults to None.
             if max_results is set, then the parameter page is not taken into account.
