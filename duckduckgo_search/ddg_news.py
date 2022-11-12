@@ -77,7 +77,7 @@ def ddg_news(
         "noamp": "1",
         "q": keywords,
         "vqd": vqd,
-        "p": safesearch_base[safesearch].capitalize(),
+        "p": safesearch_base[safesearch.capitalize()],
         "df": time,
         "s": 0,
     }
