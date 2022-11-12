@@ -104,7 +104,7 @@ def ddg(
 
     # save to csv or json file
     if output:
-        _do_output(__name__, keywords, output, results)
+        _do_output(__file__, keywords, output, results)
 
     # download documents
     if download:
