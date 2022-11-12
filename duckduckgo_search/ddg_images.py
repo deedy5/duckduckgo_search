@@ -104,7 +104,7 @@ def ddg_images(
         "q": keywords,
         "vqd": vqd,
         "f": f"{time},{size},{color},{type_image},{layout},{license_image}",
-        "p": safesearch_base[safesearch].capitalize(),
+        "p": safesearch_base[safesearch.capitalize()],
     }
 
     # get results
