@@ -8,12 +8,12 @@ from duckduckgo_search import ddg_images
 
 def test_ddg_images():
     results = ddg_images("cat")
-    assert len(results) >= 90
+    assert len(results) >= 75
 
     
 def test_ddg_images_pagination():
     results = ddg_images("cat", page=2)
-    assert len(results) >= 90
+    assert len(results) >= 75
     
 
 def test_ddg_images_max_results():
@@ -24,10 +24,10 @@ def test_ddg_images_max_results():
 def test_ddg_images_save_csv_json():
     keywords = "cat"
     results = ddg_images(keywords, output="json")
-    assert len(results) >= 90
+    assert len(results) >= 75
 
     results = ddg_images(keywords, output="csv")
-    assert len(results) >= 90
+    assert len(results) >= 75
 
     # delete files contains keyword in name
     not_files = True
