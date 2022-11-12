@@ -29,9 +29,10 @@ def ddg_videos(
         resolution (Optional[str], optional): high, standart. Defaults to None.
         duration (Optional[str], optional): short, medium, long. Defaults to None.
         license_videos (Optional[str], optional): creativeCommon, youtube. Defaults to None.
-        max_results (int, optional): maximum number of results, max=1000. Defaults to None.
+        max_results (Optional[int], optional): maximum number of results, max=1000. Defaults to None.
             if max_results is set, then the parameter page is not taken into account.
-        page (int, optional): page for pagination. Defaults to 1.output (Optional[str], optional): csv, json. Defaults to None.
+        page (int, optional): page for pagination. Defaults to 1.
+        output (Optional[str], optional): csv, json. Defaults to None.
 
     Returns:
         Optional[List[dict]]: DuckDuckGo videos search results
@@ -46,13 +47,13 @@ def ddg_videos(
             page_data = resp.json().get("results", None)
         except Exception:
             logger.exception("")
+        page_results = []
         if page_data:
-            page_results = []
             for row in page_data:
                 if row["content"] not in cache:
                     page_results.append(row)
                     cache.add(row["content"])
-            return page_results
+        return page_results
 
     if not keywords:
         return None
@@ -86,7 +87,7 @@ def ddg_videos(
         results = []
         max_results = min(abs(max_results), MAX_API_RESULTS)
         iterations = (max_results - 1) // PAGINATION_STEP + 1  # == math.ceil()
-        with ThreadPoolExecutor(iterations) as executor:
+        with ThreadPoolExecutor(min(iterations, 4)) as executor:
             fs = []
             for page in range(1, iterations + 1):
                 fs.append(executor.submit(get_ddg_videos_page, page))
@@ -95,12 +96,12 @@ def ddg_videos(
                 if r.result():
                     results.extend(r.result())
     else:
-        results = get_ddg_videos_page(page=page)
+        results = get_ddg_videos_page(page)
 
     results = results[:max_results]
 
     if output:
         # save to csv or json file
-        _do_output(__file__, keywords, output, results)
+        _do_output("ddg_videos", keywords, output, results)
 
     return results
