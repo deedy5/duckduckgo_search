@@ -168,7 +168,7 @@ from duckduckgo_search import ddg
 def ddg(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     max_results=None,
     page=1,
@@ -180,7 +180,7 @@ def ddg(
     Args:
         keywords (str): keywords for query.
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str, optional): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): d, w, m, y. Defaults to None.
         max_results (Optional[int], optional): maximum number of results, max=200. Defaults to None.
             if max_results is set, then the parameter page is not taken into account.
@@ -300,7 +300,7 @@ from duckduckgo_search import ddg_images
 def ddg_images(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     size=None,
     color=None,
@@ -317,7 +317,7 @@ def ddg_images(
     Args:
         keywords (str): keywords for query.
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str, optional): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): Day, Week, Month, Year. Defaults to None.
         size (Optional[str], optional): Small, Medium, Large, Wallpaper. Defaults to None.
         color (Optional[str], optional): color, Monochrome, Red, Orange, Yellow, Green, Blue,
@@ -384,7 +384,7 @@ from duckduckgo_search import ddg_videos
 def ddg_videos(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     resolution=None,
     duration=None,
@@ -398,7 +398,7 @@ def ddg_videos(
     Args:
         keywords (str): keywords for query.
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str, optional): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str, optional): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): d, w, m. Defaults to None.
         resolution (Optional[str], optional): high, standart. Defaults to None.
         duration (Optional[str], optional): short, medium, long. Defaults to None.
@@ -468,7 +468,7 @@ from duckduckgo_search import ddg_news
 def ddg_news(
     keywords,
     region="wt-wt",
-    safesearch="Moderate",
+    safesearch="moderate",
     time=None,
     max_results=None,
     page=1,
@@ -479,7 +479,7 @@ def ddg_news(
     Args:
         keywords (str): keywords for query.
         region (str): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-        safesearch (str): On, Moderate, Off. Defaults to "Moderate".
+        safesearch (str): on, moderate, off. Defaults to "moderate".
         time (Optional[str], optional): d, w, m. Defaults to None.
         max_results (Optional[int], optional): maximum number of results, max=240. Defaults to None.
             if max_results is set, then the parameter page is not taken into account.
