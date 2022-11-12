@@ -57,8 +57,6 @@ def ddg_news(
                             "source": row["source"],
                         }
                     )
-            print(f"{len(page_data)=}")
-            print(f"{len(page_results)=}")
             return page_results
 
     if not keywords:
