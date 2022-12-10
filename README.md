@@ -1,15 +1,28 @@
 ![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search)
-# Duckduckgo_search
+# Duckduckgo_search<a name="TOP"></a>
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
-### Install
+## Table of Contents
+* [Install](#install)
+* [CLI version](#cli-version)
+* [Duckduckgo search operators](#duckduckgo-search-operators)
+* [Regions](#regions)
+* [Using proxy](#using-proxy)
+* [1. ddg() - text search](#1-ddg---text-search-by-by-duckduckgocom)
+* [2. ddg_answers() - instant answers](#2-ddg_answers---instant-answers-by-duckduckgocom)
+* [3. ddg_images() - image search](#3-ddg_images---image-search-by-duckduckgocom)
+* [4. ddg_videos() - video search](#4-ddg_videos---video-search-by-duckduckgocom)
+* [5. ddg_news() - news search](#5-ddg_news---news-search-by-duckduckgocom)
+* [6. ddg_maps() - map search](#6-ddg_maps---map-search-by-duckduckgocom)
+* [7. ddg_translate() - translation](#7-ddg_translate---translation-by-duckduckgocom)
+
+## Install
 ```python
 pip install -U duckduckgo_search
 ```
-___
-<details>
-  <summary><b>CLI version</b></summary>
+
+## CLI version
 
 ```python3
 ddgs --help
@@ -19,28 +32,18 @@ or
 python -m duckduckgo_search --help
 ```
 
-**CLI examples:**
-
-*download pdf files:*
+CLI examples:
 ```python3
+# download pdf files
 ddgs text -k "russia filetype:pdf" -m 250 -o None -d
-```
-*download images:*
-```python3
+# download images
 ddgs images -k "lady in red" -m 1000 -s off -o None -d
-```
-*get latest news:*
-```python3
+# get latest news
 ddgs news -k "ukraine war" -s off -t d -m 50
 ```
-___
-</details>
+[Go To TOP](#TOP)
 
-
-
-
-<details>
-  <summary><b>Duckduckgo search operators</b></summary>
+## Duckduckgo search operators
 
 | Keywords example |	Result|
 | ---     | ---   |
@@ -53,14 +56,12 @@ ___
 | cats -site:example.com |	Pages about cats, excluding example.com |
 | intitle:dogs |	Page title includes the word "dogs" |
 | inurl:cats  |	Page url includes the word "cats" |
-___
-</details>
 
+[Go To TOP](#TOP)
 
-
-
+## Regions
 <details>
-  <summary><b>Regions</b></summary>
+  <summary>expand</summary>
   
     xa-ar for Arabia
     xa-en for Arabia (en)
@@ -133,11 +134,9 @@ ___
 ___
 </details>
 
+[Go To TOP](#TOP)
 
-
-
-<details>
-  <summary><b>Using proxy</b></summary>
+## Using proxy
   
 ```python3
 from duckduckgo_search import ddg
@@ -151,15 +150,10 @@ SESSION.proxies = {
 r = ddg("Don't Worry, Be Happy")
 print(r)
 ```
-___
-</details>
 
+[Go To TOP](#TOP)
 
-___
-
-
-<details>
-  <summary><b>1. ddg() - search by duckduckgo.com</b></summary>
+## 1. ddg() - text search by by duckduckgo.com
 
 ```python
 from duckduckgo_search import ddg
@@ -231,14 +225,10 @@ print(results)
 ...
 ]
 ```
-___
-</details>
 
+[Go To TOP](#TOP)
 
-
-
-<details>
-  <summary><b>2. ddg_answers() - instant answers by duckduckgo.com</b></summary>
+## 2. ddg_answers() - instant answers by duckduckgo.com
 
 ```python
 from duckduckgo_search import ddg_answers
@@ -284,14 +274,10 @@ print(results)
 ...
 ]
 ```
-___
-</details>
 
+[Go To TOP](#TOP)
 
-
-
-<details>
-  <summary><b>3. ddg_images() - image search by duckduckgo.com</b></summary>
+## 3. ddg_images() - image search by duckduckgo.com
   
 ```python
 from duckduckgo_search import ddg_images
@@ -368,14 +354,10 @@ print(r)
 ...
 ]
 ```
-___
-</details>
 
+[Go To TOP](#TOP)
 
-
-
-<details>
-  <summary><b>4. ddg_videos() - video search by duckduckgo.com</b></summary>
+## 4. ddg_videos() - video search by duckduckgo.com
   
 ```python
 from duckduckgo_search import ddg_videos
@@ -452,14 +434,10 @@ print(r)
 ...
 ]
 ```
-___
-</details>
 
+[Go To TOP](#TOP)
 
-
-
-<details>
-  <summary><b>5. ddg_news() - news search by duckduckgo.com</b></summary>
+## 5. ddg_news() - news search by duckduckgo.com
   
 ```python
 from duckduckgo_search import ddg_news
@@ -516,14 +494,10 @@ print(r)
 ...
 ]
 ```
-___
-</details>
 
+[Go To TOP](#TOP)
 
-
-
-<details>
-  <summary><b>6. ddg_maps() - map search by duckduckgo.com</b></summary>
+## 6. ddg_maps() - map search by duckduckgo.com
 
 ```python
 from duckduckgo_search import ddg_maps
@@ -653,14 +627,10 @@ print(r)
 ...
 ]
 ```
-___
-</details>
 
+[Go To TOP](#TOP)
 
-
-
-<details>
-  <summary><b>7. ddg_translate() - translation by duckduckgo.com</b></summary>
+## 7. ddg_translate() - translation by duckduckgo.com
 
 ```python
 from duckduckgo_search import ddg_translate
@@ -722,5 +692,5 @@ print(results)
 ...
 ]
 ```
-___
-</details>
+
+[Go To TOP](#TOP)
