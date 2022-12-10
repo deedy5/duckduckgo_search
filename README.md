@@ -722,7 +722,7 @@ def ddg_suggestions(
 [{"phrase":str},{"phrase":str},{"phrase":str},...]
 ```
 
-***Example 1. Answers***
+***Example 1. Suggestions***
 ```python
 from duckduckgo_search import ddg_suggestions
 
@@ -731,7 +731,7 @@ results = ddg_suggestions(keywords)
 print(results)
 ```
 ```python
-["ford kögler", "ford kuga", "ford focus", "ford puma", "ford mustang", "ford transit", "ford ranger", "ford fiesta"]
+[{"phrase":"ford kögler"},{"phrase":"ford kuga"},{"phrase":"ford focus"},{"phrase":"ford puma"},{"phrase":"ford mustang"},{"phrase":"ford transit"},{"phrase":"ford ranger"},{"phrase":"ford fiesta"}]
 ```
 
 [Go To TOP](#TOP)
