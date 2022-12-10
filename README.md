@@ -713,13 +713,13 @@ def ddg_suggestions(
         region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         output (Optional[str], optional): csv, json. Defaults to None.
     Returns:
-        Optional[List[str]]: DuckDuckGo suggestions results.
+        Optional[List[dict]]: DuckDuckGo suggestions results.
     """
 ```
 
 ***Returns***
 ```python
-[str, str, str, ...]
+[{"phrase":str},{"phrase":str},{"phrase":str},...]
 ```
 
 ***Example 1. Answers***

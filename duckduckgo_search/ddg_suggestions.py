@@ -31,15 +31,12 @@ def ddg_suggestions(
         "q": keywords,
         "kl": region,
     }
-    page_data = []
     try:
         resp = SESSION.get("https://duckduckgo.com/ac", params=payload)
         resp.raise_for_status()
-        page_data = resp.json()
+        results = resp.json()
     except Exception:
         logger.exception("")
-    if page_data:
-        results = [x["phrase"] for x in page_data]
 
     if output:
         _do_output("ddg_suggestions", keywords, output, results)

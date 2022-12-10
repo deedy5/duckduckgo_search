@@ -11,6 +11,7 @@ from .ddg_answers import ddg_answers
 from .ddg_images import ddg_images
 from .ddg_maps import ddg_maps
 from .ddg_news import ddg_news
+from .ddg_suggestions import ddg_suggestions
 from .ddg_translate import ddg_translate
 from .ddg_videos import ddg_videos
 from .version import __version__
