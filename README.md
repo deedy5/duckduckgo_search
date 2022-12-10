@@ -18,7 +18,6 @@ or
 ```python3
 python -m duckduckgo_search --help
 ```
-![](https://github.com/deedy5/duckduckgo_search/raw/main/docs/ddgs_demo.gif)
 
 **CLI examples:**
 
