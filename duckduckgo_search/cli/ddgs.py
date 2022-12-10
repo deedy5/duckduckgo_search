@@ -8,6 +8,7 @@ from duckduckgo_search import (
     ddg_images,
     ddg_maps,
     ddg_news,
+    ddg_suggestions,
     ddg_translate,
     ddg_videos,
 )
@@ -384,6 +385,26 @@ def maps(output, *args, **kwargs):
 )
 def translate(output, *args, **kwargs):
     data = ddg_translate(output=output, *args, **kwargs)
+    if output == "print":
+        print_data(data)
+
+
+@cli.command()
+@click.option("-k", "--keywords", help="keywords for query")
+@click.option(
+    "-r",
+    "--region",
+    default="wt-wt",
+    help="wt-wt, us-en, uk-en, ru-ru, etc. - search region https://duckduckgo.com/params",
+)
+@click.option(
+    "-o",
+    "--output",
+    default="print",
+    help="csv, json (save the results to a csv or json file)",
+)
+def suggestions(output, *args, **kwargs):
+    data = ddg_suggestions(output=output, *args, **kwargs)
     if output == "print":
         print_data(data)
 
