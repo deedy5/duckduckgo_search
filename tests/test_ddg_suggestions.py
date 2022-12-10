@@ -2,25 +2,25 @@ import os
 import os.path
 from random import randrange
 
-from duckduckgo_search import ddg_answers
+from duckduckgo_search import ddg_suggestions
 
 
-def test_ddg_answers():
-    results = ddg_answers("cat", related=True)
+def test_ddg_suggestions():
+    results = ddg_suggestions("cat")
     assert len(results) >= 5
 
 
-def test_ddg_answers_save_csv_json():
+def test_ddg_suggestions_save_csv_json():
     keywords = "cat"
-    results = ddg_answers(keywords, related=True, output="json")
+    results = ddg_suggestions(keywords, output="json")
     assert len(results) >= 5
-    results = ddg_answers(keywords, related=True, output="csv")
+    results = ddg_suggestions(keywords, output="csv")
     assert len(results) >= 5
 
     # delete files and folders contains keyword in name
     not_files = True
     for name in os.listdir():
-        if f"ddg_answers_{keywords}" in name:
+        if f"ddg_suggestions_{keywords}" in name:
             if os.path.isfile(name):
                 os.remove(name)
                 not_files = False
@@ -29,7 +29,7 @@ def test_ddg_answers_save_csv_json():
 
 
 # results not found
-def test_ddg_answers_not_results():
+def test_ddg_suggestions_not_results():
     random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
-    results = ddg_answers(random_chars, related=True)
+    results = ddg_suggestions(random_chars)
     assert len(results) == 0

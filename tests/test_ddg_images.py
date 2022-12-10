@@ -10,11 +10,11 @@ def test_ddg_images():
     results = ddg_images("cat")
     assert len(results) >= 75
 
-    
+
 def test_ddg_images_pagination():
     results = ddg_images("cat", page=2)
     assert len(results) >= 75
-    
+
 
 def test_ddg_images_max_results():
     results = ddg_images("cat", max_results=200)
