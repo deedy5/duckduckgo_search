@@ -16,6 +16,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [5. ddg_news() - news search](#5-ddg_news---news-search-by-duckduckgocom)
 * [6. ddg_maps() - map search](#6-ddg_maps---map-search-by-duckduckgocom)
 * [7. ddg_translate() - translation](#7-ddg_translate---translation-by-duckduckgocom)
+* [8. ddg_suggestions() - suggestions](#8-ddg_suggestions---suggestions-by-duckduckgocom)
 
 ## Install
 ```python
@@ -62,7 +63,7 @@ ddgs news -k "ukraine war" -s off -t d -m 50
 ## Regions
 <details>
   <summary>expand</summary>
-  
+
     xa-ar for Arabia
     xa-en for Arabia (en)
     ar-es for Argentina
@@ -137,7 +138,7 @@ ___
 [Go To TOP](#TOP)
 
 ## Using proxy
-  
+
 ```python3
 from duckduckgo_search import ddg
 from duckduckgo_search.utils import SESSION
@@ -278,7 +279,7 @@ print(results)
 [Go To TOP](#TOP)
 
 ## 3. ddg_images() - image search by duckduckgo.com
-  
+
 ```python
 from duckduckgo_search import ddg_images
 
@@ -333,7 +334,7 @@ def ddg_images(
   'thumbnail': str,
   'title': str,
   'url': str,
-  'width': int },  
+  'width': int },
  ...
  ]
 ```
@@ -358,7 +359,7 @@ print(r)
 [Go To TOP](#TOP)
 
 ## 4. ddg_videos() - video search by duckduckgo.com
-  
+
 ```python
 from duckduckgo_search import ddg_videos
 
@@ -438,7 +439,7 @@ print(r)
 [Go To TOP](#TOP)
 
 ## 5. ddg_news() - news search by duckduckgo.com
-  
+
 ```python
 from duckduckgo_search import ddg_news
 
@@ -549,7 +550,7 @@ def ddg_maps(
   'url': str,
   'desc': str,
   'phone': str,
-  'image': str,  
+  'image': str,
   'source': str,
   'links': dict,
   'hours': dict,}
@@ -691,6 +692,46 @@ print(results)
 {'detected_language': 'de', 'translated': 'Elinizdeki serçe çatıdaki bir güvercinden daha iyidir.', 'original': 'Ein Spatz in der Hand ist besser, als eine Taube auf dem Dach.'},
 ...
 ]
+```
+
+[Go To TOP](#TOP)
+
+
+## 8. ddg_suggestions() - suggestions by duckduckgo.com
+
+```python
+from duckduckgo_search import ddg_suggestions
+
+def ddg_suggestions(
+    keywords,
+    region="wt-wt",
+    output=None,
+):
+    """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
+    Args:
+        keywords (str): keywords for query.
+        region (str, optional): wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        output (Optional[str], optional): csv, json. Defaults to None.
+    Returns:
+        Optional[List[str]]: DuckDuckGo suggestions results.
+    """
+```
+
+***Returns***
+```python
+[str, str, str, ...]
+```
+
+***Example 1. Answers***
+```python
+from duckduckgo_search import ddg_suggestions
+
+keywords = 'ford'
+results = ddg_suggestions(keywords)
+print(results)
+```
+```python
+["ford kögler", "ford kuga", "ford focus", "ford puma", "ford mustang", "ford transit", "ford ranger", "ford fiesta"]
 ```
 
 [Go To TOP](#TOP)
