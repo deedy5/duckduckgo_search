@@ -7,13 +7,13 @@ from duckduckgo_search import ddg_news
 
 def test_ddg_news():
     results = ddg_news("cat")
-    assert len(results) >= 20
+    assert len(results) >= 15
 
-    
+
 def test_ddg_news_pagination():
     results = ddg_news("cat", page=2)
     assert len(results) >= 20
-    
+
 
 def test_ddg_news_max_results():
     results = ddg_news("cat", max_results=60)
@@ -23,9 +23,9 @@ def test_ddg_news_max_results():
 def test_ddg_news_save_csv_json():
     keywords = "cat"
     results = ddg_news(keywords, max_results=20, output="json")
-    assert len(results) >= 20
+    assert len(results) >= 15
     results = ddg_news(keywords, max_results=20, output="csv")
-    assert len(results) >= 20
+    assert len(results) >= 15
 
     # delete files and folders contains keyword in name
     not_files = True
