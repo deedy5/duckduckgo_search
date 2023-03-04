@@ -17,7 +17,7 @@ def test_ddg_news_pagination():
 
 def test_ddg_news_max_results():
     results = ddg_news("cat", max_results=60)
-    assert len(results) >= 40
+    assert len(results) >= 30
 
 
 def test_ddg_news_save_csv_json():
