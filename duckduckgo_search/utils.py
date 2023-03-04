@@ -101,7 +101,7 @@ def _normalize(raw_html):
         parser = HTMLParser()
         parser.handle_data = parts.append
         parser.feed(raw_html)
-        return ''.join(parts)
+        return "".join(parts)
 
 
 def _do_output(module_name, keywords, output, results):
