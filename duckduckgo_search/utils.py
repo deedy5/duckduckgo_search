@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 from datetime import datetime
+from html.parser import HTMLParser
 from time import sleep
 
 import requests
@@ -17,8 +18,6 @@ HEADERS = {
 }
 SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
-
-RE_CLEAN_HTML = re.compile("<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});")
 VQD_DICT = dict()
 
 
@@ -96,8 +95,13 @@ def _download_file(url, dir_path, filename):
 
 
 def _normalize(raw_html):
+    """strip HTML tags"""
     if raw_html:
-        return re.sub(RE_CLEAN_HTML, "", raw_html)
+        parts = []
+        parser = HTMLParser()
+        parser.handle_data = parts.append
+        parser.feed(raw_html)
+        return ''.join(parts)
 
 
 def _do_output(module_name, keywords, output, results):
