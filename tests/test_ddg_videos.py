@@ -9,11 +9,11 @@ def test_ddg_videos():
     results = ddg_videos("cat")
     assert len(results) >= 45
 
-    
+
 def test_ddg_videos_pagination():
     results = ddg_videos("cat", page=2)
     assert len(results) >= 45
-    
+
 
 def test_ddg_videos_max_results():
     results = ddg_videos("cat", max_results=100)
@@ -49,4 +49,4 @@ def test_ddg_videos_not_results():
         duration="short",
         license_videos="youtube",
     )
-    assert len(r) == 0
+    assert r is None

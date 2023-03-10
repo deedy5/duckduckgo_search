@@ -44,4 +44,4 @@ def test_ddg_news_not_results():
     results = ddg_news(
         random_chars, region="us-en", safesearch="Off", time="d",
     )
-    assert len(results) == 0
+    assert results is None

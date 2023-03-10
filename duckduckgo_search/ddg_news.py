@@ -98,11 +98,13 @@ def ddg_news(
             for r in as_completed(fs):
                 if r.result():
                     results.extend(r.result())
+        results = results[:max_results]
     else:
         results = get_ddg_news_page(page=page)
+        if not results:
+            return None
 
     results.sort(key=lambda x: x["date"], reverse=True)
-    results = results[:max_results]
 
     # save to csv or json file
     if output:

@@ -100,11 +100,12 @@ def ddg(
             for r in as_completed(fs):
                 if r.result():
                     results.extend(r.result())
-
+        results = results[:max_results]
     else:
-        results = get_ddg_page(page)
+        results = get_ddg_page(page=page)
+        if not results:
+            return None
 
-    results = results[:max_results]
     keywords = keywords.replace(" filetype:", "_")
 
     # save to csv or json file

@@ -10,11 +10,11 @@ def test_ddg():
     results = ddg("cat")
     assert len(results) >= 15
 
-    
+
 def test_ddg_pagination():
     results = ddg("cat", page=2)
     assert len(results) >= 15
-    
+
 
 def test_ddg_max_results():
     results = ddg("cat", max_results=50)
@@ -67,4 +67,4 @@ def test_ddg_download():
 def test_ddg_not_results():
     random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
     results = ddg(random_chars, safesearch="Off", time="d")
-    assert len(results) == 0
+    assert results is None
