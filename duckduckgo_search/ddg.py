@@ -46,6 +46,8 @@ def ddg(
             page_data = resp.json().get("results", None)
         except Exception:
             logger.exception("")
+            if not max_results:
+                return None
         page_results = []
         if page_data:
             for row in page_data:
