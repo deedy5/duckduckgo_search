@@ -9,6 +9,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Duckduckgo search operators](#duckduckgo-search-operators)
 * [Regions](#regions)
 * [Using proxy](#using-proxy)
+* [Warning](#warning)
 * [1. ddg() - text search](#1-ddg---text-search-by-by-duckduckgocom)
 * [2. ddg_answers() - instant answers](#2-ddg_answers---instant-answers-by-duckduckgocom)
 * [3. ddg_images() - image search](#3-ddg_images---image-search-by-duckduckgocom)
@@ -151,6 +152,14 @@ SESSION.proxies = {
 r = ddg("Don't Worry, Be Happy")
 print(r)
 ```
+
+[Go To TOP](#TOP)
+
+## Warning
+:warning:
+**Always** use the **max_results** parameter if you need more results than what is returned when page=1.
+In this case requests to the api are multithreaded and duplicate results are avoided.
+If you try to get all results using the page parameter and increasing it (1, 2, 3, 4, etc.), api will be returning repeated results indefinitely.
 
 [Go To TOP](#TOP)
 
