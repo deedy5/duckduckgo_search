@@ -1,7 +1,7 @@
 import csv
+import html
 import json
 import logging
-import html
 import os
 import re
 import shutil
