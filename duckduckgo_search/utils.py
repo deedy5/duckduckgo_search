@@ -1,10 +1,11 @@
 import csv
 import json
 import logging
+import html
 import os
+import re
 import shutil
 from datetime import datetime
-from html.parser import HTMLParser
 from time import sleep
 
 import requests
@@ -16,8 +17,9 @@ HEADERS = {
     "Referer": "https://duckduckgo.com/",
 }
 SESSION = requests.Session()
-SESSION.headers.update(HEADERS)
+SESSION.headers = HEADERS
 VQD_DICT = dict()
+RE_STRIP_TAGS = re.compile("<.*?>")
 
 
 def _get_vqd(keywords):
@@ -52,7 +54,7 @@ def _get_vqd(keywords):
         prev_proxies = SESSION.proxies
         SESSION.close()
         SESSION = requests.Session()
-        SESSION.headers.update(HEADERS)
+        SESSION.headers = HEADERS
         SESSION.proxies = prev_proxies
         logger.warning(
             "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
@@ -96,11 +98,7 @@ def _download_file(url, dir_path, filename):
 def _normalize(raw_html):
     """strip HTML tags"""
     if raw_html:
-        parts = []
-        parser = HTMLParser()
-        parser.handle_data = parts.append
-        parser.feed(raw_html)
-        return "".join(parts)
+        return html.unescape(re.sub(RE_STRIP_TAGS, "", raw_html))
 
 
 def _do_output(module_name, keywords, output, results):
