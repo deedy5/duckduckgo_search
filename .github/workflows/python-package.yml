@@ -28,8 +28,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
         python -m pip install --upgrade flake8 pytest isort black
-    - name: Build package
-      run: python -m build
+        
+    - name: temp
+      run: |
+        pip install requests click
+        
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
