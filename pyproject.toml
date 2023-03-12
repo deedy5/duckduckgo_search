@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckduckgo_search"
+description = "Search for words, documents, images, news, maps and text translation using the DuckDuckGo.com search engine."
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT License"}
+keywords = ["python", "duckduckgo"]
+authors = [
+  {name = "deedy5"}
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "requests>=2.28.2",
+    "click>=8.1.3",
+]
+dynamic = ["version"]
+
+[project.urls]  # Optional
+"Homepage" = "https://github.com/deedy5/duckduckgo_search"
+
+[project.scripts]
+ddgs = "duckduckgo_search.cli.ddgs:cli"
+
+[tool.setuptools.dynamic]
+version = {attr = "duckduckgo_search.version.__version__"}
