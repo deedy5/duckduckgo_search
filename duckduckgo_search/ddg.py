@@ -138,7 +138,6 @@ def ddg(
             ) as as_completed_futures:
                 for i, future in enumerate(as_completed_futures, start=1):
                     logger.info("%s/%s", i, len(results))
-        print("Done.")
 
     return results
 
