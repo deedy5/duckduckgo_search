@@ -3,6 +3,9 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from time import sleep
+from unicodedata import normalize
+
+from click import progressbar
 
 from .utils import SESSION, _do_output, _download_file, _get_vqd, _normalize
 
@@ -114,21 +117,27 @@ def ddg(
 
     # download documents
     if download:
-        print("Downloading documents. Wait...")
         keywords = keywords.replace('"', "'")
         path = f"ddg_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
         os.makedirs(path, exist_ok=True)
         futures = []
-        with ThreadPoolExecutor(30) as executor:
+        with ThreadPoolExecutor(10) as executor:
             for i, res in enumerate(results, start=1):
-                filename = res["href"].split("/")[-1].split("?")[0]
+                filename = normalize("NFC", res["href"].split("/")[-1].split("?")[0])
                 future = executor.submit(
                     _download_file, res["href"], path, f"{i}_{filename}"
                 )
                 futures.append(future)
-            for i, future in enumerate(as_completed(futures), start=1):
-                logger.info("%s/%s", i, len(results))
-                print(f"{i}/{len(results)}")
+            with progressbar(
+                as_completed(futures),
+                label="Downloading documents",
+                length=len(futures),
+                show_percent=True,
+                show_pos=True,
+                width=0,
+            ) as as_completed_futures:
+                for i, future in enumerate(as_completed_futures, start=1):
+                    logger.info("%s/%s", i, len(results))
         print("Done.")
 
     return results
