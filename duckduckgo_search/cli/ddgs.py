@@ -39,9 +39,11 @@ def print_data(data):
             click.secho(f"{i}. {'-' * 78}", bg="black", fg="white")
             for j, (k, v) in enumerate(e.items(), start=1):
                 if v:
+                    width = 300 if k in ("href", "url", "image", "thumbnail", "content") else 78
+                    k = 'language' if k == 'detected_language' else k
                     text = click.wrap_text(
                         f"{v}",
-                        width=78,
+                        width=width,
                         initial_indent="",
                         subsequent_indent=" " * 12,
                         preserve_paragraphs=True,
