@@ -3,7 +3,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from time import sleep
-from unicodedata import normalize
+from urllib.parse import unquote
 
 from click import progressbar
 
@@ -144,7 +144,7 @@ def ddg_images(
         futures = []
         with ThreadPoolExecutor(30) as executor:
             for i, res in enumerate(results, start=1):
-                filename = normalize("NFC", res["image"].split("/")[-1].split("?")[0])
+                filename = unquote(res["image"].split("/")[-1].split("?")[0])
                 future = executor.submit(
                     _download_file, res["image"], path, f"{i}_{filename}"
                 )
