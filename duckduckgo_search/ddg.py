@@ -2,8 +2,8 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from urllib.parse import unquote
 from time import sleep
+from urllib.parse import unquote
 
 from click import progressbar
 
