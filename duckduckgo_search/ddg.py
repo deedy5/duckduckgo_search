@@ -2,8 +2,8 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from urllib.parse import unquote
 from time import sleep
-from unicodedata import normalize
 
 from click import progressbar
 
@@ -123,7 +123,7 @@ def ddg(
         futures = []
         with ThreadPoolExecutor(10) as executor:
             for i, res in enumerate(results, start=1):
-                filename = normalize("NFC", res["href"].split("/")[-1].split("?")[0])
+                filename = unquote(res["href"].split("/")[-1].split("?")[0])
                 future = executor.submit(
                     _download_file, res["href"], path, f"{i}_{filename}"
                 )

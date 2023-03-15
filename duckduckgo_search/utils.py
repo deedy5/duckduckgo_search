@@ -1,11 +1,11 @@
 import csv
-import html
 import json
 import logging
 import os
 import re
-import shutil
 from datetime import datetime
+from html import unescape
+from shutil import copyfileobj
 from time import sleep
 
 import requests
@@ -89,7 +89,7 @@ def _download_file(url, dir_path, filename):
             resp.raise_for_status()
             resp.raw.decode_content = True
             with open(os.path.join(dir_path, filename), "wb") as file:
-                shutil.copyfileobj(resp.raw, file)
+                copyfileobj(resp.raw, file)
             logger.info(f"File downloaded {url}")
     except Exception:
         logger.exception("")
@@ -98,7 +98,7 @@ def _download_file(url, dir_path, filename):
 def _normalize(raw_html):
     """strip HTML tags"""
     if raw_html:
-        return html.unescape(re.sub(RE_STRIP_TAGS, "", raw_html))
+        return unescape(re.sub(RE_STRIP_TAGS, "", raw_html))
 
 
 def _do_output(module_name, keywords, output, results):
