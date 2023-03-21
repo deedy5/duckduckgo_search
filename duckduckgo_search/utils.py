@@ -102,18 +102,31 @@ def _normalize(raw_html):
 
 
 def _do_output(module_name, keywords, output, results):
+
+    def get_file_name(extension):
+        return f"{module_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}.{extension}"
+
     keywords = keywords.replace('"', "'")
+    # clean up forward and backward slash from keywords
+    # so filepath `open(...)` does not think there is a directory.
+    keywords = keywords.replace('/', "_").replace('/', "_")
+
+    filename = None
     if output == "csv":
-        _save_csv(
-            f"{module_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}.csv", results
-        )
+        extension = "csv"
+        filename = get_file_name(extension)
     elif output == "json":
-        _save_json(
-            f"{module_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}.json", results
-        )
+        extension = "json"
+        filename = get_file_name(extension)
     """
     elif output == "print":
         for i, result in enumerate(results, start=1):
             print(f"{i}.", json.dumps(result, ensure_ascii=False, indent=4))
             input()
     """
+    if filename is not None:
+        _save_json(
+            filename, results
+        )
+
+    return filename
