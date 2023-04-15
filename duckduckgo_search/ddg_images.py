@@ -138,7 +138,12 @@ def ddg_images(
 
     # download images
     if download:
-        keywords = keywords.replace('"', "'")
+        keywords = (
+            keywords.replace('"', "'")
+            .replace("site:", "")
+            .replace(" ", "_")
+            .replace("/", "_")
+        )
         path = f"ddg_images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
         os.makedirs(path, exist_ok=True)
         futures = []
