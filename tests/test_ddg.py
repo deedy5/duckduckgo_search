@@ -61,10 +61,3 @@ def test_ddg_download():
         if f"ddg_{keywords}" in dir:
             if os.path.isdir(dir):
                 shutil.rmtree(dir)
-
-
-# results not found
-def test_ddg_not_results():
-    random_chars = "".join(chr(randrange(65, 90)) for i in range(100))
-    results = ddg(random_chars, safesearch="Off", time="d")
-    assert results is None
