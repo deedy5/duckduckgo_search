@@ -9,6 +9,7 @@ from shutil import copyfileobj
 from time import sleep
 
 import requests
+from diskcache import Cache
 
 logger = logging.getLogger(__name__)
 
@@ -16,19 +17,24 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
     "Referer": "https://duckduckgo.com/",
 }
+HEADERS_FILE_DOWNLOAD = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0"
+}
 SESSION = requests.Session()
 SESSION.headers = HEADERS
-VQD_DICT = dict()
 RE_STRIP_TAGS = re.compile("<.*?>")
+VQD_CACHE = Cache(
+    "vqd_cache", size_limit=104_857_600, eviction_policy="least-frequently-used"
+)
 
 
 def _get_vqd(keywords):
     global SESSION
 
-    vqd_bytes = VQD_DICT.get(keywords, None)
+    vqd_bytes = VQD_CACHE.get(keywords, None)
+    VQD_CACHE.close()
     if vqd_bytes:
-        # move_to_end (LRU cache)
-        VQD_DICT[keywords] = VQD_DICT.pop(keywords)
+        logger.info("keywords=%s. Got vqd from cache", keywords)
         return vqd_bytes.decode()
 
     payload = {"q": keywords}
@@ -41,10 +47,8 @@ def _get_vqd(keywords):
             vqd_bytes = resp.content[vqd_index_start:vqd_index_end]
 
             if vqd_bytes:
-                # delete the first key to reduce memory consumption
-                if len(VQD_DICT) > 32768:
-                    VQD_DICT.pop(next(iter(VQD_DICT)))
-                VQD_DICT[keywords] = vqd_bytes
+                VQD_CACHE[keywords] = vqd_bytes
+                VQD_CACHE.close()
                 return vqd_bytes.decode()
 
         except Exception:
@@ -59,7 +63,8 @@ def _get_vqd(keywords):
         logger.warning(
             "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
         )
-        VQD_DICT.pop(keywords, None)
+        VQD_CACHE.pop(keywords, None)
+        VQD_CACHE.close()
         sleep(0.25)
 
     # sleep to prevent blocking
@@ -81,11 +86,10 @@ def _save_csv(csvfile, data):
 
 
 def _download_file(url, dir_path, filename):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0"
-    }
     try:
-        with requests.get(url, headers=headers, stream=True, timeout=10) as resp:
+        with requests.get(
+            url, headers=HEADERS_FILE_DOWNLOAD, stream=True, timeout=10
+        ) as resp:
             resp.raise_for_status()
             resp.raw.decode_content = True
             with open(os.path.join(dir_path, filename), "wb") as file:
