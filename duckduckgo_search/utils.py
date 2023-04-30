@@ -23,9 +23,16 @@ HEADERS_FILE_DOWNLOAD = {
 SESSION = requests.Session()
 SESSION.headers = HEADERS
 RE_STRIP_TAGS = re.compile("<.*?>")
-VQD_CACHE = Cache(
-    "vqd_cache", size_limit=104_857_600, eviction_policy="least-frequently-used"
-)
+try:
+    VQD_CACHE = Cache(
+        f"{os.path.dirname(__file__)}/vqd_cache",
+        size_limit=104_857_600,
+        eviction_policy="least-frequently-used",
+    )
+except OSError:
+    VQD_CACHE = Cache(
+        "vqd_cache", size_limit=104_857_600, eviction_policy="least-frequently-used"
+    )
 
 
 def _get_vqd(keywords):
@@ -34,7 +41,7 @@ def _get_vqd(keywords):
     vqd_bytes = VQD_CACHE.get(keywords, None)
     VQD_CACHE.close()
     if vqd_bytes:
-        logger.info("keywords=%s. Got vqd from cache", keywords)
+        logger.debug("keywords=%s. Got vqd from cache", keywords)
         return vqd_bytes.decode()
 
     payload = {"q": keywords}
