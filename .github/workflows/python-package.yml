@@ -31,7 +31,7 @@ jobs:
         
     - name: temp
       run: |
-        pip install requests click
+        pip install requests click diskcache
         
     - name: Lint with flake8
       run: |
