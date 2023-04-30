@@ -1,6 +1,6 @@
 import logging
 
-from .utils import SESSION, VQD_DICT, _do_output, _get_vqd
+from .utils import SESSION, VQD_CACHE, _do_output, _get_vqd
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,8 @@ def ddg_translate(
             result["original"] = data
             results.append(result)
         except Exception:
-            VQD_DICT.pop("translate", None)
+            VQD_CACHE.pop("translate", None)
+            VQD_CACHE.close()
             logger.exception("")
 
     if output:
