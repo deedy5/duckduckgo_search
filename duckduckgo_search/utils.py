@@ -39,7 +39,6 @@ def _get_vqd(keywords):
     global SESSION
 
     vqd_bytes = VQD_CACHE.get(keywords, None)
-    VQD_CACHE.close()
     if vqd_bytes:
         logger.debug("keywords=%s. Got vqd from cache", keywords)
         return vqd_bytes.decode()
@@ -55,7 +54,6 @@ def _get_vqd(keywords):
 
             if vqd_bytes:
                 VQD_CACHE[keywords] = vqd_bytes
-                VQD_CACHE.close()
                 return vqd_bytes.decode()
 
         except Exception:
@@ -63,15 +61,11 @@ def _get_vqd(keywords):
 
         # refresh SESSION if not vqd
         prev_proxies = SESSION.proxies
-        SESSION.close()
         SESSION = requests.Session()
         SESSION.headers = HEADERS
         SESSION.proxies = prev_proxies
-        logger.warning(
-            "keywords=%s. _get_vqd() is None. Refresh SESSION and retry...", keywords
-        )
+        logger.warning("keywords=%s. _get_vqd() is None, refreshing SESSION", keywords)
         VQD_CACHE.pop(keywords, None)
-        VQD_CACHE.close()
         sleep(0.25)
 
     # sleep to prevent blocking
