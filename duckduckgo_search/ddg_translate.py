@@ -56,7 +56,6 @@ def ddg_translate(
             results.append(result)
         except Exception:
             VQD_CACHE.pop("translate", None)
-            VQD_CACHE.close()
             logger.exception("")
 
     if output:

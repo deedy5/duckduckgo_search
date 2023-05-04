@@ -72,6 +72,13 @@ def _get_vqd(keywords):
     sleep(0.25)
 
 
+def _refresh_vqd(keywords):
+    VQD_CACHE.pop(keywords, None)
+    vqd = _get_vqd(keywords)
+    logger.debug("keywords=%s. _refresh_vqd()", keywords)
+    return vqd
+
+
 def _save_json(jsonfile, data):
     with open(jsonfile, "w") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)

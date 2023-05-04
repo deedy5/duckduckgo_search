@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from time import sleep
 
-from .utils import SESSION, _do_output, _get_vqd, _normalize
+from .utils import SESSION, _do_output, _get_vqd, _normalize, _refresh_vqd
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +36,19 @@ def ddg_news(
     def get_ddg_news_page(page):
         payload["s"] = max(PAGINATION_STEP * (page - 1), 0)
         page_data = None
-        try:
-            resp = SESSION.get("https://duckduckgo.com/news.js", params=payload)
-            resp.raise_for_status()
-            page_data = resp.json().get("results", None)
-        except Exception:
-            logger.exception("")
-            if not max_results:
-                return None
+        for i in range(2):
+            try:
+                resp = SESSION.get("https://duckduckgo.com/news.js", params=payload)
+                resp.raise_for_status()
+                page_data = resp.json().get("results", None)
+                break
+            except Exception:
+                logger.exception("")
+                if i == 1 and not max_results:
+                    return None
+                if "506-00.js" in resp.url:
+                    payload["vqd"] = _refresh_vqd(keywords)
+
         page_results = []
         if page_data:
             for row in page_data:
