@@ -58,11 +58,11 @@ def ddg(
                 break
             except Exception:
                 logger.exception("")
-                if i ==1 and not max_results:
+                if i == 1 and not max_results:
                     return None
                 if "506-00.js" in resp.url:
                     payload["vqd"] = _refresh_vqd(keywords)
-                
+
         page_results = []
         if page_data:
             for row in page_data:
