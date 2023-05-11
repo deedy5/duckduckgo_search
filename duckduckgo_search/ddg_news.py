@@ -42,8 +42,11 @@ def ddg_news(
                 resp.raise_for_status()
                 page_data = resp.json().get("results", None)
                 break
-            except Exception:
-                logger.exception("")
+            except Exception as ex:
+                logger.debug(
+                    f"get_ddg_news_page() {keywords=} {type(ex).__name__} {ex}"
+                )
+
                 if i == 1 and not max_results:
                     return None
                 if "506-00.js" in resp.url:

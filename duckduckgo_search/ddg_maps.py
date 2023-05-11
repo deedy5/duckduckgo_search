@@ -114,8 +114,8 @@ def ddg_maps(
             coordinates = resp.json()[0]["boundingbox"]
             lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
             lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
-        except Exception:
-            logger.exception("")
+        except Exception as ex:
+            logger.debug(f"ddg_maps() {keywords=} {type(ex).__name__} {ex}")
             return
 
     # if a radius is specified, expand the search square
@@ -151,8 +151,8 @@ def ddg_maps(
             resp = SESSION.get("https://duckduckgo.com/local.js", params=params)
             resp.raise_for_status()
             page_data = resp.json()["results"]
-        except Exception:
-            logger.exception("")
+        except Exception as ex:
+            logger.debug(f"ddg_maps() {keywords=} {type(ex).__name__} {ex}")
             break
 
         if not page_data:

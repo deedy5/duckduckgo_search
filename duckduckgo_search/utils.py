@@ -103,8 +103,8 @@ def _download_file(url, dir_path, filename):
             with open(os.path.join(dir_path, filename), "wb") as file:
                 copyfileobj(resp.raw, file)
             logger.info(f"File downloaded {url}")
-    except Exception:
-        logger.exception("")
+    except Exception as ex:
+        logger.debug(f"_download_file {url=} {type(ex).__name__} {ex}")
 
 
 def _normalize(raw_html):

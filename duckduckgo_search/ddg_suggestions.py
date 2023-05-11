@@ -35,8 +35,8 @@ def ddg_suggestions(
         resp = SESSION.get("https://duckduckgo.com/ac", params=payload)
         resp.raise_for_status()
         results = resp.json()
-    except Exception:
-        logger.exception("")
+    except Exception as ex:
+        logger.debug(f"ddg_suggestions() {keywords=} {type(ex).__name__} {ex}")
 
     if output:
         _do_output("ddg_suggestions", keywords, output, results)
