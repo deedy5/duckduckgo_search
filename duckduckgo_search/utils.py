@@ -48,16 +48,16 @@ def _get_vqd(keywords):
         try:
             resp = SESSION.post("https://duckduckgo.com", data=payload, timeout=10)
             resp.raise_for_status()
-            vqd_index_start = resp.content.index(b"vqd='") + 5
-            vqd_index_end = resp.content.index(b"'", vqd_index_start)
+            vqd_index_start = resp.content.index(b'vqd="') + 5
+            vqd_index_end = resp.content.index(b'"', vqd_index_start)
             vqd_bytes = resp.content[vqd_index_start:vqd_index_end]
 
             if vqd_bytes:
                 VQD_CACHE[keywords] = vqd_bytes
                 return vqd_bytes.decode()
 
-        except Exception:
-            logger.exception("")
+        except Exception as ex:
+            logger.info(f"_get_vqd() {keywords=} {type(ex).__name__} {ex}")
 
         # refresh SESSION if not vqd
         prev_proxies = SESSION.proxies
