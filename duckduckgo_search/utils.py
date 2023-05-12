@@ -57,7 +57,7 @@ def _get_vqd(keywords):
                 return vqd_bytes.decode()
 
         except Exception as ex:
-            logger.info(f"_get_vqd() {keywords=} {type(ex).__name__} {ex}")
+            logger.info(f"_get_vqd() keywords={keywords} {type(ex).__name__} {ex}")
 
         # refresh SESSION if not vqd
         prev_proxies = SESSION.proxies
@@ -104,7 +104,7 @@ def _download_file(url, dir_path, filename):
                 copyfileobj(resp.raw, file)
             logger.info(f"File downloaded {url}")
     except Exception as ex:
-        logger.debug(f"_download_file {url=} {type(ex).__name__} {ex}")
+        logger.debug(f"_download_file url={url} {type(ex).__name__} {ex}")
 
 
 def _normalize(raw_html):

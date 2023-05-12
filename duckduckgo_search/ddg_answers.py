@@ -37,7 +37,7 @@ def ddg_answers(
         resp.raise_for_status()
         page_data = resp.json()
     except Exception as ex:
-        logger.debug(f"ddg_answers() {keywords=} {type(ex).__name__} {ex}")
+        logger.debug(f"ddg_answers() keywords={keywords} {type(ex).__name__} {ex}")
     if page_data:
         answer = page_data.get("AbstractText", None)
         if answer:
@@ -62,7 +62,7 @@ def ddg_answers(
             resp.raise_for_status()
             page_data = resp.json().get("RelatedTopics", [])
         except Exception as ex:
-            logger.debug(f"ddg_answers() {keywords=} {type(ex).__name__} {ex}")
+            logger.debug(f"ddg_answers() keywords={keywords} {type(ex).__name__} {ex}")
 
         for i, row in enumerate(page_data):
             topic = row.get("Name", None)
