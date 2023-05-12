@@ -57,7 +57,9 @@ def ddg(
                 page_data = resp.json().get("results", None)
                 break
             except Exception as ex:
-                logger.debug(f"get_ddg_page() keywords={keywords} {type(ex).__name__} {ex}")
+                logger.debug(
+                    f"get_ddg_page() keywords={keywords} {type(ex).__name__} {ex}"
+                )
 
                 if i == 1 and not max_results:
                     return None
