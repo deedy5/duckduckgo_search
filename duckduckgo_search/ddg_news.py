@@ -44,7 +44,7 @@ def ddg_news(
                 break
             except Exception as ex:
                 logger.debug(
-                    f"get_ddg_news_page() {keywords=} {type(ex).__name__} {ex}"
+                    f"get_ddg_news_page() keywords={keywords} {type(ex).__name__} {ex}"
                 )
 
                 if i == 1 and not max_results:

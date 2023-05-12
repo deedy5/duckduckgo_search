@@ -56,7 +56,7 @@ def ddg_translate(
             results.append(result)
         except Exception as ex:
             VQD_CACHE.pop("translate", None)
-            logger.debug(f"ddg_translate() {keywords=} {type(ex).__name__} {ex}")
+            logger.debug(f"ddg_translate() keywords={keywords} {type(ex).__name__} {ex}")
 
     if output:
         keywords = keywords[0]

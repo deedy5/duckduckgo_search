@@ -36,7 +36,7 @@ def ddg_suggestions(
         resp.raise_for_status()
         results = resp.json()
     except Exception as ex:
-        logger.debug(f"ddg_suggestions() {keywords=} {type(ex).__name__} {ex}")
+        logger.debug(f"ddg_suggestions() keywords={keywords} {type(ex).__name__} {ex}")
 
     if output:
         _do_output("ddg_suggestions", keywords, output, results)
