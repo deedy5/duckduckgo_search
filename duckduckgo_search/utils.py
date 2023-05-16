@@ -24,8 +24,9 @@ SESSION = requests.Session()
 SESSION.headers = HEADERS
 RE_STRIP_TAGS = re.compile("<.*?>")
 try:
+    cache_directory_path = os.environ.get("DDG_CACHE_DIR", os.path.dirname(__file__))
     VQD_CACHE = Cache(
-        f"{os.path.dirname(__file__)}/vqd_cache",
+        f"{cache_directory_path}/vqd_cache",
         size_limit=104_857_600,
         eviction_policy="least-frequently-used",
     )
