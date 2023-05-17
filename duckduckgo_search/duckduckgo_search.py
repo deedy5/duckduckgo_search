@@ -59,7 +59,7 @@ class DDGS:
                 resp.raise_for_status()
                 return resp
             except Exception as ex:
-                logger.debug(f"_get_url() {url=} {type(ex).__name__}")
+                logger.debug(f"_get_url() url={url} {type(ex).__name__}")
             sleep(0.25)
 
     def _resp_to_json(self, resp):
