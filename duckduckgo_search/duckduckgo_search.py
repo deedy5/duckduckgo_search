@@ -48,7 +48,7 @@ class DDGS:
         self._timeout = timeout
 
     def _get_url(self, method, url, **kwargs):
-        for _ in range(2):
+        for _ in range(3):
             try:
                 resp = self._session.request(
                     method, url, timeout=self._timeout, proxies=self._proxies, **kwargs
@@ -58,6 +58,8 @@ class DDGS:
                     sleep(5)
                 resp.raise_for_status()
                 return resp
+            except requests.HTTPError:
+                sleep(1)
             except Exception as ex:
                 logger.debug(f"_get_url() url={url} {type(ex).__name__}")
             sleep(0.25)
