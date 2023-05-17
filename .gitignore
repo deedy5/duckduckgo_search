@@ -161,3 +161,6 @@ cython_debug/
 
 # vqd_cache
 /vqd_cache
+
+# vscode
+.vscode

@@ -1,19 +1,22 @@
+import csv
+import json
+import logging
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from shutil import copyfileobj
+from urllib.parse import unquote
+
 import click
+import requests
 
 # isort: off
-from duckduckgo_search import (
-    __version__,
-    ddg,
-    ddg_answers,
-    ddg_images,
-    ddg_maps,
-    ddg_news,
-    ddg_suggestions,
-    ddg_translate,
-    ddg_videos,
-)
+from .duckduckgo_search import DDGS
+from .version import __version__
 
 # isort: on
+
+logger = logging.getLogger(__name__)
 
 COLORS = {
     0: "black",
@@ -31,6 +34,20 @@ COLORS = {
     12: "bright_magenta",
     13: "bright_cyan",
 }
+
+
+def save_json(jsonfile, data):
+    with open(jsonfile, "w") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+def save_csv(csvfile, data):
+    with open(csvfile, "w", newline="", encoding="utf-8") as file:
+        if data:
+            headers = data[0].keys()
+            writer = csv.DictWriter(file, fieldnames=headers, quoting=csv.QUOTE_MINIMAL)
+            writer.writeheader()
+            writer.writerows(data)
 
 
 def print_data(data):
@@ -56,6 +73,65 @@ def print_data(data):
                     text = v
                 click.secho(f"{k:<12}{text}", bg="black", fg=COLORS[j], overline=True)
             input()
+
+
+def sanitize_keywords(keywords):
+    keywords = (
+        keywords.replace(" filetype:", "_")
+        .replace('"', "'")
+        .replace("site:", "")
+        .replace(" ", "_")
+        .replace("/", "_")
+        .replace("\\", "_")
+    )
+    return keywords
+
+
+def download_file(url, dir_path, filename):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
+    }
+    try:
+        with requests.get(url, headers=headers, stream=True, timeout=10) as resp:
+            resp.raise_for_status()
+            resp.raw.decode_content = True
+            with open(os.path.join(dir_path, filename), "wb") as file:
+                copyfileobj(resp.raw, file)
+            logger.info(f"File downloaded {url}")
+    except Exception as ex:
+        logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
+
+
+def download_results(keywords, results, images=False):
+    if images:
+        path = f"images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+    else:
+        path = f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+    os.makedirs(path, exist_ok=True)
+    futures = []
+    with ThreadPoolExecutor(10) as executor:
+        for i, res in enumerate(results, start=1):
+            if images:
+                filename = unquote(res["image"].split("/")[-1].split("?")[0])
+                future = executor.submit(
+                    download_file, res["image"], path, f"{i}_{filename}"
+                )
+            else:
+                filename = unquote(res["href"].split("/")[-1].split("?")[0])
+                future = executor.submit(
+                    download_file, res["href"], path, f"{i}_{filename}"
+                )
+            futures.append(future)
+        with click.progressbar(
+            as_completed(futures),
+            label="Downloading",
+            length=len(futures),
+            show_percent=True,
+            show_pos=True,
+            width=0,
+        ) as as_completed_futures:
+            for i, future in enumerate(as_completed_futures, start=1):
+                logger.info("%s/%s", i, len(results))
 
 
 @click.group(chain=True)
@@ -86,7 +162,7 @@ def version():
 )
 @click.option(
     "-t",
-    "--time",
+    "--timelimit",
     default=None,
     type=click.Choice(["d", "w", "m", "y"]),
     help="search results for the last day, week, month, year",
@@ -94,8 +170,8 @@ def version():
 @click.option(
     "-m",
     "--max_results",
-    default=25,
-    help="maximum number of results, max=200, default=25",
+    default=20,
+    help="maximum number of results, default=20",
 )
 @click.option(
     "-o",
@@ -110,27 +186,43 @@ def version():
     default=False,
     help="download results to 'keywords' folder",
 )
-def text(output, download, *args, **kwargs):
-    data = ddg(output=output, download=download, *args, **kwargs)
+def text(keywords, output, download, max_results, *args, **kwargs):
+    data = []
+    for r in DDGS().text(keywords=keywords, *args, **kwargs):
+        if len(data) >= max_results:
+            break
+        data.append(r)
+    keywords = sanitize_keywords(keywords)
+    filename = f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print" and not download:
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
+    if download:
+        download_results(keywords, data)
 
 
 @cli.command()
 @click.option("-k", "--keywords", help="answers search, keywords for query")
-@click.option(
-    "-rt", "--related", default=False, is_flag=True, help="Add related topics"
-)
 @click.option(
     "-o",
     "--output",
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def answers(output, *args, **kwargs):
-    data = ddg_answers(output=output, *args, **kwargs)
+def answers(keywords, output, *args, **kwargs):
+    data = []
+    for r in DDGS().answers(keywords=keywords, *args, **kwargs):
+        data.append(r)
+    filename = f"answers_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -150,7 +242,7 @@ def answers(output, *args, **kwargs):
 )
 @click.option(
     "-t",
-    "--time",
+    "--timelimit",
     default=None,
     type=click.Choice(["Day", "Week", "Month", "Year"]),
     help="search results for the last day, week, month, year",
@@ -206,8 +298,8 @@ def answers(output, *args, **kwargs):
 @click.option(
     "-m",
     "--max_results",
-    default=100,
-    help="maximum number of results, max=1000, default=100",
+    default=90,
+    help="maximum number of results, default=90",
 )
 @click.option(
     "-o",
@@ -222,10 +314,22 @@ def answers(output, *args, **kwargs):
     default=False,
     help="download and save images to 'keywords' folder",
 )
-def images(output, download, *args, **kwargs):
-    data = ddg_images(output=output, download=download, *args, **kwargs)
+def images(keywords, output, download, max_results, *args, **kwargs):
+    data = []
+    for r in DDGS().images(keywords=keywords, *args, **kwargs):
+        if len(data) >= max_results:
+            break
+        data.append(r)
+    keywords = sanitize_keywords(keywords)
+    filename = f"images_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print" and not download:
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
+    if download:
+        download_results(keywords, data, images=True)
 
 
 @cli.command()
@@ -245,7 +349,7 @@ def images(output, download, *args, **kwargs):
 )
 @click.option(
     "-t",
-    "--time",
+    "--timelimit",
     default=None,
     type=click.Choice(["d", "w", "m"]),
     help="search results for the last day, week, month",
@@ -269,7 +373,7 @@ def images(output, download, *args, **kwargs):
     "-m",
     "--max_results",
     default=50,
-    help="maximum number of results, max=1000, default=50",
+    help="maximum number of results, default=25",
 )
 @click.option(
     "-o",
@@ -277,10 +381,19 @@ def images(output, download, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def videos(output, *args, **kwargs):
-    data = ddg_videos(output=output, *args, **kwargs)
+def videos(keywords, output, max_results, *args, **kwargs):
+    data = []
+    for r in DDGS().videos(keywords=keywords, *args, **kwargs):
+        if len(data) >= max_results:
+            break
+        data.append(r)
+    filename = f"videos_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -300,7 +413,7 @@ def videos(output, *args, **kwargs):
 )
 @click.option(
     "-t",
-    "--time",
+    "--timelimit",
     default=None,
     type=click.Choice(["d", "w", "m", "y"]),
     help="d, w, m, y",
@@ -309,7 +422,7 @@ def videos(output, *args, **kwargs):
     "-m",
     "--max_results",
     default=25,
-    help="maximum number of results, max=240, default=25",
+    help="maximum number of results, default=20",
 )
 @click.option(
     "-o",
@@ -317,10 +430,19 @@ def videos(output, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def news(output, *args, **kwargs):
-    data = ddg_news(output=output, *args, **kwargs)
+def news(keywords, output, max_results, *args, **kwargs):
+    data = []
+    for r in DDGS().news(keywords=keywords, *args, **kwargs):
+        if len(data) >= max_results:
+            break
+        data.append(r)
+    filename = f"news_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -357,17 +479,28 @@ def news(output, *args, **kwargs):
     default=0,
     help="expand the search square by the distance in kilometers",
 )
-@click.option("-m", "--max_results", help="number of results, default=None")
+@click.option("-m", "--max_results", default=50, help="number of results, default=50")
 @click.option(
     "-o",
     "--output",
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def maps(output, *args, **kwargs):
-    data = ddg_maps(output=output, *args, **kwargs)
+def maps(keywords, output, max_results, *args, **kwargs):
+    data = []
+    for i, r in enumerate(DDGS().maps(keywords=keywords, *args, **kwargs), start=1):
+        if len(data) >= max_results:
+            break
+        data.append(r)
+        if i % 100 == 0:
+            print(i)
+    filename = f"maps_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -389,10 +522,16 @@ def maps(output, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def translate(output, *args, **kwargs):
-    data = ddg_translate(output=output, *args, **kwargs)
+def translate(keywords, output, *args, **kwargs):
+    data = DDGS().translate(keywords=keywords, *args, **kwargs)
+    data = [data]
+    filename = f"translate_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -409,10 +548,19 @@ def translate(output, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def suggestions(output, *args, **kwargs):
-    data = ddg_suggestions(output=output, *args, **kwargs)
+def suggestions(keywords, output, *args, **kwargs):
+    data = []
+    for r in DDGS().suggestions(keywords=keywords, *args, **kwargs):
+        data.append(r)
+    filename = (
+        f"suggestions_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    )
     if output == "print":
         print_data(data)
+    elif output == "csv":
+        save_csv(f"{filename}.csv", data)
+    elif output == "json":
+        save_json(f"{filename}.json", data)
 
 
 if __name__ == "__main__":

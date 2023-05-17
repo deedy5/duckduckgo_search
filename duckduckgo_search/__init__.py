@@ -6,14 +6,20 @@ using the DuckDuckGo.com search engine.
 
 import logging
 
-from .ddg import ddg
-from .ddg_answers import ddg_answers
-from .ddg_images import ddg_images
-from .ddg_maps import ddg_maps
-from .ddg_news import ddg_news
-from .ddg_suggestions import ddg_suggestions
-from .ddg_translate import ddg_translate
-from .ddg_videos import ddg_videos
+# isort: off
+from .compat import (
+    ddg,
+    ddg_answers,
+    ddg_images,
+    ddg_maps,
+    ddg_news,
+    ddg_suggestions,
+    ddg_translate,
+    ddg_videos,
+)
+
+# isort: on
+from .duckduckgo_search import DDGS
 from .version import __version__
 
 # A do-nothing logging handler
