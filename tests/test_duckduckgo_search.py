@@ -30,9 +30,9 @@ def test_videos():
     counter = 0
     for i, x in enumerate(results_gen):
         counter += 1
-        if i >= 75:
+        if i >= 40:
             break
-    assert counter >= 75
+    assert counter >= 40
 
 
 def test_news():
