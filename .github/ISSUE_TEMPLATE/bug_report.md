@@ -6,6 +6,11 @@ labels: ''
 assignees: ''
 
 ---
+**Reinstall duckduckgo_search and сheck if the problem is gone**
+
+```pip install -I duckduckgo_search```
+
+```pip install -I duckduckgo_search --break-system-packages```
 
 **Describe the bug**
 A clear and concise description of what the bug is.
