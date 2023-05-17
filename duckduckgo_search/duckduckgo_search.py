@@ -66,7 +66,7 @@ class DDGS:
         try:
             return resp.json()
         except Exception as ex:
-            logger.debug(f"_resp_to_json() {type(ex).__name__} url={resp.url}")
+            logger.debug(f"_resp_to_json() {type(ex).__name__}")
 
     def _get_vqd(self, keywords):
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
