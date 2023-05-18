@@ -204,7 +204,7 @@ for r in ddgs_text_gen:
 
 # Searching for pdf files
 keywords = 'russia filetype:pdf'
-ddgs_text_gen = ddg(keywords, region='wt-wt', safesearch='Off', timelimit='y')
+ddgs_text_gen = ddgs.text(keywords, region='wt-wt', safesearch='Off', timelimit='y')
 for r in ddgs_text_gen:
 	print(r)
 ```
