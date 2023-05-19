@@ -71,21 +71,24 @@ class DDGS:
             logger.debug(f"_resp_to_json() {type(ex).__name__}")
 
     def _get_vqd(self, keywords):
+        """Get vqd value for a search query.
+
+        Args:
+        keywords: The search query to generate the vqd.
+
+        Returns:
+            A string representation of the vqd value if found, else ``None``.
+        """
+
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
-            vqd_bytes = self._parse_vqd(resp.content)
-            if vqd_bytes:
-                return vqd_bytes
-
-    def _parse_vqd(self, html_bytes):
-        """Parse vqd_bytes from raw html"""
-        for d in "\"'":
-            try:
-                vqd_index_start = html_bytes.index(b"vqd=%b" % d.encode()) + 5
-                vqd_index_end = html_bytes.index(b"%b" % d.encode(), vqd_index_start)
-                return html_bytes[vqd_index_start:vqd_index_end]
-            except Exception as ex:
-                logger.debug(f"_parse_vqd() {type(ex).__name__}")
+            for c in "\"'":
+                try:
+                    start = resp.content.index(f"vqd={c}".encode()) + len(f"vqd={c}")
+                    end = resp.content.index(c.encode(), start)
+                    return resp.content[start:end].decode()
+                except ValueError:
+                    pass
 
     def _is_500_in_url(self, url):
         """something like '506-00.js' inside the url"""
