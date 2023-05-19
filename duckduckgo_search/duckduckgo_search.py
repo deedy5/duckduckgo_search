@@ -17,8 +17,8 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
     "Referer": "https://duckduckgo.com/",
 }
-RE_500_in_URL = re.compile(r"[\d]{3}-[0-9]{2}.js")
-RE_STRIP_TAGS = re.compile("<.*?>")
+REGEX_500_IN_URL = re.compile(r"[0-9]{3}-[0-9]{2}.js")
+REGEX_STRIP_TAGS = re.compile("<.*?>")
 
 
 @dataclass
@@ -89,12 +89,12 @@ class DDGS:
 
     def _is_500_in_url(self, url):
         """something like '506-00.js' inside the url"""
-        return RE_500_in_URL.search(url)
+        return bool(REGEX_500_IN_URL.search(url))
 
     def _normalize(self, raw_html):
         """strip HTML tags"""
         if raw_html:
-            return unescape(re.sub(RE_STRIP_TAGS, "", raw_html))
+            return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
 
     def text(
         self,
