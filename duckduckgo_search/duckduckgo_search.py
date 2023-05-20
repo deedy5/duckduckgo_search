@@ -39,27 +39,26 @@ class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com"""
 
     def __init__(self, headers=None, proxies=None, timeout=10):
+        self._proxies = proxies
         self._session = requests.Session()
         self._session.headers = headers if headers else UA.random
         self._session.proxies = proxies
         self._timeout = timeout
 
     def _get_url(self, method, url, **kwargs):
-        for _ in range(3):
+        for i in range(3):
             try:
                 resp = self._session.request(
                     method, url, timeout=self._timeout, **kwargs
                 )
                 if self._is_500_in_url(resp.url):
-                    logger.debug(f"_get_url() 500 in url={resp.url}. Sleep 5 s.")
-                    sleep(5)
+                    logger.info(f"_get_url() 500 in url={resp.url}.")
+                    raise requests.HTTPError
                 resp.raise_for_status()
                 return resp
-            except requests.HTTPError:
-                sleep(1)
             except Exception as ex:
-                logger.debug(f"_get_url() url={url} {type(ex).__name__}")
-            sleep(0.25)
+                logger.info(f"_get_url() {url} {type(ex).__name__} {ex} sleep {2**i}s.")
+                sleep(2**i)
 
     def _resp_to_json(self, resp):
         try:
