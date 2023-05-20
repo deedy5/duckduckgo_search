@@ -114,8 +114,7 @@ class DDGS:
             dict with search results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -138,26 +137,35 @@ class DDGS:
                 "GET", "https://links.duckduckgo.com/d.js", params=payload
             )
             resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
-            if page_data:
-                result_exists = False
-                for i, row in enumerate(page_data):
-                    if "n" not in row and row["u"] not in cache:
-                        cache.add(row["u"])
-                        body = self._normalize(row["a"])
-                        if body:
-                            result_exists = True
-                            yield {
-                                "title": self._normalize(row["t"]),
-                                "href": row["u"],
-                                "body": body,
-                            }
-                    elif "n" in row:
-                        payload["s"] = row["n"].split("s=")[-1].split("&")[0]
-                    elif not result_exists:
-                        break
-                else:
-                    continue
+            if not resp_json:
+                continue
+
+            page_data = resp.json().get("results", None)
+            if page_data is None:
+                break
+
+            result_exists = False
+            for row in page_data:
+                if "n" in row:
+                    payload["s"] = row["n"].split("s=")[-1].split("&")[0]  # next page
+                href = row.get("u", None)
+                if (
+                    href
+                    and href not in cache
+                    and href != f"http://www.google.com/search?q={keywords}"
+                ):
+                    cache.add(href)
+                    body = self._normalize(row["a"])
+                    if body:
+                        result_exists = True
+                        yield {
+                            "title": self._normalize(row["t"]),
+                            "href": href,
+                            "body": body,
+                        }
+                elif result_exists is False:
+                    break
+            if result_exists is False:
                 break
 
     def images(
