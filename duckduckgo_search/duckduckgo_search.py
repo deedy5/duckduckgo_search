@@ -10,13 +10,11 @@ from typing import Dict, Generator, Optional
 from urllib.parse import unquote
 
 import requests
+from anti_useragent import UserAgent
 
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
-    "Referer": "https://duckduckgo.com/",
-}
+UA = UserAgent()
 REGEX_500_IN_URL = re.compile(r"[0-9]{3}-[0-9]{2}.js")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
 
@@ -41,9 +39,8 @@ class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com"""
 
     def __init__(self, headers=None, proxies=None, timeout=10):
-        self._proxies = proxies
         self._session = requests.Session()
-        self._session.headers = headers
+        self._session.headers = headers if headers else UA.random
         self._session.proxies = proxies
         self._timeout = timeout
 
@@ -51,7 +48,7 @@ class DDGS:
         for _ in range(3):
             try:
                 resp = self._session.request(
-                    method, url, timeout=self._timeout, proxies=self._proxies, **kwargs
+                    method, url, timeout=self._timeout, **kwargs
                 )
                 if self._is_500_in_url(resp.url):
                     logger.debug(f"_get_url() 500 in url={resp.url}. Sleep 5 s.")
