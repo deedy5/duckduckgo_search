@@ -229,28 +229,35 @@ class DDGS:
         cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
+
             resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
-            if page_data:
-                result_exists = False
-                for row in page_data:
-                    if row["image"] not in cache:
-                        cache.add(row["image"])
-                        result_exists = True
-                        yield {
-                            "title": row["title"],
-                            "image": row["image"],
-                            "thumbnail": row["thumbnail"],
-                            "url": row["url"],
-                            "height": row["height"],
-                            "width": row["width"],
-                            "source": row["source"],
-                        }
-                next = resp.json().get("next", None)
-                if next:
-                    payload["s"] = next.split("s=")[-1].split("&")[0]
-                if not result_exists or not next:
-                    break
+            if not resp_json:
+                continue
+
+            page_data = resp.json().get("results", None)
+            if page_data is None:
+                break
+
+            result_exists = False
+            for row in page_data:
+                image_url = row.get("image", None)
+                if image_url and image_url not in cache:
+                    cache.add(image_url)
+                    result_exists = True
+                    yield {
+                        "title": row["title"],
+                        "image": image_url,
+                        "thumbnail": row["thumbnail"],
+                        "url": row["url"],
+                        "height": row["height"],
+                        "width": row["width"],
+                        "source": row["source"],
+                    }
+            next = resp_json.get("next", None)
+            if next:
+                payload["s"] = next.split("s=")[-1].split("&")[0]
+            if next is None or result_exists is False:
+                break
 
     def videos(
         self,
