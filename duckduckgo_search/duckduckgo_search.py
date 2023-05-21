@@ -11,6 +11,7 @@ from urllib.parse import unquote
 
 import requests
 from anti_useragent import UserAgent
+from requests.exceptions import HTTPError, Timeout
 
 logger = logging.getLogger(__name__)
 
@@ -52,13 +53,13 @@ class DDGS:
                     method, url, timeout=self._timeout, **kwargs
                 )
                 if self._is_500_in_url(resp.url):
-                    logger.info(f"_get_url() 500 in url={resp.url}.")
                     raise requests.HTTPError
                 resp.raise_for_status()
                 return resp
-            except Exception as ex:
-                logger.info(f"_get_url() {url} {type(ex).__name__} {ex} sleep {2**i}s.")
-                sleep(2**i)
+            except (HTTPError, Timeout) as ex:
+                logger.warning(f"_get_url() {url} {type(ex).__name__} {ex}")
+                if i < 2:
+                    sleep(2**i)
 
     def _resp_to_json(self, resp):
         try:
