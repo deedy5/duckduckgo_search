@@ -312,7 +312,7 @@ class DDGS:
                         cache.add(row["content"])
                         result_exists = True
                         yield row
-                next = resp.json().get("next", None)
+                next = page_data.get("next", None)
                 if next:
                     payload["s"] = next.split("s=")[-1].split("&")[0]
                 if not result_exists or not next:
