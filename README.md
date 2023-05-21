@@ -177,7 +177,7 @@ def text(
     region: str = "wt-wt",
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
-) -> Generator[dict, None, None]:
+) -> Iterator[dict]:
     """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
     Args:
@@ -253,7 +253,7 @@ def images(
     type_image: Optional[str] = None,
     layout: Optional[str] = None,
     license_image: Optional[str] = None,
-) -> Generator[dict, None, None]:
+) -> Iterator[dict]:
     """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -311,7 +311,7 @@ def videos(
     resolution: Optional[str] = None,
     duration: Optional[str] = None,
     license_videos: Optional[str] = None,
-) -> Generator[dict, None, None]:
+) -> Iterator[dict]:
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -358,7 +358,7 @@ def news(
     region: str = "wt-wt",
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
-) -> Generator[dict, None, None]:
+) -> Iterator[dict]:
     """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -406,7 +406,7 @@ def maps(
         latitude: Optional[str] = None,
         longitude: Optional[str] = None,
         radius: int = 0,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -485,7 +485,7 @@ print(r)
 def suggestions(
     keywords,
     region: str = "wt-wt",
-) -> Generator[dict, None, None]:
+) -> Iterator[dict]:
     """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
 
     Args:
