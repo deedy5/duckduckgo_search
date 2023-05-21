@@ -131,7 +131,7 @@ class DDGS:
             )
             try:
                 page_data = resp.json().get("results", None)
-            except JSONDecodeError:
+            except (AttributeError, JSONDecodeError):
                 break
 
             result_exists = False
@@ -220,7 +220,7 @@ class DDGS:
             resp = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
             try:
                 resp_json = resp.json()
-            except JSONDecodeError:
+            except (AttributeError, JSONDecodeError):
                 break
 
             page_data = resp_json.get("results", None)
@@ -296,7 +296,7 @@ class DDGS:
             resp = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
             try:
                 resp_json = resp.json()
-            except JSONDecodeError:
+            except (AttributeError, JSONDecodeError):
                 break
 
             page_data = resp_json.get("results", None)
@@ -357,7 +357,7 @@ class DDGS:
             )
             try:
                 resp_json = resp.json()
-            except JSONDecodeError:
+            except (AttributeError, JSONDecodeError):
                 break
 
             page_data = resp_json.get("results", None)
@@ -404,7 +404,7 @@ class DDGS:
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
         try:
             page_data = resp.json()
-        except JSONDecodeError:
+        except (AttributeError, JSONDecodeError):
             page_data = None
 
         if page_data:
@@ -426,7 +426,7 @@ class DDGS:
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
         try:
             page_data = resp.json().get("RelatedTopics", None)
-        except JSONDecodeError:
+        except (AttributeError, JSONDecodeError):
             page_data = None
 
         if page_data:
@@ -474,7 +474,7 @@ class DDGS:
         resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
         try:
             page_data = resp.json()
-        except JSONDecodeError:
+        except (AttributeError, JSONDecodeError):
             page_data = None
 
         if page_data:
@@ -594,7 +594,7 @@ class DDGS:
             )
             try:
                 page_data = resp.json().get("results", [])
-            except JSONDecodeError:
+            except (AttributeError, JSONDecodeError):
                 break
 
             for res in page_data:
@@ -666,7 +666,7 @@ class DDGS:
         )
         try:
             page_data = resp.json()
-        except JSONDecodeError:
+        except (AttributeError, JSONDecodeError):
             page_data = None
 
         if page_data:
