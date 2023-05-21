@@ -6,17 +6,19 @@ from datetime import datetime
 from decimal import Decimal
 from html import unescape
 from time import sleep
-from typing import Deque, Dict, Iterator, MutableMapping, Optional
+from typing import Deque, Dict, Iterator, Optional
 from urllib.parse import unquote
 
 import requests
-from anti_useragent import UserAgent
 from requests.exceptions import HTTPError, JSONDecodeError, Timeout
 from requests.models import Response
 
 logger = logging.getLogger(__name__)
 
-UA = UserAgent()
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
+    "Referer": "https://duckduckgo.com/",
+}
 REGEX_500_IN_URL = re.compile(r"[0-9]{3}-[0-9]{2}.js")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
 
@@ -42,14 +44,14 @@ class DDGS:
 
     def __init__(
         self,
-        headers: MutableMapping[str, str] = {},
-        proxies: MutableMapping[str, str] = {},
+        headers: Optional[Dict[str, str]] = None,
+        proxies: Optional[Dict[str, str]] = None,
         timeout: int = 10,
     ) -> None:
-        self._proxies = proxies
+        self.headers = headers if headers else HEADERS
         self._session = requests.Session()
-        self._session.headers = headers if headers else UA.random
-        self._session.proxies = proxies
+        self._session.headers.update(headers if headers else HEADERS)
+        self._session.proxies.update(proxies if proxies else {})
         self._timeout = timeout
 
     def _get_url(self, method: str, url: str, **kwargs) -> Optional[Response]:
