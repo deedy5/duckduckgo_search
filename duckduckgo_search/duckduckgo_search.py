@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from html import unescape
 from time import sleep
-from typing import Dict, Iterator, Optional
+from typing import Deque, Dict, Iterator, MutableMapping, Optional
 from urllib.parse import unquote
 
 import requests
@@ -42,8 +42,8 @@ class DDGS:
 
     def __init__(
         self,
-        headers: Optional[Dict[str, str]] = None,
-        proxies: Optional[Dict[str, str]] = None,
+        headers: MutableMapping[str, str] = {},
+        proxies: MutableMapping[str, str] = {},
         timeout: int = 10,
     ) -> None:
         self._proxies = proxies
@@ -66,8 +66,9 @@ class DDGS:
                 logger.warning(f"_get_url() {url} {type(ex).__name__} {ex}")
                 if i < 2:
                     sleep(2**i)
+        return None
 
-    def _get_vqd(self, keywords: str) -> str:
+    def _get_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
@@ -82,6 +83,7 @@ class DDGS:
                     return resp.content[start:end].decode()
                 except ValueError:
                     logger.warning(f"_get_vqd() keywords={keywords} vqd not found")
+        return None
 
     def _is_500_in_url(self, url: str) -> bool:
         """something like '506-00.js' inside the url"""
@@ -89,10 +91,9 @@ class DDGS:
 
     def _normalize(self, raw_html: str) -> str:
         """strip HTML tags"""
-        if not raw_html:
-            return ""
         if raw_html:
             return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
+        return ""
 
     def text(
         self,
@@ -135,6 +136,8 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://links.duckduckgo.com/d.js", params=payload
             )
+            if resp is None:
+                break
             try:
                 page_data = resp.json().get("results", None)
             except (AttributeError, JSONDecodeError):
@@ -224,6 +227,8 @@ class DDGS:
         cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
+            if resp is None:
+                break
             try:
                 resp_json = resp.json()
             except (AttributeError, JSONDecodeError):
@@ -300,6 +305,8 @@ class DDGS:
         cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
+            if resp is None:
+                break
             try:
                 resp_json = resp.json()
             except (AttributeError, JSONDecodeError):
@@ -361,6 +368,8 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://duckduckgo.com/news.js", params=payload
             )
+            if resp is None:
+                break
             try:
                 resp_json = resp.json()
             except (AttributeError, JSONDecodeError):
@@ -408,6 +417,8 @@ class DDGS:
         }
 
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
+        if resp is None:
+            return None
         try:
             page_data = resp.json()
         except (AttributeError, JSONDecodeError):
@@ -430,6 +441,8 @@ class DDGS:
             "format": "json",
         }
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
+        if resp is None:
+            return None
         try:
             page_data = resp.json().get("RelatedTopics", None)
         except (AttributeError, JSONDecodeError):
@@ -478,13 +491,14 @@ class DDGS:
             "kl": region,
         }
         resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
+        if resp is None:
+            return None
         try:
             page_data = resp.json()
             for r in page_data:
                 yield r
         except (AttributeError, JSONDecodeError):
             pass
-            
 
     def maps(
         self,
@@ -537,7 +551,7 @@ class DDGS:
         # otherwise request about bbox to nominatim api
         else:
             if place:
-                params = {
+                params: Dict[str, Optional[str]] = {
                     "q": place,
                     "polygon_geojson": "0",
                     "format": "jsonv2",
@@ -559,6 +573,9 @@ class DDGS:
                     "https://nominatim.openstreetmap.org/search.php",
                     params=params,
                 )
+                if resp is None:
+                    return None
+
                 coordinates = resp.json()[0]["boundingbox"]
                 lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
                 lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
@@ -574,7 +591,7 @@ class DDGS:
         logging.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         # сreate a queue of search squares (bboxes)
-        work_bboxes = deque()
+        work_bboxes: Deque = deque()
         work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
 
         # bbox iterate
@@ -597,6 +614,8 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://duckduckgo.com/local.js", params=params
             )
+            if resp is None:
+                break
             try:
                 page_data = resp.json().get("results", [])
             except (AttributeError, JSONDecodeError):
@@ -606,10 +625,10 @@ class DDGS:
                 result = MapsResult()
                 result.title = res["name"]
                 result.address = res["address"]
-                if result.title + result.address in cache:
+                if f"{result.title} {result.address}" in cache:
                     continue
                 else:
-                    cache.add(result.title + result.address)
+                    cache.add(f"{result.title} {result.address}")
                     result.country_code = res["country_code"]
                     result.url = res["website"]
                     result.phone = res["phone"]
@@ -669,10 +688,11 @@ class DDGS:
             params=payload,
             data=keywords.encode(),
         )
+        if resp is None:
+            return None
         try:
             page_data = resp.json()
             page_data["original"] = keywords
-            return page_data
         except (AttributeError, JSONDecodeError):
-            pass
-            
+            page_data = None
+        return page_data
