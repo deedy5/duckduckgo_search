@@ -6,12 +6,13 @@ from datetime import datetime
 from decimal import Decimal
 from html import unescape
 from time import sleep
-from typing import Dict, Generator, Optional
+from typing import Dict, Iterator, Optional
 from urllib.parse import unquote
 
 import requests
 from anti_useragent import UserAgent
-from requests.exceptions import JSONDecodeError, HTTPError, Timeout
+from requests.exceptions import HTTPError, JSONDecodeError, Timeout
+from requests.models import Response
 
 logger = logging.getLogger(__name__)
 
@@ -39,14 +40,19 @@ class MapsResult:
 class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com"""
 
-    def __init__(self, headers=None, proxies=None, timeout=10):
+    def __init__(
+        self,
+        headers: Optional[Dict[str, str]] = None,
+        proxies: Optional[Dict[str, str]] = None,
+        timeout: int = 10,
+    ) -> None:
         self._proxies = proxies
         self._session = requests.Session()
         self._session.headers = headers if headers else UA.random
         self._session.proxies = proxies
         self._timeout = timeout
 
-    def _get_url(self, method, url, **kwargs):
+    def _get_url(self, method: str, url: str, **kwargs) -> Optional[Response]:
         for i in range(3):
             try:
                 resp = self._session.request(
@@ -61,7 +67,7 @@ class DDGS:
                 if i < 2:
                     sleep(2**i)
 
-    def _get_vqd(self, keywords):
+    def _get_vqd(self, keywords: str) -> str:
         """Get vqd value for a search query."""
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
@@ -77,11 +83,11 @@ class DDGS:
                 except ValueError:
                     logger.warning(f"_get_vqd() keywords={keywords} vqd not found")
 
-    def _is_500_in_url(self, url):
+    def _is_500_in_url(self, url: str) -> bool:
         """something like '506-00.js' inside the url"""
         return bool(REGEX_500_IN_URL.search(url))
 
-    def _normalize(self, raw_html):
+    def _normalize(self, raw_html: str) -> str:
         """strip HTML tags"""
         if not raw_html:
             return ""
@@ -94,7 +100,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
         Args:
@@ -169,7 +175,7 @@ class DDGS:
         type_image: Optional[str] = None,
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -254,7 +260,7 @@ class DDGS:
         resolution: Optional[str] = None,
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -319,7 +325,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -384,7 +390,7 @@ class DDGS:
     def answers(
         self,
         keywords: str,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
 
         Args:
@@ -452,9 +458,9 @@ class DDGS:
 
     def suggestions(
         self,
-        keywords,
+        keywords: str,
         region: str = "wt-wt",
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
 
         Args:
@@ -474,16 +480,15 @@ class DDGS:
         resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
         try:
             page_data = resp.json()
-        except (AttributeError, JSONDecodeError):
-            page_data = None
-
-        if page_data:
             for r in page_data:
                 yield r
+        except (AttributeError, JSONDecodeError):
+            pass
+            
 
     def maps(
         self,
-        keywords,
+        keywords: str,
         place: Optional[str] = None,
         street: Optional[str] = None,
         city: Optional[str] = None,
@@ -494,7 +499,7 @@ class DDGS:
         latitude: Optional[str] = None,
         longitude: Optional[str] = None,
         radius: int = 0,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -666,9 +671,8 @@ class DDGS:
         )
         try:
             page_data = resp.json()
-        except (AttributeError, JSONDecodeError):
-            page_data = None
-
-        if page_data:
             page_data["original"] = keywords
             return page_data
+        except (AttributeError, JSONDecodeError):
+            pass
+            
