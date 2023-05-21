@@ -6,19 +6,19 @@ from datetime import datetime
 from decimal import Decimal
 from html import unescape
 from time import sleep
-from typing import Dict, Generator, Optional
+from typing import Deque, Dict, Iterator, MutableMapping, Optional
 from urllib.parse import unquote
 
 import requests
+from anti_useragent import UserAgent
+from requests.exceptions import HTTPError, JSONDecodeError, Timeout
+from requests.models import Response
 
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
-    "Referer": "https://duckduckgo.com/",
-}
-RE_500_in_URL = re.compile(r"[\d]{3}-[0-9]{2}.js")
-RE_STRIP_TAGS = re.compile("<.*?>")
+UA = UserAgent()
+REGEX_500_IN_URL = re.compile(r"[0-9]{3}-[0-9]{2}.js")
+REGEX_STRIP_TAGS = re.compile("<.*?>")
 
 
 @dataclass
@@ -40,61 +40,60 @@ class MapsResult:
 class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com"""
 
-    def __init__(self, headers=None, proxies=None, timeout=10):
+    def __init__(
+        self,
+        headers: MutableMapping[str, str] = {},
+        proxies: MutableMapping[str, str] = {},
+        timeout: int = 10,
+    ) -> None:
         self._proxies = proxies
         self._session = requests.Session()
-        self._session.headers = headers
+        self._session.headers = headers if headers else UA.random
         self._session.proxies = proxies
         self._timeout = timeout
 
-    def _get_url(self, method, url, **kwargs):
-        for _ in range(3):
+    def _get_url(self, method: str, url: str, **kwargs) -> Optional[Response]:
+        for i in range(3):
             try:
                 resp = self._session.request(
-                    method, url, timeout=self._timeout, proxies=self._proxies, **kwargs
+                    method, url, timeout=self._timeout, **kwargs
                 )
                 if self._is_500_in_url(resp.url):
-                    logger.debug(f"_get_url() 500 in url={resp.url}. Sleep 5 s.")
-                    sleep(5)
+                    raise requests.HTTPError
                 resp.raise_for_status()
                 return resp
-            except requests.HTTPError:
-                sleep(1)
-            except Exception as ex:
-                logger.debug(f"_get_url() url={url} {type(ex).__name__}")
-            sleep(0.25)
+            except (HTTPError, Timeout) as ex:
+                logger.warning(f"_get_url() {url} {type(ex).__name__} {ex}")
+                if i < 2:
+                    sleep(2**i)
+        return None
 
-    def _resp_to_json(self, resp):
-        try:
-            return resp.json()
-        except Exception as ex:
-            logger.debug(f"_resp_to_json() {type(ex).__name__}")
-
-    def _get_vqd(self, keywords):
+    def _get_vqd(self, keywords: str) -> Optional[str]:
+        """Get vqd value for a search query."""
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
-            vqd_bytes = self._parse_vqd(resp.content)
-            if vqd_bytes:
-                return vqd_bytes
+            for c1, c2 in (
+                (b'vqd="', b'"'),
+                (b"vqd=", b"&"),
+                (b"vqd='", b"'"),
+            ):
+                try:
+                    start = resp.content.index(c1) + len(c1)
+                    end = resp.content.index(c2, start)
+                    return resp.content[start:end].decode()
+                except ValueError:
+                    logger.warning(f"_get_vqd() keywords={keywords} vqd not found")
+        return None
 
-    def _parse_vqd(self, html_bytes):
-        """Parse vqd_bytes from raw html"""
-        for d in "\"'":
-            try:
-                vqd_index_start = html_bytes.index(b"vqd=%b" % d.encode()) + 5
-                vqd_index_end = html_bytes.index(b"%b" % d.encode(), vqd_index_start)
-                return html_bytes[vqd_index_start:vqd_index_end]
-            except Exception as ex:
-                logger.debug(f"_parse_vqd() {type(ex).__name__}")
-
-    def _is_500_in_url(self, url):
+    def _is_500_in_url(self, url: str) -> bool:
         """something like '506-00.js' inside the url"""
-        return RE_500_in_URL.search(url)
+        return bool(REGEX_500_IN_URL.search(url))
 
-    def _normalize(self, raw_html):
+    def _normalize(self, raw_html: str) -> str:
         """strip HTML tags"""
         if raw_html:
-            return unescape(re.sub(RE_STRIP_TAGS, "", raw_html))
+            return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
+        return ""
 
     def text(
         self,
@@ -102,7 +101,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
         Args:
@@ -115,8 +114,7 @@ class DDGS:
             dict with search results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -138,27 +136,35 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://links.duckduckgo.com/d.js", params=payload
             )
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
-            if page_data:
-                result_exists = False
-                for i, row in enumerate(page_data):
-                    if "n" not in row and row["u"] not in cache:
-                        cache.add(row["u"])
-                        body = self._normalize(row["a"])
-                        if body:
-                            result_exists = True
-                            yield {
-                                "title": self._normalize(row["t"]),
-                                "href": row["u"],
-                                "body": body,
-                            }
-                    elif "n" in row:
-                        payload["s"] = row["n"].split("s=")[-1].split("&")[0]
-                    elif not result_exists:
-                        break
-                else:
-                    continue
+            if resp is None:
+                break
+            try:
+                page_data = resp.json().get("results", None)
+            except (AttributeError, JSONDecodeError):
+                break
+
+            result_exists = False
+            for row in page_data:
+                if "n" in row:
+                    payload["s"] = row["n"].split("s=")[-1].split("&")[0]  # next page
+                href = row.get("u", None)
+                if (
+                    href
+                    and href not in cache
+                    and href != f"http://www.google.com/search?q={keywords}"
+                ):
+                    cache.add(href)
+                    body = self._normalize(row["a"])
+                    if body:
+                        result_exists = True
+                        yield {
+                            "title": self._normalize(row["t"]),
+                            "href": href,
+                            "body": body,
+                        }
+                elif result_exists is False:
+                    break
+            if result_exists is False:
                 break
 
     def images(
@@ -172,7 +178,7 @@ class DDGS:
         type_image: Optional[str] = None,
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -195,8 +201,7 @@ class DDGS:
             dict with image search results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -222,28 +227,34 @@ class DDGS:
         cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
-            if page_data:
-                result_exists = False
-                for row in page_data:
-                    if row["image"] not in cache:
-                        cache.add(row["image"])
-                        result_exists = True
-                        yield {
-                            "title": row["title"],
-                            "image": row["image"],
-                            "thumbnail": row["thumbnail"],
-                            "url": row["url"],
-                            "height": row["height"],
-                            "width": row["width"],
-                            "source": row["source"],
-                        }
-                next = resp.json().get("next", None)
-                if next:
-                    payload["s"] = next.split("s=")[-1].split("&")[0]
-                if not result_exists or not next:
-                    break
+            if resp is None:
+                break
+            try:
+                resp_json = resp.json()
+            except (AttributeError, JSONDecodeError):
+                break
+
+            page_data = resp_json.get("results", None)
+            result_exists = False
+            for row in page_data:
+                image_url = row.get("image", None)
+                if image_url and image_url not in cache:
+                    cache.add(image_url)
+                    result_exists = True
+                    yield {
+                        "title": row["title"],
+                        "image": image_url,
+                        "thumbnail": row["thumbnail"],
+                        "url": row["url"],
+                        "height": row["height"],
+                        "width": row["width"],
+                        "source": row["source"],
+                    }
+            next = resp_json.get("next", None)
+            if next:
+                payload["s"] = next.split("s=")[-1].split("&")[0]
+            if next is None or result_exists is False:
+                break
 
     def videos(
         self,
@@ -254,7 +265,7 @@ class DDGS:
         resolution: Optional[str] = None,
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -270,8 +281,7 @@ class DDGS:
             dict with videos search results
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -295,8 +305,14 @@ class DDGS:
         cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
+            if resp is None:
+                break
+            try:
+                resp_json = resp.json()
+            except (AttributeError, JSONDecodeError):
+                break
+
+            page_data = resp_json.get("results", None)
             if page_data:
                 result_exists = False
                 for row in page_data:
@@ -304,7 +320,7 @@ class DDGS:
                         cache.add(row["content"])
                         result_exists = True
                         yield row
-                next = resp.json().get("next", None)
+                next = resp_json.get("next", None)
                 if next:
                     payload["s"] = next.split("s=")[-1].split("&")[0]
                 if not result_exists or not next:
@@ -316,7 +332,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -329,8 +345,7 @@ class DDGS:
             dict with news search results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -353,8 +368,14 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://duckduckgo.com/news.js", params=payload
             )
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
+            if resp is None:
+                break
+            try:
+                resp_json = resp.json()
+            except (AttributeError, JSONDecodeError):
+                break
+
+            page_data = resp_json.get("results", None)
             if page_data:
                 result_exists = False
                 for row in page_data:
@@ -369,7 +390,7 @@ class DDGS:
                             "image": row.get("image", None),
                             "source": row["source"],
                         }
-                next = resp.json().get("next", None)
+                next = resp_json.get("next", None)
                 if next:
                     payload["s"] = next.split("s=")[-1].split("&")[0]
                 if not result_exists or not next:
@@ -378,7 +399,7 @@ class DDGS:
     def answers(
         self,
         keywords: str,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
 
         Args:
@@ -388,8 +409,7 @@ class DDGS:
             dict with instant answers results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         payload = {
             "q": f"what is {keywords}",
@@ -397,8 +417,13 @@ class DDGS:
         }
 
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
-        resp_json = self._resp_to_json(resp)
-        page_data = resp.json() if resp_json else None
+        if resp is None:
+            return None
+        try:
+            page_data = resp.json()
+        except (AttributeError, JSONDecodeError):
+            page_data = None
+
         if page_data:
             answer = page_data.get("AbstractText", None)
             url = page_data.get("AbstractURL", None)
@@ -416,7 +441,13 @@ class DDGS:
             "format": "json",
         }
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
-        page_data = resp.json().get("RelatedTopics", []) if resp else None
+        if resp is None:
+            return None
+        try:
+            page_data = resp.json().get("RelatedTopics", None)
+        except (AttributeError, JSONDecodeError):
+            page_data = None
+
         if page_data:
             for i, row in enumerate(page_data):
                 topic = row.get("Name", None)
@@ -440,9 +471,9 @@ class DDGS:
 
     def suggestions(
         self,
-        keywords,
+        keywords: str,
         region: str = "wt-wt",
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
 
         Args:
@@ -453,22 +484,25 @@ class DDGS:
             dict with suggestions results.
         """
 
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         payload = {
             "q": keywords,
             "kl": region,
         }
         resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
-        resp_json = self._resp_to_json(resp)
-        if resp_json:
-            for r in resp_json:
+        if resp is None:
+            return None
+        try:
+            page_data = resp.json()
+            for r in page_data:
                 yield r
+        except (AttributeError, JSONDecodeError):
+            pass
 
     def maps(
         self,
-        keywords,
+        keywords: str,
         place: Optional[str] = None,
         street: Optional[str] = None,
         city: Optional[str] = None,
@@ -479,7 +513,7 @@ class DDGS:
         latitude: Optional[str] = None,
         longitude: Optional[str] = None,
         radius: int = 0,
-    ) -> Generator[dict, None, None]:
+    ) -> Iterator[dict]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -500,8 +534,7 @@ class DDGS:
             dict with maps search results
         """
 
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -518,7 +551,7 @@ class DDGS:
         # otherwise request about bbox to nominatim api
         else:
             if place:
-                params = {
+                params: Dict[str, Optional[str]] = {
                     "q": place,
                     "polygon_geojson": "0",
                     "format": "jsonv2",
@@ -540,6 +573,9 @@ class DDGS:
                     "https://nominatim.openstreetmap.org/search.php",
                     params=params,
                 )
+                if resp is None:
+                    return None
+
                 coordinates = resp.json()[0]["boundingbox"]
                 lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
                 lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
@@ -555,7 +591,7 @@ class DDGS:
         logging.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         # сreate a queue of search squares (bboxes)
-        work_bboxes = deque()
+        work_bboxes: Deque = deque()
         work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
 
         # bbox iterate
@@ -578,19 +614,21 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://duckduckgo.com/local.js", params=params
             )
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results") if resp_json else None
-            if not page_data:
+            if resp is None:
+                break
+            try:
+                page_data = resp.json().get("results", [])
+            except (AttributeError, JSONDecodeError):
                 break
 
             for res in page_data:
                 result = MapsResult()
                 result.title = res["name"]
                 result.address = res["address"]
-                if result.title + result.address in cache:
+                if f"{result.title} {result.address}" in cache:
                     continue
                 else:
-                    cache.add(result.title + result.address)
+                    cache.add(f"{result.title} {result.address}")
                     result.country_code = res["country_code"]
                     result.url = res["website"]
                     result.phone = res["phone"]
@@ -631,8 +669,7 @@ class DDGS:
             dict with translated keywords.
         """
 
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd("translate")
         if not vqd:
@@ -651,7 +688,11 @@ class DDGS:
             params=payload,
             data=keywords.encode(),
         )
-        resp_json = self._resp_to_json(resp)
-        if resp_json:
-            resp_json["original"] = keywords
-            return resp_json
+        if resp is None:
+            return None
+        try:
+            page_data = resp.json()
+            page_data["original"] = keywords
+        except (AttributeError, JSONDecodeError):
+            page_data = None
+        return page_data
