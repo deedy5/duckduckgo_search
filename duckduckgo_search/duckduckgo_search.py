@@ -11,7 +11,7 @@ from urllib.parse import unquote
 
 import requests
 from anti_useragent import UserAgent
-from requests.exceptions import HTTPError, Timeout
+from requests.exceptions import JSONDecodeError, HTTPError, Timeout
 
 logger = logging.getLogger(__name__)
 
@@ -60,12 +60,6 @@ class DDGS:
                 logger.warning(f"_get_url() {url} {type(ex).__name__} {ex}")
                 if i < 2:
                     sleep(2**i)
-
-    def _resp_to_json(self, resp):
-        try:
-            return resp.json()
-        except Exception as ex:
-            logger.debug(f"_resp_to_json() {type(ex).__name__}")
 
     def _get_vqd(self, keywords):
         """Get vqd value for a search query.
@@ -141,12 +135,9 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://links.duckduckgo.com/d.js", params=payload
             )
-            resp_json = self._resp_to_json(resp)
-            if not resp_json:
-                continue
-
-            page_data = resp.json().get("results", None)
-            if page_data is None:
+            try:
+                page_data = resp.json().get("results", None)
+            except JSONDecodeError:
                 break
 
             result_exists = False
@@ -234,15 +225,12 @@ class DDGS:
         cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
-
-            resp_json = self._resp_to_json(resp)
-            if not resp_json:
-                continue
-
-            page_data = resp.json().get("results", None)
-            if page_data is None:
+            try:
+                resp_json = resp.json()
+            except JSONDecodeError:
                 break
 
+            page_data = resp_json.get("results", None)
             result_exists = False
             for row in page_data:
                 image_url = row.get("image", None)
@@ -314,8 +302,11 @@ class DDGS:
         cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
+            try:
+                page_data = resp.json().get("results", None)
+            except JSONDecodeError:
+                break
+
             if page_data:
                 result_exists = False
                 for row in page_data:
@@ -372,8 +363,11 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://duckduckgo.com/news.js", params=payload
             )
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results", None) if resp_json else None
+            try:
+                page_data = resp.json().get("results", None)
+            except JSONDecodeError:
+                break
+
             if page_data:
                 result_exists = False
                 for row in page_data:
@@ -416,8 +410,11 @@ class DDGS:
         }
 
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
-        resp_json = self._resp_to_json(resp)
-        page_data = resp.json() if resp_json else None
+        try:
+            page_data = resp.json()
+        except JSONDecodeError:
+            page_data = None
+
         if page_data:
             answer = page_data.get("AbstractText", None)
             url = page_data.get("AbstractURL", None)
@@ -435,7 +432,11 @@ class DDGS:
             "format": "json",
         }
         resp = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
-        page_data = resp.json().get("RelatedTopics", []) if resp else None
+        try:
+            page_data = resp.json().get("RelatedTopics", None)
+        except JSONDecodeError:
+            page_data = None
+
         if page_data:
             for i, row in enumerate(page_data):
                 topic = row.get("Name", None)
@@ -480,9 +481,13 @@ class DDGS:
             "kl": region,
         }
         resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
-        resp_json = self._resp_to_json(resp)
-        if resp_json:
-            for r in resp_json:
+        try:
+            page_data = resp.json()
+        except JSONDecodeError:
+            page_data = None
+
+        if page_data:
+            for r in page_data:
                 yield r
 
     def maps(
@@ -597,9 +602,9 @@ class DDGS:
             resp = self._get_url(
                 "GET", "https://duckduckgo.com/local.js", params=params
             )
-            resp_json = self._resp_to_json(resp)
-            page_data = resp.json().get("results") if resp_json else None
-            if not page_data:
+            try:
+                page_data = resp.json().get("results", [])
+            except JSONDecodeError:
                 break
 
             for res in page_data:
@@ -670,7 +675,11 @@ class DDGS:
             params=payload,
             data=keywords.encode(),
         )
-        resp_json = self._resp_to_json(resp)
-        if resp_json:
-            resp_json["original"] = keywords
-            return resp_json
+        try:
+            page_data = resp.json()
+        except JSONDecodeError:
+            page_data = None
+
+        if page_data:
+            page_data["original"] = keywords
+            return page_data
