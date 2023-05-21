@@ -62,15 +62,7 @@ class DDGS:
                     sleep(2**i)
 
     def _get_vqd(self, keywords):
-        """Get vqd value for a search query.
-
-        Args:
-        keywords: The search query to generate the vqd.
-
-        Returns:
-            A string representation of the vqd value if found, else ``None``.
-        """
-
+        """Get vqd value for a search query."""
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
             for c1, c2 in (
@@ -303,10 +295,11 @@ class DDGS:
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
             try:
-                page_data = resp.json().get("results", None)
+                resp_json = resp.json()
             except JSONDecodeError:
                 break
 
+            page_data = resp_json.get("results", None)
             if page_data:
                 result_exists = False
                 for row in page_data:
@@ -314,7 +307,7 @@ class DDGS:
                         cache.add(row["content"])
                         result_exists = True
                         yield row
-                next = page_data.get("next", None)
+                next = resp_json.get("next", None)
                 if next:
                     payload["s"] = next.split("s=")[-1].split("&")[0]
                 if not result_exists or not next:
@@ -363,10 +356,11 @@ class DDGS:
                 "GET", "https://duckduckgo.com/news.js", params=payload
             )
             try:
-                page_data = resp.json().get("results", None)
+                resp_json = resp.json()
             except JSONDecodeError:
                 break
 
+            page_data = resp_json.get("results", None)
             if page_data:
                 result_exists = False
                 for row in page_data:
@@ -381,7 +375,7 @@ class DDGS:
                             "image": row.get("image", None),
                             "source": row["source"],
                         }
-                next = resp.json().get("next", None)
+                next = resp_json.get("next", None)
                 if next:
                     payload["s"] = next.split("s=")[-1].split("&")[0]
                 if not result_exists or not next:
