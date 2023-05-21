@@ -198,8 +198,7 @@ class DDGS:
             dict with image search results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -277,8 +276,7 @@ class DDGS:
             dict with videos search results
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -339,8 +337,7 @@ class DDGS:
             dict with news search results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -401,8 +398,7 @@ class DDGS:
             dict with instant answers results.
 
         """
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         payload = {
             "q": f"what is {keywords}",
@@ -473,8 +469,7 @@ class DDGS:
             dict with suggestions results.
         """
 
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         payload = {
             "q": keywords,
@@ -524,8 +519,7 @@ class DDGS:
             dict with maps search results
         """
 
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
         if not vqd:
@@ -655,8 +649,7 @@ class DDGS:
             dict with translated keywords.
         """
 
-        if not keywords:
-            return None
+        assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd("translate")
         if not vqd:
