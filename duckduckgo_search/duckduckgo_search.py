@@ -78,13 +78,17 @@ class DDGS:
 
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
-            for c in ('"', "", "'"):
+            for c1, c2 in (
+                (b'vqd="', b'"'),
+                (b"vqd=", b"&"),
+                (b"vqd='", b"'"),
+            ):
                 try:
-                    start = resp.content.index(f"vqd={c}".encode()) + len(f"vqd={c}")
-                    end = resp.content.index(c.encode(), start)
+                    start = resp.content.index(c1) + len(c1)
+                    end = resp.content.index(c2, start)
                     return resp.content[start:end].decode()
                 except ValueError:
-                    logger.info(f"_get_vqd() keywords={keywords} vqd not found")
+                    logger.warning(f"_get_vqd() keywords={keywords} vqd not found")
 
     def _is_500_in_url(self, url):
         """something like '506-00.js' inside the url"""
