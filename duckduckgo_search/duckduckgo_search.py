@@ -91,6 +91,8 @@ class DDGS:
 
     def _normalize(self, raw_html):
         """strip HTML tags"""
+        if not raw_html:
+            return ""
         if raw_html:
             return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
 
