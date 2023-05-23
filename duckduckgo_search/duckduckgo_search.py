@@ -619,7 +619,7 @@ class DDGS:
                 page_data = resp.json().get("results", [])
             except (AttributeError, JSONDecodeError):
                 break
-            
+
             if page_data:
                 for res in page_data:
                     result = MapsResult()
