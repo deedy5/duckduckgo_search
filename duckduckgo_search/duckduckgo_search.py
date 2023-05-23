@@ -63,10 +63,11 @@ class DDGS:
                     raise requests.HTTPError
                 resp.raise_for_status()
                 return resp
-            except (HTTPError, Timeout) as ex:
+            except Exception as ex:
                 logger.warning(f"_get_url() {url} {type(ex).__name__} {ex}")
-                if i < 2:
-                    sleep(2**i)
+                if i >= 2 or "418" in str(ex):
+                    raise ex
+                sleep(2**i)
         return None
 
     def _get_vqd(self, keywords: str) -> Optional[str]:
@@ -118,8 +119,7 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        if not vqd:
-            return None
+        assert vqd, "error in getting vqd"
 
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
@@ -206,8 +206,7 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        if not vqd:
-            return None
+        assert vqd, "error in getting vqd"
 
         safesearch_base = {"on": 1, "moderate": 1, "off": -1}
         timelimit = f"time:{timelimit}" if timelimit else ""
@@ -287,8 +286,7 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        if not vqd:
-            return None
+        assert vqd, "error in getting vqd"
 
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         timelimit = f"publishedAfter:{timelimit}" if timelimit else ""
@@ -351,8 +349,7 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        if not vqd:
-            return None
+        assert vqd, "error in getting vqd"
 
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
@@ -540,8 +537,7 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        if not vqd:
-            return None
+        assert vqd, "error in getting vqd"
 
         # if longitude and latitude are specified, skip the request about bbox to the nominatim api
         if latitude and longitude:
@@ -676,8 +672,7 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd("translate")
-        if not vqd:
-            return None
+        assert vqd, "error in getting vqd"
 
         payload = {
             "vqd": vqd,
