@@ -148,7 +148,7 @@ class DDGS:
                 result_exists = False
                 for row in page_data:
                     if "n" in row:
-                        payload["s"] = row["n"].split("s=")[-1].split("&")[0]  # next page
+                        payload["s"] = row["n"].split("s=")[-1].split("&")[0]
                     href = row.get("u", None)
                     if (
                         href
