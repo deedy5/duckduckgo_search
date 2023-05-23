@@ -48,7 +48,6 @@ class DDGS:
         proxies: Optional[Dict[str, str]] = None,
         timeout: int = 10,
     ) -> None:
-        self.headers = headers if headers else HEADERS
         self._session = requests.Session()
         self._session.headers.update(headers if headers else HEADERS)
         self._session.proxies.update(proxies if proxies else {})
