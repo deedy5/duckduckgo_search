@@ -139,8 +139,10 @@ ___
 [Go To TOP](#TOP)
 
 ## Using proxy
-The site blocks ip for a few minutes if you send too many requests. In this case, you need to use a proxy.
-Also you can set a timeout if the proxy takes a long time to respond (default timeout=10).
+If you send too many requests the site blocks ip for up to one minute and DDGS will raise an exception 
+`requests.exceptions.HTTPError: 418 Client Error:  for url: https://duckduckgo.com/`.
+In this case, you need repeat again after a while or to use a proxy. 
+You can set a timeout if the proxy takes a long time to respond (default timeout=10).
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
