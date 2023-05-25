@@ -242,7 +242,11 @@ class DDGS:
             if result_exists is False:
                 break
 
-            next_page = tree.xpath('.//div[@class="nav-link"]')[-1]
+            next_page = tree.xpath('.//div[@class="nav-link"]')
+            next_page = next_page[-1] if next_page else None
+            if next_page is None:
+                return
+
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
