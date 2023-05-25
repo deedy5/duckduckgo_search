@@ -10,7 +10,6 @@ from typing import Deque, Dict, Iterator, Optional
 from urllib.parse import unquote
 
 import requests
-from requests.exceptions import HTTPError, JSONDecodeError, Timeout
 from requests.models import Response
 
 logger = logging.getLogger(__name__)
@@ -59,15 +58,16 @@ class DDGS:
                 resp = self._session.request(
                     method, url, timeout=self._timeout, **kwargs
                 )
-                if self._is_500_in_url(resp.url):
+                if self._is_500_in_url(resp.url) or resp.status_code == 202:
                     raise requests.HTTPError
                 resp.raise_for_status()
-                return resp
+                if resp.status_code == 200:
+                    return resp
             except Exception as ex:
                 logger.warning(f"_get_url() {url} {type(ex).__name__} {ex}")
                 if i >= 2 or "418" in str(ex):
                     raise ex
-                sleep(2**i)
+            sleep(3)
         return None
 
     def _get_vqd(self, keywords: str) -> Optional[str]:
@@ -121,16 +121,25 @@ class DDGS:
         vqd = self._get_vqd(keywords)
         assert vqd, "error in getting vqd"
 
-        safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
-            "q": keywords,
+            "q": keywords,  #
+            "kl": region,
             "l": region,
-            "p": safesearch_base[safesearch.lower()],
             "s": 0,
             "df": timelimit,
-            "o": "json",
             "vqd": vqd,
+            "o": "json",
         }
+        if safesearch == "off":
+            # payload["p"] = '-2'
+            payload["ex"] = "-2"
+        elif safesearch == "moderate":
+            payload["p"] = ""
+            payload["sp"] = "0"
+            payload["ex"] = "-1"
+        elif safesearch == "on":  # strict
+            payload["sp"] = "0"
+            payload["p"] = "1"
 
         cache = set()
         for _ in range(10):
@@ -141,33 +150,34 @@ class DDGS:
                 break
             try:
                 page_data = resp.json().get("results", None)
-            except (AttributeError, JSONDecodeError):
+            except Exception:
+                break
+            if page_data is None:
                 break
 
-            if page_data:
-                result_exists = False
-                for row in page_data:
-                    if "n" in row:
-                        payload["s"] = row["n"].split("s=")[-1].split("&")[0]
-                    href = row.get("u", None)
-                    if (
-                        href
-                        and href not in cache
-                        and href != f"http://www.google.com/search?q={keywords}"
-                    ):
-                        cache.add(href)
-                        body = self._normalize(row["a"])
-                        if body:
-                            result_exists = True
-                            yield {
-                                "title": self._normalize(row["t"]),
-                                "href": href,
-                                "body": body,
-                            }
-                    elif result_exists is False:
-                        break
-                if result_exists is False:
+            result_exists = False
+            for row in page_data:
+                if "n" in row:
+                    payload["s"] = row["n"].split("s=")[-1].split("&")[0]
+                href = row.get("u", None)
+                if (
+                    href
+                    and href not in cache
+                    and href != f"http://www.google.com/search?q={keywords}"
+                ):
+                    cache.add(href)
+                    body = self._normalize(row["a"])
+                    if body:
+                        result_exists = True
+                        yield {
+                            "title": self._normalize(row["t"]),
+                            "href": href,
+                            "body": body,
+                        }
+                elif result_exists is False:
                     break
+            if result_exists is False:
+                break
 
     def images(
         self,
@@ -232,31 +242,32 @@ class DDGS:
                 break
             try:
                 resp_json = resp.json()
-            except (AttributeError, JSONDecodeError):
+            except Exception:
+                break
+            page_data = resp_json.get("results", None)
+            if page_data is None:
                 break
 
-            page_data = resp_json.get("results", None)
-            if page_data:
-                result_exists = False
-                for row in page_data:
-                    image_url = row.get("image", None)
-                    if image_url and image_url not in cache:
-                        cache.add(image_url)
-                        result_exists = True
-                        yield {
-                            "title": row["title"],
-                            "image": image_url,
-                            "thumbnail": row["thumbnail"],
-                            "url": row["url"],
-                            "height": row["height"],
-                            "width": row["width"],
-                            "source": row["source"],
-                        }
-                next = resp_json.get("next", None)
-                if next:
-                    payload["s"] = next.split("s=")[-1].split("&")[0]
-                if next is None or result_exists is False:
-                    break
+            result_exists = False
+            for row in page_data:
+                image_url = row.get("image", None)
+                if image_url and image_url not in cache:
+                    cache.add(image_url)
+                    result_exists = True
+                    yield {
+                        "title": row["title"],
+                        "image": image_url,
+                        "thumbnail": row["thumbnail"],
+                        "url": row["url"],
+                        "height": row["height"],
+                        "width": row["width"],
+                        "source": row["source"],
+                    }
+            next = resp_json.get("next", None)
+            if next:
+                payload["s"] = next.split("s=")[-1].split("&")[0]
+            if next is None or result_exists is False:
+                break
 
     def videos(
         self,
@@ -310,22 +321,23 @@ class DDGS:
                 break
             try:
                 resp_json = resp.json()
-            except (AttributeError, JSONDecodeError):
+            except Exception:
+                break
+            page_data = resp_json.get("results", None)
+            if page_data is None:
                 break
 
-            page_data = resp_json.get("results", None)
-            if page_data:
-                result_exists = False
-                for row in page_data:
-                    if row["content"] not in cache:
-                        cache.add(row["content"])
-                        result_exists = True
-                        yield row
-                next = resp_json.get("next", None)
-                if next:
-                    payload["s"] = next.split("s=")[-1].split("&")[0]
-                if not result_exists or not next:
-                    break
+            result_exists = False
+            for row in page_data:
+                if row["content"] not in cache:
+                    cache.add(row["content"])
+                    result_exists = True
+                    yield row
+            next = resp_json.get("next", None)
+            if next:
+                payload["s"] = next.split("s=")[-1].split("&")[0]
+            if not result_exists or not next:
+                break
 
     def news(
         self,
@@ -372,29 +384,30 @@ class DDGS:
                 break
             try:
                 resp_json = resp.json()
-            except (AttributeError, JSONDecodeError):
+            except Exception:
+                break
+            page_data = resp_json.get("results", None)
+            if page_data is None:
                 break
 
-            page_data = resp_json.get("results", None)
-            if page_data:
-                result_exists = False
-                for row in page_data:
-                    if row["url"] not in cache:
-                        cache.add(row["url"])
-                        result_exists = True
-                        yield {
-                            "date": datetime.utcfromtimestamp(row["date"]).isoformat(),
-                            "title": row["title"],
-                            "body": self._normalize(row["excerpt"]),
-                            "url": row["url"],
-                            "image": row.get("image", None),
-                            "source": row["source"],
-                        }
-                next = resp_json.get("next", None)
-                if next:
-                    payload["s"] = next.split("s=")[-1].split("&")[0]
-                if not result_exists or not next:
-                    break
+            result_exists = False
+            for row in page_data:
+                if row["url"] not in cache:
+                    cache.add(row["url"])
+                    result_exists = True
+                    yield {
+                        "date": datetime.utcfromtimestamp(row["date"]).isoformat(),
+                        "title": row["title"],
+                        "body": self._normalize(row["excerpt"]),
+                        "url": row["url"],
+                        "image": row.get("image", None),
+                        "source": row["source"],
+                    }
+            next = resp_json.get("next", None)
+            if next:
+                payload["s"] = next.split("s=")[-1].split("&")[0]
+            if not result_exists or not next:
+                break
 
     def answers(
         self,
@@ -421,7 +434,7 @@ class DDGS:
             return None
         try:
             page_data = resp.json()
-        except (AttributeError, JSONDecodeError):
+        except Exception:
             page_data = None
 
         if page_data:
@@ -445,7 +458,7 @@ class DDGS:
             return None
         try:
             page_data = resp.json().get("RelatedTopics", None)
-        except (AttributeError, JSONDecodeError):
+        except Exception:
             page_data = None
 
         if page_data:
@@ -497,7 +510,7 @@ class DDGS:
             page_data = resp.json()
             for r in page_data:
                 yield r
-        except (AttributeError, JSONDecodeError):
+        except Exception:
             pass
 
     def maps(
@@ -617,40 +630,41 @@ class DDGS:
                 break
             try:
                 page_data = resp.json().get("results", [])
-            except (AttributeError, JSONDecodeError):
+            except Exception:
+                break
+            if page_data is None:
                 break
 
-            if page_data:
-                for res in page_data:
-                    result = MapsResult()
-                    result.title = res["name"]
-                    result.address = res["address"]
-                    if f"{result.title} {result.address}" in cache:
-                        continue
-                    else:
-                        cache.add(f"{result.title} {result.address}")
-                        result.country_code = res["country_code"]
-                        result.url = res["website"]
-                        result.phone = res["phone"]
-                        result.latitude = res["coordinates"]["latitude"]
-                        result.longitude = res["coordinates"]["longitude"]
-                        result.source = unquote(res["url"])
-                        if res["embed"]:
-                            result.image = res["embed"].get("image", "")
-                            result.links = res["embed"].get("third_party_links", "")
-                            result.desc = res["embed"].get("description", "")
-                        result.hours = res["hours"]
-                        yield result.__dict__
+            for res in page_data:
+                result = MapsResult()
+                result.title = res["name"]
+                result.address = res["address"]
+                if f"{result.title} {result.address}" in cache:
+                    continue
+                else:
+                    cache.add(f"{result.title} {result.address}")
+                    result.country_code = res["country_code"]
+                    result.url = res["website"]
+                    result.phone = res["phone"]
+                    result.latitude = res["coordinates"]["latitude"]
+                    result.longitude = res["coordinates"]["longitude"]
+                    result.source = unquote(res["url"])
+                    if res["embed"]:
+                        result.image = res["embed"].get("image", "")
+                        result.links = res["embed"].get("third_party_links", "")
+                        result.desc = res["embed"].get("description", "")
+                    result.hours = res["hours"]
+                    yield result.__dict__
 
-                # divide the square into 4 parts and add to the queue
-                if len(page_data) >= 15:
-                    lat_middle = (lat_t + lat_b) / 2
-                    lon_middle = (lon_l + lon_r) / 2
-                    bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
-                    bbox2 = (lat_t, lon_middle, lat_middle, lon_r)
-                    bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
-                    bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
-                    work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
+            # divide the square into 4 parts and add to the queue
+            if len(page_data) >= 15:
+                lat_middle = (lat_t + lat_b) / 2
+                lon_middle = (lon_l + lon_r) / 2
+                bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
+                bbox2 = (lat_t, lon_middle, lat_middle, lon_r)
+                bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
+                bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
+                work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
 
     def translate(
         self,
@@ -692,6 +706,6 @@ class DDGS:
         try:
             page_data = resp.json()
             page_data["original"] = keywords
-        except (AttributeError, JSONDecodeError):
+        except Exception:
             page_data = None
         return page_data
