@@ -6,10 +6,11 @@ from datetime import datetime
 from decimal import Decimal
 from html import unescape
 from time import sleep
-from typing import Deque, Dict, Iterator, Optional
+from typing import Deque, Dict, Iterator, Optional, Set
 from urllib.parse import unquote
 
 import requests
+from lxml import html
 from requests.models import Response
 
 logger = logging.getLogger(__name__)
@@ -97,6 +98,7 @@ class DDGS:
             return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
         return ""
 
+    '''
     def text(
         self,
         keywords: str,
@@ -178,6 +180,73 @@ class DDGS:
                     break
             if result_exists is False:
                 break
+    '''
+
+    def text(
+        self,
+        keywords: str,
+        region: str = "wt-wt",
+        safesearch: str = "moderate",
+        timelimit: Optional[str] = None,
+    ) -> Iterator[dict]:
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+
+        Args:
+            keywords: keywords for query.
+            region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+            safesearch: on, moderate, off. Defaults to "moderate".
+            timelimit: d, w, m, y. Defaults to None.
+
+        Yields:
+            dict with search results.
+
+        """
+        assert keywords, "keywords is mandatory"
+
+        safesearch_base = {"on": 1, "moderate": -1, "off": -2}
+        payload = {
+            "q": keywords,
+            "l": region,
+            "p": safesearch_base[safesearch.lower()],
+            "df": timelimit,
+        }
+        cache: Set[str] = set()
+        for _ in range(10):
+            resp = self._get_url(
+                "POST", "https://html.duckduckgo.com/html", data=payload
+            )
+            if resp is None:
+                break
+            tree = html.fromstring(resp.content)
+            if tree.xpath('//div[@class="no-results"]/text()'):
+                return
+            result_exists = False
+            for e in tree.xpath('//div[contains(@class, "results_links")]'):
+                href = e.xpath('.//a[contains(@class, "result__a")]/@href')
+                href = href[0] if href else None
+                if (
+                    href
+                    and href not in cache
+                    and href != f"http://www.google.com/search?q={keywords}"
+                ):
+                    cache.add(href)
+                    title = e.xpath('.//a[contains(@class, "result__a")]/text()')
+                    body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
+                    result_exists = True
+                    yield {
+                        "title": self._normalize(title[0]) if title else None,
+                        "href": href,
+                        "body": self._normalize("".join(body)) if body else None,
+                    }
+
+            if result_exists is False:
+                break
+
+            next_page = tree.xpath('.//div[@class="nav-link"]')[-1]
+            names = next_page.xpath('.//input[@type="hidden"]/@name')
+            values = next_page.xpath('.//input[@type="hidden"]/@value')
+            payload = {n: v for n, v in zip(names, values)}
+            sleep(1)
 
     def images(
         self,
