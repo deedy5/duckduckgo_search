@@ -154,7 +154,7 @@ proxies = {
 }
 ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
 for r in ddgs_text_gen:
-	print(r)
+    print(r)
 ```
 *2. Use any proxy server* (*example with [iproyal residential proxies](https://iproyal.com?r=residential_proxies)*)
 ```python3
@@ -167,7 +167,7 @@ proxies = {
 }
 ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
 for r in ddgs_text_gen:
-	print(r)
+    print(r)
 ```
 
 [Go To TOP](#TOP)
@@ -179,6 +179,7 @@ def text(
     region: str = "wt-wt",
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
+    backend: str = "api",
 ) -> Iterator[dict]:
     """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
@@ -205,20 +206,20 @@ ddgs = DDGS()
 keywords = 'live free or die'
 ddgs_text_gen = ddgs.text(keywords, region='wt-wt', safesearch='Off', timelimit='y')
 for r in ddgs_text_gen:
-	print(r)
+    print(r)
 
 # Searching for pdf files
 keywords = 'russia filetype:pdf'
 ddgs_text_gen = ddgs.text(keywords, region='wt-wt', safesearch='Off', timelimit='y')
 for r in ddgs_text_gen:
-	print(r)
+    print(r)
 
 # Using lite backend and limit the number of results to 10
 from itertools import islice
 
 ddgs_text_gen = DDGS().text("notes from a dead house", backend="lite")
 for r in islice(ddgs_text_gen, 10):
-	print(r)
+    print(r)
 ```
 
 
