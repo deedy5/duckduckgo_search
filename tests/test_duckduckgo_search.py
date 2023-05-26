@@ -14,6 +14,24 @@ def test_text():
             break
     assert counter >= 25
 
+def test_text_html():
+    results_gen = DDGS().text("cat", backend="html")
+    counter = 0
+    for i, x in enumerate(results_gen):
+        counter += 1
+        if i >= 25:
+            break
+    assert counter >= 25
+
+def test_text_lite():
+    results_gen = DDGS().text("cat", backend="lite")
+    counter = 0
+    for i, x in enumerate(results_gen):
+        counter += 1
+        if i >= 25:
+            break
+    assert counter >= 25
+
 
 def test_images():
     results_gen = DDGS().images("cat")

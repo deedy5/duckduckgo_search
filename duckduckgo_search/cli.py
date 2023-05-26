@@ -146,7 +146,7 @@ def version():
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="text search, keywords for query")
+@click.option("-k", "--keywords", required=True, help="text search, keywords for query")
 @click.option(
     "-r",
     "--region",
@@ -186,6 +186,13 @@ def version():
     default=False,
     help="download results to 'keywords' folder",
 )
+@click.option(
+    "-b",
+    "--backend",
+    default="api",
+    type=click.Choice(["api", "html", "lite"]),
+    help="which backend to use, default=api",
+)
 def text(keywords, output, download, max_results, *args, **kwargs):
     data = []
     for r in DDGS().text(keywords=keywords, *args, **kwargs):
@@ -205,7 +212,9 @@ def text(keywords, output, download, max_results, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="answers search, keywords for query")
+@click.option(
+    "-k", "--keywords", required=True, help="answers search, keywords for query"
+)
 @click.option(
     "-o",
     "--output",
@@ -226,7 +235,7 @@ def answers(keywords, output, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option(
     "-r",
     "--region",
@@ -333,7 +342,7 @@ def images(keywords, output, download, max_results, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option(
     "-r",
     "--region",
@@ -397,7 +406,7 @@ def videos(keywords, output, max_results, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option(
     "-r",
     "--region",
@@ -446,7 +455,7 @@ def news(keywords, output, max_results, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option(
     "-p",
     "--place",
@@ -504,7 +513,7 @@ def maps(keywords, output, max_results, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="text for translation")
+@click.option("-k", "--keywords", required=True, help="text for translation")
 @click.option(
     "-f",
     "--from_",
@@ -535,7 +544,7 @@ def translate(keywords, output, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", help="keywords for query")
+@click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option(
     "-r",
     "--region",

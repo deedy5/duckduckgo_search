@@ -173,7 +173,6 @@ for r in ddgs_text_gen:
 [Go To TOP](#TOP)
 
 ## 1. text() - text search by by duckduckgo.com
-*WARNING!: Since version v3.4.0, api requests have been replaced by html parsing. Set a delay of at least 1 second between function calls.*
 ```python
 def text(
     keywords: str,
@@ -188,7 +187,10 @@ def text(
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m, y. Defaults to None.
-
+        backend: api, html, lite. Defaults to api.
+            api - collect data from https://duckduckgo.com,
+            html - collect data from https://html.duckduckgo.com,
+            lite - collect data from https://lite.duckduckgo.com.
     Yields:
         dict with search results.
 
@@ -200,7 +202,7 @@ from duckduckgo_search import DDGS
 
 ddgs = DDGS()
 
-keywords = 'Bella Ciao'
+keywords = 'live free or die'
 ddgs_text_gen = ddgs.text(keywords, region='wt-wt', safesearch='Off', timelimit='y')
 for r in ddgs_text_gen:
 	print(r)
@@ -209,6 +211,13 @@ for r in ddgs_text_gen:
 keywords = 'russia filetype:pdf'
 ddgs_text_gen = ddgs.text(keywords, region='wt-wt', safesearch='Off', timelimit='y')
 for r in ddgs_text_gen:
+	print(r)
+
+# Using lite backend and limit the number of results to 10
+from itertools import islice
+
+ddgs_text_gen = DDGS().text("notes from a dead house", backend="lite")
+for r in islice(ddgs_text_gen, 10):
 	print(r)
 ```
 
