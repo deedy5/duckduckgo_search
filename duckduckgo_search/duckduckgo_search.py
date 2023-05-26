@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from html import unescape
+from itertools import cycle
 from time import sleep
 from typing import Deque, Dict, Iterator, Optional, Set
 from urllib.parse import unquote
@@ -98,8 +99,37 @@ class DDGS:
             return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
         return ""
 
-    '''
     def text(
+        self,
+        keywords: str,
+        region: str = "wt-wt",
+        safesearch: str = "moderate",
+        timelimit: Optional[str] = None,
+        backend: str = "api",
+    ) -> Iterator[dict]:
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+
+        Args:
+            keywords: keywords for query.
+            region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+            safesearch: on, moderate, off. Defaults to "moderate".
+            timelimit: d, w, m, y. Defaults to None.
+            backend: api, html, lite. Defaults to api.
+                api - collect data from https://duckduckgo.com,
+                html - collect data from https://html.duckduckgo.com,
+                lite - collect data from https://lite.duckduckgo.com.
+        Yields:
+            dict with search results.
+
+        """
+        if backend == "api":
+            yield from self._text_api(keywords, region, safesearch, timelimit)
+        elif backend == "html":
+            yield from self._text_html(keywords, region, safesearch, timelimit)
+        elif backend == "lite":
+            yield from self._text_lite(keywords, region, timelimit)
+
+    def _text_api(
         self,
         keywords: str,
         region: str = "wt-wt",
@@ -122,6 +152,7 @@ class DDGS:
 
         vqd = self._get_vqd(keywords)
         assert vqd, "error in getting vqd"
+        sleep(0.75)
 
         payload = {
             "q": keywords,  #
@@ -144,7 +175,8 @@ class DDGS:
             payload["p"] = "1"
 
         cache = set()
-        for _ in range(10):
+        for s in ("0", "20", "70", "120"):
+            payload["s"] = s
             resp = self._get_url(
                 "GET", "https://links.duckduckgo.com/d.js", params=payload
             )
@@ -157,10 +189,7 @@ class DDGS:
             if page_data is None:
                 break
 
-            result_exists = False
             for row in page_data:
-                if "n" in row:
-                    payload["s"] = row["n"].split("s=")[-1].split("&")[0]
                 href = row.get("u", None)
                 if (
                     href
@@ -170,19 +199,13 @@ class DDGS:
                     cache.add(href)
                     body = self._normalize(row["a"])
                     if body:
-                        result_exists = True
                         yield {
                             "title": self._normalize(row["t"]),
                             "href": href,
                             "body": body,
                         }
-                elif result_exists is False:
-                    break
-            if result_exists is False:
-                break
-    '''
 
-    def text(
+    def _text_html(
         self,
         keywords: str,
         region: str = "wt-wt",
@@ -206,7 +229,7 @@ class DDGS:
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
-            "l": region,
+            "kl": region,
             "p": safesearch_base[safesearch.lower()],
             "df": timelimit,
         }
@@ -217,10 +240,11 @@ class DDGS:
             )
             if resp is None:
                 break
+
             tree = html.fromstring(resp.content)
             if tree.xpath('//div[@class="no-results"]/text()'):
                 return
-            result_exists = False
+
             for e in tree.xpath('//div[contains(@class, "results_links")]'):
                 href = e.xpath('.//a[contains(@class, "result__a")]/@href')
                 href = href[0] if href else None
@@ -232,15 +256,11 @@ class DDGS:
                     cache.add(href)
                     title = e.xpath('.//a[contains(@class, "result__a")]/text()')
                     body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
-                    result_exists = True
                     yield {
                         "title": self._normalize(title[0]) if title else None,
                         "href": href,
                         "body": self._normalize("".join(body)) if body else None,
                     }
-
-            if result_exists is False:
-                break
 
             next_page = tree.xpath('.//div[@class="nav-link"]')
             next_page = next_page[-1] if next_page else None
@@ -250,7 +270,70 @@ class DDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
-            sleep(1)
+            sleep(0.75)
+
+    def _text_lite(
+        self,
+        keywords: str,
+        region: str = "wt-wt",
+        timelimit: Optional[str] = None,
+    ) -> Iterator[dict]:
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+
+        Args:
+            keywords: keywords for query.
+            region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+            timelimit: d, w, m, y. Defaults to None.
+
+        Yields:
+            dict with search results.
+
+        """
+        assert keywords, "keywords is mandatory"
+
+        payload = {
+            "q": keywords,
+            "kl": region,
+            "df": timelimit,
+        }
+        cache: Set[str] = set()
+        for s in ("0", "20", "70", "120"):
+            payload["s"] = s
+            resp = self._get_url(
+                "POST", "https://lite.duckduckgo.com/lite/", data=payload
+            )
+            if resp is None:
+                break
+
+            tree = html.fromstring(resp.content)
+            if "No more results." in tree.xpath("//table[1]//text()"):
+                return
+
+            result_exists = False
+            for i, e in zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr")):
+                if i == 1:
+                    href = e.xpath(".//a//@href")
+                    href = href[0] if href else None
+                    if (
+                        href is None
+                        or href in cache
+                        or href == f"http://www.google.com/search?q={keywords}"
+                    ):
+                        continue
+                    title = e.xpath(".//a//text()")[0]
+                elif i == 2:
+                    body = e.xpath(".//td[@class='result-snippet']//text()")
+                    body = "".join(body).strip()
+                elif i == 3:
+                    result_exists = True
+                    yield {
+                        "href": href,
+                        "title": title,
+                        "body": body,
+                    }
+            if result_exists is False:
+                break
+            sleep(0.75)
 
     def images(
         self,
@@ -290,6 +373,7 @@ class DDGS:
 
         vqd = self._get_vqd(keywords)
         assert vqd, "error in getting vqd"
+        sleep(0.75)
 
         safesearch_base = {"on": 1, "moderate": 1, "off": -1}
         timelimit = f"time:{timelimit}" if timelimit else ""
