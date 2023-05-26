@@ -212,7 +212,9 @@ def text(keywords, output, download, max_results, *args, **kwargs):
 
 
 @cli.command()
-@click.option("-k", "--keywords", required=True, help="answers search, keywords for query")
+@click.option(
+    "-k", "--keywords", required=True, help="answers search, keywords for query"
+)
 @click.option(
     "-o",
     "--output",
