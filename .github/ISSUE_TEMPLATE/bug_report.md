@@ -6,11 +6,6 @@ labels: ''
 assignees: ''
 
 ---
-**Reinstall duckduckgo_search and сheck if the problem is gone**
-
-```pip install -I duckduckgo_search```
-
-```pip install -I duckduckgo_search --break-system-packages```
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -31,15 +26,3 @@ If applicable, add screenshots to help explain your problem.
 **Desktop (please complete the following information):**
  - OS: [e.g. iOS]
  - duckduckgo_search version [e.g. 3.0.0]
-
-**Additional context**
-Run this code and show results, change text() to the function that is causing the problem
-```python
-import logging
-from duckduckgo_search import DDGS
-
-logging.basicConfig(level=logging.DEBUG)
-
-for r in DDGS().text("something"):
-    pass
-```
