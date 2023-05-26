@@ -173,6 +173,7 @@ for r in ddgs_text_gen:
 [Go To TOP](#TOP)
 
 ## 1. text() - text search by by duckduckgo.com
+*WARNING!: Since version v3.4.0, api requests have been replaced by html parsing. Set a delay of at least 1 second between function calls.*
 ```python
 def text(
     keywords: str,
