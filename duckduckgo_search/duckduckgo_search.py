@@ -13,7 +13,6 @@ from urllib.parse import unquote
 import httpx
 import requests
 from lxml import html
-from requests.models import Response
 
 logger = logging.getLogger(__name__)
 
@@ -47,23 +46,30 @@ class DDGS:
     def __init__(
         self,
         headers: Optional[Dict[str, str]] = None,
-        proxies = None,
+        proxies: Optional[Dict] = None,
         timeout: int = 10,
     ) -> None:
-        self._session = requests.Session()
-        self._session.headers.update(headers if headers else HEADERS)
-        self._session.proxies.update(proxies if proxies else {})
-        self._timeout = timeout
-        self._client = httpx.Client(headers=headers, proxies=proxies, http2=True)
+        self._client = httpx.Client(
+            headers=headers if headers else HEADERS,
+            proxies=proxies,
+            timeout=timeout,
+            http2=True,
+        )
 
-    def _get_url(self, method: str, url: str, **kwargs) -> Optional[httpx._models.Response]:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._client.close()
+
+    def _get_url(
+        self, method: str, url: str, **kwargs
+    ) -> Optional[httpx._models.Response]:
         for i in range(3):
             try:
-                resp = self._client.request(
-                    method, url, timeout=self._timeout, **kwargs
-                )
+                resp = self._client.request(method, url, **kwargs)
                 if self._is_500_in_url(str(resp.url)) or resp.status_code == 202:
-                    raise requests.HTTPError
+                    raise httpx._exceptions.HTTPError("")
                 resp.raise_for_status()
                 if resp.status_code == 200:
                     return resp
@@ -662,7 +668,9 @@ class DDGS:
             "q": keywords,
             "kl": region,
         }
-        resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
+        resp = self._get_url(
+            "GET", "https://duckduckgo.com/ac", params=payload, follow_redirects=True
+        )
         if resp is None:
             return None
         try:
@@ -857,8 +865,8 @@ class DDGS:
         resp = self._get_url(
             "POST",
             "https://duckduckgo.com/translation.js",
-            params=payload,
-            data=keywords.encode(),
+            data=payload,
+            content=keywords.encode(),
         )
         if resp is None:
             return None

@@ -8,7 +8,7 @@ from shutil import copyfileobj
 from urllib.parse import unquote
 
 import click
-import requests
+import httpx
 
 # isort: off
 from .duckduckgo_search import DDGS
@@ -92,12 +92,11 @@ def download_file(url, dir_path, filename):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
     }
     try:
-        with requests.get(url, headers=headers, stream=True, timeout=10) as resp:
-            resp.raise_for_status()
-            resp.raw.decode_content = True
-            with open(os.path.join(dir_path, filename), "wb") as file:
-                copyfileobj(resp.raw, file)
-            logger.info(f"File downloaded {url}")
+        with open(os.path.join(dir_path, filename), "wb") as file:
+            with httpx.stream("GET", url, headers=headers) as resp:
+                for chunk in resp.iter_bytes():
+                    file.write(chunk)
+        logger.info(f"File downloaded {url}")
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
