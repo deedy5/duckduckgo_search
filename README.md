@@ -1,8 +1,4 @@
 ![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search)
-# Attention!!! 
-### The text() and images() functions may not work due to changes in the site, after which it is not possible to get vqd. In the near future the code of these functions will be rewritten using javascript rendering.
-___
-
 # Duckduckgo_search<a name="TOP"></a>
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
@@ -144,7 +140,7 @@ ___
 ## Using proxy
 If you send too many requests the site blocks ip for up to one minute and DDGS will raise an exception 
 `requests.exceptions.HTTPError: 418 Client Error:  for url: https://duckduckgo.com/`.
-In this case, you need repeat again after a while or to use a proxy. 
+In this case, you need repeat again after a while or to use a proxy ([httpx documentation](https://www.python-httpx.org/advanced)).
 You can set a timeout if the proxy takes a long time to respond (default timeout=10).
 
 *1. The easiest way. Launch the Tor Browser*
@@ -152,8 +148,7 @@ You can set a timeout if the proxy takes a long time to respond (default timeout
 from duckduckgo_search import DDGS
 
 proxies = {
-    "http": "socks5h://localhost:9150",
-    "https": "socks5h://localhost:9150"
+    "all://": "socks5h://localhost:9150",
 }
 ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
 for r in ddgs_text_gen:
@@ -164,9 +159,7 @@ for r in ddgs_text_gen:
 from duckduckgo_search import DDGS
 
 proxies = {
-    "http": "socks5h://user:password@geo.iproyal.com:32325",
-    "https": "socks5h://user:password@geo.iproyal.com:32325",
-    "no_proxy": "localhost,127.0.0.1",
+    "all://": "https://user:password@geo.iproyal.com:32325",
 }
 ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
 for r in ddgs_text_gen:
