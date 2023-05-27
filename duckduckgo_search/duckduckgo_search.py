@@ -11,6 +11,7 @@ from typing import Deque, Dict, Iterator, Optional, Set
 from urllib.parse import unquote
 
 import httpx
+import requests
 from lxml import html
 
 logger = logging.getLogger(__name__)
@@ -861,11 +862,10 @@ class DDGS:
             "to": to,
         }
 
-        resp = self._get_url(
-            "POST",
+        resp = requests.post(
             "https://duckduckgo.com/translation.js",
-            data=payload,
-            content=keywords.encode(),
+            params=payload,
+            data=keywords.encode(),
         )
         if resp is None:
             return None
