@@ -10,6 +10,7 @@ from time import sleep
 from typing import Deque, Dict, Iterator, Optional, Set
 from urllib.parse import unquote
 
+import httpx
 import requests
 from lxml import html
 from requests.models import Response
@@ -46,21 +47,22 @@ class DDGS:
     def __init__(
         self,
         headers: Optional[Dict[str, str]] = None,
-        proxies: Optional[Dict[str, str]] = None,
+        proxies = None,
         timeout: int = 10,
     ) -> None:
         self._session = requests.Session()
         self._session.headers.update(headers if headers else HEADERS)
         self._session.proxies.update(proxies if proxies else {})
         self._timeout = timeout
+        self._client = httpx.Client(headers=headers, proxies=proxies, http2=True)
 
-    def _get_url(self, method: str, url: str, **kwargs) -> Optional[Response]:
+    def _get_url(self, method: str, url: str, **kwargs) -> Optional[httpx._models.Response]:
         for i in range(3):
             try:
-                resp = self._session.request(
+                resp = self._client.request(
                     method, url, timeout=self._timeout, **kwargs
                 )
-                if self._is_500_in_url(resp.url) or resp.status_code == 202:
+                if self._is_500_in_url(str(resp.url)) or resp.status_code == 202:
                     raise requests.HTTPError
                 resp.raise_for_status()
                 if resp.status_code == 200:
