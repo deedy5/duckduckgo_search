@@ -1,8 +1,4 @@
 ![Python >= 3.7](https://img.shields.io/badge/python->=3.7-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search)
-# Attention!!! 
-### The text() and images() functions may not work due to changes in the site, after which it is not possible to get vqd. In the near future the code of these functions will be rewritten using javascript rendering.
-___
-
 # Duckduckgo_search<a name="TOP"></a>
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
