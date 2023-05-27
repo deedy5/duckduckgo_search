@@ -11,7 +11,6 @@ from typing import Deque, Dict, Iterator, Optional, Set
 from urllib.parse import unquote
 
 import httpx
-import requests
 from lxml import html
 
 logger = logging.getLogger(__name__)
