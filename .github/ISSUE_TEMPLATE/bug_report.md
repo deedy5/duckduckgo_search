@@ -1,28 +1,22 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[BUG]"
+title: ''
 labels: ''
 assignees: ''
 
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+What the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Debug log**
+Add `logging.basicConfig(level=logging.DEBUG)` to the beginning of your script and attach log to the issue.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - duckduckgo_search version [e.g. 3.0.0]
+**Specify this information**
+ - OS
+ - environment
+ - duckduckgo_search version
