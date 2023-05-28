@@ -138,8 +138,7 @@ ___
 [Go To TOP](#TOP)
 
 ## Using proxy
-If you send too many requests the site blocks ip for up to one minute and DDGS will raise an exception 
-`requests.exceptions.HTTPError: 418 Client Error:  for url: https://duckduckgo.com/`.
+If you send too many requests the site blocks ip for up to one minute and DDGS will raise an exception.
 In this case, you need repeat again after a while or to use a proxy ([httpx documentation](https://www.python-httpx.org/advanced)).
 You can set a timeout if the proxy takes a long time to respond (default timeout=10).
 
