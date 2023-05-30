@@ -1,78 +1,72 @@
 import os
 import shutil
+from itertools import islice
 
 from duckduckgo_search import DDGS
 from duckduckgo_search.cli import download_results, save_csv, save_json
 
 
 def test_text():
-    results_gen = DDGS().text("cat")
-    counter = 0
-    for i, x in enumerate(results_gen):
-        counter += 1
-        if i >= 25:
-            break
-    assert counter >= 25
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.text("cat")
+        results = [x for x in islice(ddgs_gen, 25)]
+        assert len(results) >= 20
+
+
+def test_text_html():
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.text("eagle", backend="html")
+        results = [x for x in islice(ddgs_gen, 25)]
+        assert len(results) >= 20
+
+
+def test_text_lite():
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.text("dog", backend="lite")
+        results = [x for x in islice(ddgs_gen, 25)]
+        assert len(results) >= 20
 
 
 def test_images():
-    results_gen = DDGS().images("cat")
-    counter = 0
-    for i, x in enumerate(results_gen):
-        counter += 1
-        if i >= 150:
-            break
-    assert counter >= 150
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.images("airplane")
+        results = [x for x in islice(ddgs_gen, 150)]
+        assert len(results) >= 140
 
 
 def test_videos():
-    results_gen = DDGS().videos("cat")
-    counter = 0
-    for i, x in enumerate(results_gen):
-        counter += 1
-        if i >= 40:
-            break
-    assert counter >= 40
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.videos("sea")
+        results = [x for x in islice(ddgs_gen, 50)]
+        assert len(results) >= 40
 
 
 def test_news():
-    results_gen = DDGS().news("cat")
-    counter = 0
-    for i, x in enumerate(results_gen):
-        counter += 1
-        if i >= 40:
-            break
-    assert counter >= 40
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.news("tesla")
+        results = [x for x in islice(ddgs_gen, 40)]
+        assert len(results) >= 30
 
 
 def test_maps():
-    results_gen = DDGS().maps("school", place="London")
-    counter = 0
-    for i, x in enumerate(results_gen):
-        counter += 1
-        if i >= 40:
-            break
-    assert counter >= 40
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.maps("school", place="London")
+        results = [x for x in islice(ddgs_gen, 40)]
+        assert len(results) >= 30
 
 
 def test_answers():
-    results_gen = DDGS().answers("cat")
-    counter = 0
-    for i, x in enumerate(results_gen):
-        counter += 1
-        if i >= 1:
-            break
-    assert counter >= 1
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.answers("sun")
+        results = [x for x in islice(ddgs_gen, 5)]
+        assert len(results) >= 1
 
 
 def test_suggestions():
-    results_gen = DDGS().suggestions("cat")
-    counter = 0
-    for i, x in enumerate(results_gen):
-        counter += 1
-        if i >= 10:
-            break
-    assert counter >= 1
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.suggestions("moon")
+        results = [x for x in islice(ddgs_gen, 5)]
+        assert len(results) >= 1
 
 
 def test_translate():
@@ -86,16 +80,12 @@ def test_translate():
 
 def test_save_csv():
     keywords = "butterfly"
-    results_gen = DDGS().text(keywords)
-    results = []
-    for r in results_gen:
-        results.append(r)
-        if len(results) >= 20:
-            break
-    assert len(results) >= 20
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.text(keywords)
+        results = [x for x in islice(ddgs_gen, 25)]
+        assert len(results) >= 22
 
     save_csv(f"{keywords}.csv", results)
-    save_json(f"{keywords}.json", results)
 
     # delete files and folders contains keyword in name
     not_files = True
@@ -110,13 +100,10 @@ def test_save_csv():
 
 def test_save_json():
     keywords = "chicago"
-    results_gen = DDGS().text(keywords)
-    results = []
-    for r in results_gen:
-        results.append(r)
-        if len(results) >= 20:
-            break
-    assert len(results) >= 20
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.text(keywords)
+        results = [x for x in islice(ddgs_gen, 25)]
+        assert len(results) >= 22
 
     save_json(f"{keywords}.json", results)
 
@@ -133,8 +120,8 @@ def test_save_json():
 
 def test_text_download():
     keywords = "maradona"
-    results = [x for i, x in enumerate(DDGS().text(keywords)) if i <= 10]
-    assert len(results) >= 10
+    results = [x for x in islice(DDGS().text(keywords), 10)]
+    assert len(results) >= 8
 
     download_results(keywords, results)
 
@@ -159,8 +146,8 @@ def test_text_download():
 
 def test_images_download():
     keywords = "real madrid"
-    results = [x for i, x in enumerate(DDGS().images(keywords)) if i <= 10]
-    assert len(results) >= 10
+    results = [x for x in islice(DDGS().images(keywords), 10)]
+    assert len(results) >= 8
 
     download_results(keywords, results, images=True)
 

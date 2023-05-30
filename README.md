@@ -139,30 +139,24 @@ ___
 
 ## Using proxy
 If you send too many requests the site blocks ip for up to one minute and DDGS will raise an exception.
-In this case, you need repeat again after a while or to use a proxy ([httpx documentation](https://www.python-httpx.org/advanced)).
+In this case, you need repeat again after a while or to use a proxy ([documentation](https://www.python-httpx.org/advanced/#http-proxying)).
 You can set a timeout if the proxy takes a long time to respond (default timeout=10).
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
 from duckduckgo_search import DDGS
 
-proxies = {
-    "all://": "socks5h://localhost:9150",
-}
-ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
-for r in ddgs_text_gen:
-    print(r)
+with DDGS(proxies="socks5://localhost:9150", timeout=20) as ddgs:
+    for r in ddgs.text("something you need"):
+        print(r)
 ```
 *2. Use any proxy server* (*example with [iproyal residential proxies](https://iproyal.com?r=residential_proxies)*)
 ```python3
 from duckduckgo_search import DDGS
 
-proxies = {
-    "all://": "https://user:password@geo.iproyal.com:32325",
-}
-ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
-for r in ddgs_text_gen:
-    print(r)
+with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as ddgs:
+    for r in ddgs.text("something you need"):
+        print(r)
 ```
 
 [Go To TOP](#TOP)
@@ -196,25 +190,22 @@ def text(
 ```python
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'live free or die'
-ddgs_text_gen = ddgs.text(keywords, region='wt-wt', safesearch='Off', timelimit='y')
-for r in ddgs_text_gen:
-    print(r)
+with DDGS() as ddgs:
+    for r in ddgs.text('live free or die', region='wt-wt', safesearch='Off', timelimit='y'):
+        print(r)
 
 # Searching for pdf files
-keywords = 'russia filetype:pdf'
-ddgs_text_gen = ddgs.text(keywords, region='wt-wt', safesearch='Off', timelimit='y')
-for r in ddgs_text_gen:
-    print(r)
+with DDGS() as ddgs:
+    for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='Off', timelimit='y'):
+        print(r)
 
 # Using lite backend and limit the number of results to 10
 from itertools import islice
 
-ddgs_text_gen = DDGS().text("notes from a dead house", backend="lite")
-for r in islice(ddgs_text_gen, 10):
-    print(r)
+with DDGS() as ddgs:
+    ddgs_gen = ddgs.text("notes from a dead house", backend="lite")
+    for r in islice(ddgs_gen, 10):
+        print(r)
 ```
 
 
@@ -238,12 +229,9 @@ def answers(keywords: str) -> Generator[dict, None, None]:
 ```python
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'sun'
-ddgs_answers_gen = ddgs.answers(keywords)
-for r in ddgs_answers_gen:
-    print(r)
+with DDGS() as ddgs:
+    for r in ddgs.answers("sun"):
+        print(r)
 ```
 
 [Go To TOP](#TOP)
@@ -289,21 +277,20 @@ def images(
 ```python
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'butterfly'
-ddgs_images_gen = ddgs.images(
-    keywords,
-    region="wt-wt",
-    safesearch="Off",
-    size=None,
-    color="Monochrome",
-    type_image=None,
-    layout=None,
-    license_image=None,
-)
-for r in ddgs_images_gen:
-    print(r)
+with DDGS() as ddgs:
+    keywords = 'butterfly'
+    ddgs_images_gen = ddgs.images(
+      keywords,
+      region="wt-wt",
+      safesearch="Off",
+      size=None,
+      color="Monochrome",
+      type_image=None,
+      layout=None,
+      license_image=None,
+    )
+    for r in ddgs_images_gen:
+        print(r)
 ```
 
 [Go To TOP](#TOP)
@@ -340,19 +327,18 @@ def videos(
 ```python
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'tesla'
-ddgs_videos_gen = ddgs.videos(
-    keywords,
-    region="wt-wt",
-    safesearch="Off",
-    timelimit="w",
-    resolution="high",
-    duration="medium",
-)
-for r in ddgs_videos_gen:
-    print(r)
+with DDGS() as ddgs:
+    keywords = 'tesla'
+    ddgs_videos_gen = ddgs.videos(
+      keywords,
+      region="wt-wt",
+      safesearch="Off",
+      timelimit="w",
+      resolution="high",
+      duration="medium",
+    )
+    for r in ddgs_videos_gen:
+        print(r)
 ```
 
 
@@ -384,17 +370,16 @@ def news(
 ```python
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'How soon the sun will die'
-ddgs_news_gen = ddgs.news(
-    keywords,
-    region="wt-wt",
-    safesearch="Off",
-    timelimit="m",
-)
-for r in ddgs_news_gen:
-    print(r)
+with DDGS() as ddgs:
+    keywords = 'How soon the sun will die'
+    ddgs_news_gen = ddgs.news(
+      keywords,
+      region="wt-wt",
+      safesearch="Off",
+      timelimit="m",
+    )
+    for r in ddgs_news_gen:
+        print(r)
 ```
 
 [Go To TOP](#TOP)
@@ -440,15 +425,9 @@ def maps(
 ```python
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'school'
-ddgs_maps_gen = ddgs.maps(
-    keywords,
-    place="Uganda",
-)
-for r in ddgs_maps_gen:
-    print(r)
+with DDGS() as ddgs:
+    for r in ddgs.maps("school", place="Uganda"):
+        print(r)
 ```
 
 [Go To TOP](#TOP)
@@ -477,11 +456,10 @@ def translate(
 ```python
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'school'
-r = ddgs.translate(keywords, to="de")
-print(r)
+with DDGS() as ddgs:
+    keywords = 'school'
+    r = ddgs.translate(keywords, to="de")
+    print(r)
 ```
 
 [Go To TOP](#TOP)
@@ -508,12 +486,9 @@ def suggestions(
 ```python3
 from duckduckgo_search import DDGS
 
-ddgs = DDGS()
-
-keywords = 'fly'
-ddgs_suggestions_gen = ddgs.suggestions(keywords)
-for r in ddgs_suggestions_gen:
-    print(r)
+with DDGS() as ddgs:
+    for r in ddgs.suggestions("fly)
+        print(r)
 ```
 
 [Go To TOP](#TOP)

@@ -6,22 +6,37 @@ from datetime import datetime
 from decimal import Decimal
 from html import unescape
 from itertools import cycle
+from random import choice
 from time import sleep
-from typing import Deque, Dict, Iterator, Optional, Set
+from typing import Deque, Dict, Iterator, Optional, Set, Union
 from urllib.parse import unquote
 
 import httpx
-import requests
 from lxml import html
 
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
-    "Referer": "https://duckduckgo.com/",
-}
 REGEX_500_IN_URL = re.compile(r"[0-9]{3}-[0-9]{2}.js")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
+
+USERAGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13.4; rv:109.0) Gecko/20100101 Firefox/113.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.57",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.57",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 OPR/99.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 OPR/99.0.0.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 OPR/99.0.0.0",
+]
+HEADERS = {
+    "User-Agent": choice(USERAGENTS),
+    "Referer": "https://duckduckgo.com/",
+}
 
 
 @dataclass
@@ -46,7 +61,7 @@ class DDGS:
     def __init__(
         self,
         headers: Optional[Dict[str, str]] = None,
-        proxies: Optional[Dict] = None,
+        proxies: Optional[Union[Dict, str]] = None,
         timeout: int = 10,
     ) -> None:
         self._client = httpx.Client(
@@ -67,7 +82,9 @@ class DDGS:
     ) -> Optional[httpx._models.Response]:
         for i in range(3):
             try:
-                resp = self._client.request(method, url, **kwargs)
+                resp = self._client.request(
+                    method, url, follow_redirects=True, **kwargs
+                )
                 if self._is_500_in_url(str(resp.url)) or resp.status_code == 202:
                     raise httpx._exceptions.HTTPError("")
                 resp.raise_for_status()
@@ -335,9 +352,9 @@ class DDGS:
                 elif i == 3:
                     result_exists = True
                     yield {
+                        "title": self._normalize(title),
                         "href": href,
-                        "title": title,
-                        "body": body,
+                        "body": self._normalize(body),
                     }
             if result_exists is False:
                 break
@@ -668,9 +685,7 @@ class DDGS:
             "q": keywords,
             "kl": region,
         }
-        resp = self._get_url(
-            "GET", "https://duckduckgo.com/ac", params=payload, follow_redirects=True
-        )
+        resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
         if resp is None:
             return None
         try:
@@ -858,11 +873,13 @@ class DDGS:
         payload = {
             "vqd": vqd,
             "query": "translate",
-            "from": from_,
             "to": to,
         }
+        if from_:
+            payload["from"] = from_
 
-        resp = requests.post(
+        resp = self._get_url(
+            "POST",
             "https://duckduckgo.com/translation.js",
             params=payload,
             data=keywords.encode(),
