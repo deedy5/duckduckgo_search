@@ -92,8 +92,8 @@ def download_file(url, dir_path, filename):
         "User-Agent": choice(USERAGENTS),
     }
     try:
-        with open(os.path.join(dir_path, filename), "wb") as file:
-            with httpx.stream("GET", url, headers=headers) as resp:
+        with httpx.stream("GET", url, headers=headers) as resp:
+            with open(os.path.join(dir_path, filename), "wb") as file:
                 for chunk in resp.iter_bytes():
                     file.write(chunk)
         logger.info(f"File downloaded {url}")
