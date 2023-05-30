@@ -82,7 +82,9 @@ class DDGS:
     ) -> Optional[httpx._models.Response]:
         for i in range(3):
             try:
-                resp = self._client.request(method, url, **kwargs)
+                resp = self._client.request(
+                    method, url, follow_redirects=True, **kwargs
+                )
                 if self._is_500_in_url(str(resp.url)) or resp.status_code == 202:
                     raise httpx._exceptions.HTTPError("")
                 resp.raise_for_status()
