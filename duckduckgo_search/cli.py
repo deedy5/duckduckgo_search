@@ -4,14 +4,14 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from shutil import copyfileobj
+from random import choice
 from urllib.parse import unquote
 
 import click
 import httpx
 
 # isort: off
-from .duckduckgo_search import DDGS
+from .duckduckgo_search import DDGS, USERAGENTS
 from .version import __version__
 
 # isort: on
@@ -89,7 +89,7 @@ def sanitize_keywords(keywords):
 
 def download_file(url, dir_path, filename):
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
+        "User-Agent": choice(USERAGENTS),
     }
     try:
         with open(os.path.join(dir_path, filename), "wb") as file:
