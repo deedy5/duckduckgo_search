@@ -685,9 +685,7 @@ class DDGS:
             "q": keywords,
             "kl": region,
         }
-        resp = self._get_url(
-            "GET", "https://duckduckgo.com/ac", params=payload, follow_redirects=True
-        )
+        resp = self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
         if resp is None:
             return None
         try:
