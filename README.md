@@ -139,17 +139,14 @@ ___
 
 ## Using proxy
 If you send too many requests the site blocks ip for up to one minute and DDGS will raise an exception.
-In this case, you need repeat again after a while or to use a proxy ([httpx documentation](https://www.python-httpx.org/advanced)).
+In this case, you need repeat again after a while or to use a proxy ([documentation](https://www.python-httpx.org/advanced/#http-proxying)).
 You can set a timeout if the proxy takes a long time to respond (default timeout=10).
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
 from duckduckgo_search import DDGS
 
-proxies = {
-    "all://": "socks5h://localhost:9150",
-}
-ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
+ddgs_text_gen = DDGS(proxies="socks5://localhost:9150", timeout=20).text("something you need")
 for r in ddgs_text_gen:
     print(r)
 ```
@@ -157,10 +154,7 @@ for r in ddgs_text_gen:
 ```python3
 from duckduckgo_search import DDGS
 
-proxies = {
-    "all://": "https://user:password@geo.iproyal.com:32325",
-}
-ddgs_text_gen = DDGS(proxies=proxies, timeout=20).text("something you need")
+ddgs_text_gen = DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20).text("something you need")
 for r in ddgs_text_gen:
     print(r)
 ```
