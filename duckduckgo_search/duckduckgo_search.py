@@ -350,9 +350,9 @@ class DDGS:
                 elif i == 3:
                     result_exists = True
                     yield {
+                        "title": self._normalize(title),
                         "href": href,
-                        "title": title,
-                        "body": body,
+                        "body": self._normalize(body),
                     }
             if result_exists is False:
                 break
