@@ -77,12 +77,14 @@ def print_data(data):
 
 def sanitize_keywords(keywords):
     keywords = (
-        keywords.replace(" filetype:", "_")
+        keywords.replace("filetype", "")
+        .replace(":", "")
         .replace('"', "'")
-        .replace("site:", "")
+        .replace("site", "")
         .replace(" ", "_")
         .replace("/", "_")
         .replace("\\", "_")
+        .replace(" ", "")
     )
     return keywords
 
