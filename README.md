@@ -142,10 +142,6 @@ ___
 [Go To TOP](#TOP)
 
 ## Using proxy
-If you send too many requests the site blocks ip for up to one minute and DDGS will raise an exception.
-In this case, you need repeat again after a while or to use a proxy ([documentation](https://www.python-httpx.org/advanced/#http-proxying)).
-You can set a timeout if the proxy takes a long time to respond (default timeout=10).
-
 *1. The easiest way. Launch the Tor Browser*
 ```python3
 from duckduckgo_search import DDGS
@@ -166,6 +162,13 @@ with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as
 [Go To TOP](#TOP)
 
 ## 1. text() - text search by by duckduckgo.com
+`html` and `lite` backend differ from `api`:</br>
+* don't do an extra request first to get vqd,</br>
+* use POST requests,</br>
+* pause 0.75 seconds between paginations.</br>
+
+If you use `html` or `lite` backend, pause at least 0.75 seconds between text() calls. 
+Otherwise the site will return a 403 status code after a few requests and block your ip for a few seconds.
 ```python
 def text(
     keywords: str,
