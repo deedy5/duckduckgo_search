@@ -35,10 +35,14 @@ python -m duckduckgo_search --help
 
 CLI examples:
 ```python3
-# download pdf files
+# text search
+ddgs text -k 'ayrton senna'
+# find and download pdf files
 ddgs text -k "russia filetype:pdf" -m 50 -d
-# download images
-ddgs images -k "lady in red" -m 500 -s off -d
+# find and download xls files from a specific site
+ddgs text -k 'sanctions filetype:xls site:gov.ua' -m 50 -d
+# find and download images
+ddgs images -k "yuri kuklachev cat theatre" -m 500 -s off -d
 # get latest news
 ddgs news -k "ukraine war" -s off -t d -m 10
 ```
