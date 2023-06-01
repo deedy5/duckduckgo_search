@@ -24,20 +24,7 @@ USERAGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13.4; rv:109.0) Gecko/20100101 Firefox/113.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13.4; rv:102.0) Gecko/20100101 Firefox/102.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/113.0.1774.57",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/113.0.1774.57",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 OPR/99.0.0.0",
-    "Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 OPR/99.0.0.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 OPR/99.0.0.0",
 ]
-HEADERS = {
-    "User-Agent": choice(USERAGENTS),
-    "Referer": "https://duckduckgo.com/",
-}
 
 
 @dataclass
@@ -65,8 +52,13 @@ class DDGS:
         proxies: Optional[Union[Dict, str]] = None,
         timeout: int = 10,
     ) -> None:
+        if headers is None:
+            headers = {
+                "User-Agent": choice(USERAGENTS),
+                "Referer": "https://duckduckgo.com/",
+            }
         self._client = httpx.Client(
-            headers=headers if headers else HEADERS,
+            headers=headers,
             proxies=proxies,
             timeout=timeout,
             http2=True,
@@ -215,6 +207,7 @@ class DDGS:
             if page_data is None:
                 break
 
+            result_exists = False
             for row in page_data:
                 href = row.get("u", None)
                 if (
@@ -225,11 +218,14 @@ class DDGS:
                     cache.add(href)
                     body = self._normalize(row["a"])
                     if body:
+                        result_exists = True
                         yield {
                             "title": self._normalize(row["t"]),
                             "href": href,
-                            "body": body,
+                            "body": self._normalize(body),
                         }
+            if result_exists is False:
+                break
 
     def _text_html(
         self,
@@ -271,6 +267,7 @@ class DDGS:
             if tree.xpath('//div[@class="no-results"]/text()'):
                 return
 
+            result_exists = False
             for e in tree.xpath('//div[contains(@class, "results_links")]'):
                 href = e.xpath('.//a[contains(@class, "result__a")]/@href')
                 href = href[0] if href else None
@@ -282,6 +279,7 @@ class DDGS:
                     cache.add(href)
                     title = e.xpath('.//a[contains(@class, "result__a")]/text()')
                     body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
+                    result_exists = True
                     yield {
                         "title": self._normalize(title[0]) if title else None,
                         "href": href,
@@ -290,7 +288,7 @@ class DDGS:
 
             next_page = tree.xpath('.//div[@class="nav-link"]')
             next_page = next_page[-1] if next_page else None
-            if next_page is None:
+            if next_page is None or result_exists is False:
                 return
 
             names = next_page.xpath('.//input[@type="hidden"]/@name')
@@ -331,9 +329,10 @@ class DDGS:
             if resp is None:
                 break
 
-            tree = html.fromstring(resp.content)
-            if "No more results." in tree.xpath("//table[1]//text()"):
+            if b"No more results." in resp.content:
                 return
+
+            tree = html.fromstring(resp.content)
 
             result_exists = False
             for i, e in zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr")):
@@ -346,6 +345,7 @@ class DDGS:
                         or href == f"http://www.google.com/search?q={keywords}"
                     ):
                         continue
+                    cache.add(href)
                     title = e.xpath(".//a//text()")[0]
                 elif i == 2:
                     body = e.xpath(".//td[@class='result-snippet']//text()")
