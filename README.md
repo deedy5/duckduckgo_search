@@ -41,6 +41,8 @@ ddgs text -k 'ayrton senna'
 ddgs text -k "russia filetype:pdf" -m 50 -d
 # find and download xls files from a specific site
 ddgs text -k 'sanctions filetype:xls site:gov.ua' -m 50 -d
+# find and download any xls files from a specific site
+ddgs text -k 'filetype:xls site:mos.ru' -m 50 -d
 # find and download images
 ddgs images -k "yuri kuklachev cat theatre" -m 500 -s off -d
 # get latest news
@@ -161,7 +163,7 @@ with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as
 
 [Go To TOP](#TOP)
 
-## 1. text() - text search by by duckduckgo.com
+## 1. text() - text search by duckduckgo.com
 `html` and `lite` backend differ from `api`:</br>
 * don't do an extra request first to get vqd,</br>
 * use POST requests,</br>
