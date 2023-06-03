@@ -1,8 +1,8 @@
+import asyncio
 import csv
 import json
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from random import choice
 from urllib.parse import unquote
@@ -10,11 +10,8 @@ from urllib.parse import unquote
 import click
 import httpx
 
-# isort: off
 from .duckduckgo_search import DDGS, USERAGENTS
 from .version import __version__
-
-# isort: on
 
 logger = logging.getLogger(__name__)
 
@@ -89,50 +86,59 @@ def sanitize_keywords(keywords):
     return keywords
 
 
-def download_file(url, dir_path, filename):
-    headers = {
-        "User-Agent": choice(USERAGENTS),
-    }
+async def download_file(url, dir_path, filename, sem):
+    headers = {"User-Agent": choice(USERAGENTS)}
     try:
-        with httpx.stream("GET", url, headers=headers) as resp:
-            with open(os.path.join(dir_path, filename), "wb") as file:
-                for chunk in resp.iter_bytes():
-                    file.write(chunk)
-        logger.info(f"File downloaded {url}")
+        async with sem:
+            async with httpx.AsyncClient() as client:
+                async with client.stream("GET", url, headers=headers) as resp:
+                    if resp.status_code == 200:
+                        with open(os.path.join(dir_path, filename), "wb") as file:
+                            async for chunk in resp.aiter_bytes():
+                                file.write(chunk)
+                logger.info(f"File downloaded {url}")
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
 
-def download_results(keywords, results, images=False):
+async def _download_results(keywords, results, images=False):
     if images:
         path = f"images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     else:
         path = f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     os.makedirs(path, exist_ok=True)
-    futures = []
-    with ThreadPoolExecutor(10) as executor:
-        for i, res in enumerate(results, start=1):
-            if images:
-                filename = unquote(res["image"].split("/")[-1].split("?")[0])
-                future = executor.submit(
-                    download_file, res["image"], path, f"{i}_{filename}"
-                )
-            else:
-                filename = unquote(res["href"].split("/")[-1].split("?")[0])
-                future = executor.submit(
-                    download_file, res["href"], path, f"{i}_{filename}"
-                )
-            futures.append(future)
-        with click.progressbar(
-            as_completed(futures),
-            label="Downloading",
-            length=len(futures),
-            show_percent=True,
-            show_pos=True,
-            width=0,
-        ) as as_completed_futures:
-            for i, future in enumerate(as_completed_futures, start=1):
-                logger.info("%s/%s", i, len(results))
+
+    tasks = []
+    sem = asyncio.Semaphore(20)
+    for i, res in enumerate(results, start=1):
+        if images:
+            filename = unquote(res["image"].split("/")[-1].split("?")[0])
+            task = asyncio.create_task(
+                download_file(res["image"], path, f"{i}_{filename}", sem)
+            )
+        else:
+            filename = unquote(res["href"].split("/")[-1].split("?")[0])
+            task = asyncio.create_task(
+                download_file(res["href"], path, f"{i}_{filename}", sem)
+            )
+        tasks.append(task)
+
+    with click.progressbar(
+        length=len(tasks),
+        label="Downloading",
+        show_percent=True,
+        show_pos=True,
+        width=50,
+    ) as bar:
+        for future in asyncio.as_completed(tasks):
+            await future
+            bar.update(1)
+
+    await asyncio.gather(*tasks)
+
+
+def download_results(keywords, results, images=False):
+    asyncio.run(_download_results(keywords, results, images))
 
 
 @click.group(chain=True)
