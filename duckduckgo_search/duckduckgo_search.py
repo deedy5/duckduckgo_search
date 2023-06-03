@@ -117,6 +117,10 @@ class DDGS:
             return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
         return ""
 
+    def _normalize_url(self, url: str) -> str:
+        """unquote url and replace spaces with '+'"""
+        return unquote(url).replace(" ", "+")
+
     def text(
         self,
         keywords: str,
@@ -221,7 +225,7 @@ class DDGS:
                         result_exists = True
                         yield {
                             "title": self._normalize(row["t"]),
-                            "href": href,
+                            "href": self._normalize_url(href),
                             "body": self._normalize(body),
                         }
             if result_exists is False:
@@ -282,7 +286,7 @@ class DDGS:
                     result_exists = True
                     yield {
                         "title": self._normalize(title[0]) if title else None,
-                        "href": href,
+                        "href": self._normalize_url(href),
                         "body": self._normalize("".join(body)) if body else None,
                     }
 
@@ -354,7 +358,7 @@ class DDGS:
                     result_exists = True
                     yield {
                         "title": self._normalize(title),
-                        "href": href,
+                        "href": self._normalize_url(href),
                         "body": self._normalize(body),
                     }
             if result_exists is False:
@@ -439,9 +443,9 @@ class DDGS:
                     result_exists = True
                     yield {
                         "title": row["title"],
-                        "image": image_url,
-                        "thumbnail": row["thumbnail"],
-                        "url": row["url"],
+                        "image": self._normalize_url(image_url),
+                        "thumbnail": self._normalize_url(row["thumbnail"]),
+                        "url": self._normalize_url(row["url"]),
                         "height": row["height"],
                         "width": row["width"],
                         "source": row["source"],
@@ -577,13 +581,14 @@ class DDGS:
             for row in page_data:
                 if row["url"] not in cache:
                     cache.add(row["url"])
+                    image_url = row.get("image", None)
                     result_exists = True
                     yield {
                         "date": datetime.utcfromtimestamp(row["date"]).isoformat(),
                         "title": row["title"],
                         "body": self._normalize(row["excerpt"]),
-                        "url": row["url"],
-                        "image": row.get("image", None),
+                        "url": self._normalize_url(row["url"]),
+                        "image": self._normalize_url(image_url) if image_url else None,
                         "source": row["source"],
                     }
             next = resp_json.get("next", None)
@@ -827,11 +832,11 @@ class DDGS:
                 else:
                     cache.add(f"{result.title} {result.address}")
                     result.country_code = res["country_code"]
-                    result.url = res["website"]
+                    result.url = self._normalize_url(res["website"])
                     result.phone = res["phone"]
                     result.latitude = res["coordinates"]["latitude"]
                     result.longitude = res["coordinates"]["longitude"]
-                    result.source = unquote(res["url"])
+                    result.source = self._normalize_url(res["url"])
                     if res["embed"]:
                         result.image = res["embed"].get("image", "")
                         result.links = res["embed"].get("third_party_links", "")
