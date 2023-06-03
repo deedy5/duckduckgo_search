@@ -55,7 +55,15 @@ def print_data(data):
                 if v:
                     width = (
                         300
-                        if k in ("href", "url", "image", "thumbnail", "content")
+                        if k
+                        in (
+                            "content",
+                            "href",
+                            "image",
+                            "source",
+                            "thumbnail",
+                            "url",
+                        )
                         else 78
                     )
                     k = "language" if k == "detected_language" else k
