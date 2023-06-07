@@ -47,6 +47,8 @@ ddgs text -k 'filetype:xls site:mos.ru' -m 50 -d
 ddgs images -k "yuri kuklachev cat theatre" -m 500 -s off -d
 # get latest news
 ddgs news -k "ukraine war" -s off -t d -m 10
+# get last day's news and save it to a csv file
+ddgs news -k "hubble telescope" -t d -m 50 -o csv
 ```
 [Go To TOP](#TOP)
 
