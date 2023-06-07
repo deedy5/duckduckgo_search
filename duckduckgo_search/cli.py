@@ -51,7 +51,7 @@ def save_csv(csvfile, data):
 def print_data(data):
     if data:
         for i, e in enumerate(data, start=1):
-            click.secho(f"{i}. {'-' * 78}", bg="black", fg="white")
+            click.secho(f"{i}.\t    {'=' * 78}", bg="black", fg="white")
             for j, (k, v) in enumerate(e.items(), start=1):
                 if v:
                     width = (
