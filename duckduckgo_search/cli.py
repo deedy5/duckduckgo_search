@@ -99,8 +99,8 @@ async def download_file(url, dir_path, filename, sem):
     headers = {"User-Agent": choice(USERAGENTS)}
     try:
         async with sem:
-            async with httpx.AsyncClient() as client:
-                async with client.stream("GET", url, headers=headers) as resp:
+            async with httpx.AsyncClient(headers=headers) as client:
+                async with client.stream("GET", url) as resp:
                     if resp.status_code == 200:
                         async with aiofiles.open(
                             os.path.join(dir_path, filename), "wb"
