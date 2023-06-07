@@ -225,7 +225,7 @@ class DDGS:
                         yield {
                             "title": self._normalize(row["t"]),
                             "href": self._normalize_url(href),
-                            "body": self._normalize(body),
+                            "body": body,
                         }
             if result_exists is False:
                 break
