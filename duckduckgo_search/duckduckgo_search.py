@@ -174,7 +174,6 @@ class DDGS:
 
         vqd = self._get_vqd(keywords)
         assert vqd, "error in getting vqd"
-        sleep(0.75)
 
         payload = {
             "q": keywords,  #
@@ -403,7 +402,6 @@ class DDGS:
 
         vqd = self._get_vqd(keywords)
         assert vqd, "error in getting vqd"
-        sleep(0.75)
 
         safesearch_base = {"on": 1, "moderate": 1, "off": -1}
         timelimit = f"time:{timelimit}" if timelimit else ""
