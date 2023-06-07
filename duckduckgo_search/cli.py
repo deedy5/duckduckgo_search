@@ -7,6 +7,7 @@ from datetime import datetime
 from random import choice
 from urllib.parse import unquote
 
+import aiofiles
 import click
 import httpx
 
@@ -101,9 +102,11 @@ async def download_file(url, dir_path, filename, sem):
             async with httpx.AsyncClient() as client:
                 async with client.stream("GET", url, headers=headers) as resp:
                     if resp.status_code == 200:
-                        with open(os.path.join(dir_path, filename), "wb") as file:
+                        async with aiofiles.open(
+                            os.path.join(dir_path, filename), "wb"
+                        ) as file:
                             async for chunk in resp.aiter_bytes():
-                                file.write(chunk)
+                                await file.write(chunk)
                 logger.info(f"File downloaded {url}")
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
