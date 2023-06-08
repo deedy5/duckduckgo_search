@@ -8,7 +8,7 @@ from html import unescape
 from itertools import cycle
 from random import choice
 from time import sleep
-from typing import Deque, Dict, Iterator, Optional, Set, Union
+from typing import Deque, Dict, Iterator, Optional, Set, Tuple
 from urllib.parse import unquote
 
 import httpx
@@ -40,7 +40,7 @@ class MapsResult:
     image: Optional[str] = None
     source: Optional[str] = None
     links: Optional[str] = None
-    hours: Optional[Dict] = None
+    hours: Optional[Dict[str, str]] = None
 
 
 class DDGS:
@@ -48,9 +48,9 @@ class DDGS:
 
     def __init__(
         self,
-        headers: Optional[Dict[str, str]] = None,
-        proxies: Optional[Union[Dict, str]] = None,
-        timeout: int = 10,
+        headers=None,
+        proxies=None,
+        timeout=10,
     ) -> None:
         if headers is None:
             headers = {
@@ -64,10 +64,10 @@ class DDGS:
             http2=True,
         )
 
-    def __enter__(self):
+    def __enter__(self) -> "DDGS":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._client.close()
 
     def _get_url(
@@ -119,7 +119,9 @@ class DDGS:
 
     def _normalize_url(self, url: str) -> str:
         """unquote url and replace spaces with '+'"""
-        return unquote(url).replace(" ", "+")
+        if url:
+            return unquote(url).replace(" ", "+")
+        return ""
 
     def text(
         self,
@@ -128,7 +130,7 @@ class DDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         backend: str = "api",
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
         Args:
@@ -157,7 +159,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
         Args:
@@ -174,7 +176,6 @@ class DDGS:
 
         vqd = self._get_vqd(keywords)
         assert vqd, "error in getting vqd"
-        sleep(0.75)
 
         payload = {
             "q": keywords,  #
@@ -226,7 +227,7 @@ class DDGS:
                         yield {
                             "title": self._normalize(row["t"]),
                             "href": self._normalize_url(href),
-                            "body": self._normalize(body),
+                            "body": body,
                         }
             if result_exists is False:
                 break
@@ -237,7 +238,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
         Args:
@@ -305,7 +306,7 @@ class DDGS:
         keywords: str,
         region: str = "wt-wt",
         timelimit: Optional[str] = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
         Args:
@@ -376,7 +377,7 @@ class DDGS:
         type_image: Optional[str] = None,
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -403,7 +404,6 @@ class DDGS:
 
         vqd = self._get_vqd(keywords)
         assert vqd, "error in getting vqd"
-        sleep(0.75)
 
         safesearch_base = {"on": 1, "moderate": 1, "off": -1}
         timelimit = f"time:{timelimit}" if timelimit else ""
@@ -465,7 +465,7 @@ class DDGS:
         resolution: Optional[str] = None,
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -532,7 +532,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -600,7 +600,7 @@ class DDGS:
     def answers(
         self,
         keywords: str,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
 
         Args:
@@ -674,7 +674,7 @@ class DDGS:
         self,
         keywords: str,
         region: str = "wt-wt",
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
 
         Args:
@@ -714,7 +714,7 @@ class DDGS:
         latitude: Optional[str] = None,
         longitude: Optional[str] = None,
         radius: int = 0,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -791,7 +791,7 @@ class DDGS:
         logging.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         # сreate a queue of search squares (bboxes)
-        work_bboxes: Deque = deque()
+        work_bboxes: Deque[Tuple[Decimal, Decimal, Decimal, Decimal]] = deque()
         work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
 
         # bbox iterate
@@ -859,7 +859,7 @@ class DDGS:
         keywords: str,
         from_: Optional[str] = None,
         to: str = "en",
-    ) -> Optional[dict]:
+    ) -> Optional[Dict[str, Optional[str]]]:
         """DuckDuckGo translate
 
         Args:

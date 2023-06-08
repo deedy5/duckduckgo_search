@@ -7,6 +7,7 @@ from datetime import datetime
 from random import choice
 from urllib.parse import unquote
 
+import aiofiles
 import click
 import httpx
 
@@ -50,7 +51,7 @@ def save_csv(csvfile, data):
 def print_data(data):
     if data:
         for i, e in enumerate(data, start=1):
-            click.secho(f"{i}. {'-' * 78}", bg="black", fg="white")
+            click.secho(f"{i}.\t    {'=' * 78}", bg="black", fg="white")
             for j, (k, v) in enumerate(e.items(), start=1):
                 if v:
                     width = (
@@ -98,12 +99,14 @@ async def download_file(url, dir_path, filename, sem):
     headers = {"User-Agent": choice(USERAGENTS)}
     try:
         async with sem:
-            async with httpx.AsyncClient() as client:
-                async with client.stream("GET", url, headers=headers) as resp:
+            async with httpx.AsyncClient(headers=headers) as client:
+                async with client.stream("GET", url) as resp:
                     if resp.status_code == 200:
-                        with open(os.path.join(dir_path, filename), "wb") as file:
+                        async with aiofiles.open(
+                            os.path.join(dir_path, filename), "wb"
+                        ) as file:
                             async for chunk in resp.aiter_bytes():
-                                file.write(chunk)
+                                await file.write(chunk)
                 logger.info(f"File downloaded {url}")
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
