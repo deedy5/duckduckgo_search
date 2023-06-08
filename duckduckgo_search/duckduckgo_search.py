@@ -48,9 +48,9 @@ class DDGS:
 
     def __init__(
         self,
-        headers = None,
-        proxies = None,
-        timeout = 10,
+        headers=None,
+        proxies=None,
+        timeout=10,
     ) -> None:
         if headers is None:
             headers = {
