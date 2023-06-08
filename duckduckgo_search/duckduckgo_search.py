@@ -119,7 +119,9 @@ class DDGS:
 
     def _normalize_url(self, url: str) -> str:
         """unquote url and replace spaces with '+'"""
-        return unquote(url).replace(" ", "+")
+        if url:
+            return unquote(url).replace(" ", "+")
+        return ""
 
     def text(
         self,
