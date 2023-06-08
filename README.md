@@ -180,7 +180,7 @@ def text(
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
     backend: str = "api",
-) -> Iterator[dict]:
+) -> Iterator[Dict[str, Optional[str]]]:
     """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
     Args:
@@ -225,7 +225,7 @@ with DDGS() as ddgs:
 ## 2. answers() - instant answers by duckduckgo.com
 
 ```python
-def answers(keywords: str) -> Generator[dict, None, None]:
+def answers(keywords: str) -> Iterator[Dict[str, Optional[str]]]::
     """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
 
     Args:
@@ -260,7 +260,7 @@ def images(
     type_image: Optional[str] = None,
     layout: Optional[str] = None,
     license_image: Optional[str] = None,
-) -> Iterator[dict]:
+) -> Iterator[Dict[str, Optional[str]]]:
     """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -317,7 +317,7 @@ def videos(
     resolution: Optional[str] = None,
     duration: Optional[str] = None,
     license_videos: Optional[str] = None,
-) -> Iterator[dict]:
+) -> Iterator[Dict[str, Optional[str]]]:
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -363,7 +363,7 @@ def news(
     region: str = "wt-wt",
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
-) -> Iterator[dict]:
+) -> Iterator[Dict[str, Optional[str]]]:
     """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -410,7 +410,7 @@ def maps(
         latitude: Optional[str] = None,
         longitude: Optional[str] = None,
         radius: int = 0,
-    ) -> Iterator[dict]:
+    ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
         Args:
@@ -451,7 +451,7 @@ def translate(
     keywords: str,
     from_: Optional[str] = None,
     to: str = "en",
-) -> Optional[dict]:
+) -> Optional[Dict[str, Optional[str]]]:
     """DuckDuckGo translate
 
     Args:
@@ -482,7 +482,7 @@ with DDGS() as ddgs:
 def suggestions(
     keywords,
     region: str = "wt-wt",
-) -> Iterator[dict]:
+) -> Iterator[Dict[str, Optional[str]]]:
     """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
 
     Args:
