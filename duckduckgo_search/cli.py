@@ -107,7 +107,6 @@ async def download_file(url, dir_path, filename, sem):
                         ) as file:
                             async for chunk in resp.aiter_bytes():
                                 await file.write(chunk)
-                logger.info(f"File downloaded {url}")
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
