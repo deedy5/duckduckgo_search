@@ -3,6 +3,7 @@ import csv
 import json
 import logging
 import os
+import ssl
 from datetime import datetime
 from random import choice
 from urllib.parse import unquote
@@ -95,24 +96,34 @@ def sanitize_keywords(keywords):
     return keywords
 
 
-async def download_file(url, dir_path, filename, sem):
+async def download_file(url, dir_path, filename, sem, proxy):
     headers = {"User-Agent": choice(USERAGENTS)}
-    try:
-        async with sem:
-            async with httpx.AsyncClient(headers=headers) as client:
-                async with client.stream("GET", url) as resp:
-                    if resp.status_code == 200:
-                        async with aiofiles.open(
-                            os.path.join(dir_path, filename), "wb"
-                        ) as file:
-                            async for chunk in resp.aiter_bytes():
-                                await file.write(chunk)
-                logger.info(f"File downloaded {url}")
-    except Exception as ex:
-        logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
+    for i in range(2):
+        try:
+            async with sem:
+                async with httpx.AsyncClient(headers=headers, proxies=proxy) as client:
+                    async with client.stream("GET", url) as resp:
+                        if resp.status_code == 200:
+                            async with aiofiles.open(
+                                os.path.join(dir_path, filename[:200]), "wb"
+                            ) as file:
+                                async for chunk in resp.aiter_bytes():
+                                    await file.write(chunk)
+                            break
+        except (
+            httpx.ConnectTimeout,
+            httpx.ConnectError,
+            httpx.ProxyError,
+            httpx.ReadTimeout,
+            ssl.SSLCertVerificationError,
+            ssl.SSLError,
+        ) as ex:
+            logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
+        except ValueError as ex:
+            raise ex
 
 
-async def _download_results(keywords, results, images=False):
+async def _download_results(keywords, results, images=False, proxy=None, threads=None):
     if images:
         path = f"images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     else:
@@ -120,17 +131,18 @@ async def _download_results(keywords, results, images=False):
     os.makedirs(path, exist_ok=True)
 
     tasks = []
-    sem = asyncio.Semaphore(20)
+    threads = 20 if threads is None else threads
+    sem = asyncio.Semaphore(threads)
     for i, res in enumerate(results, start=1):
         if images:
             filename = unquote(res["image"].split("/")[-1].split("?")[0])
             task = asyncio.create_task(
-                download_file(res["image"], path, f"{i}_{filename}", sem)
+                download_file(res["image"], path, f"{i}_{filename}", sem, proxy)
             )
         else:
             filename = unquote(res["href"].split("/")[-1].split("?")[0])
             task = asyncio.create_task(
-                download_file(res["href"], path, f"{i}_{filename}", sem)
+                download_file(res["href"], path, f"{i}_{filename}", sem, proxy)
             )
         tasks.append(task)
 
@@ -148,8 +160,8 @@ async def _download_results(keywords, results, images=False):
     await asyncio.gather(*tasks)
 
 
-def download_results(keywords, results, images=False):
-    asyncio.run(_download_results(keywords, results, images))
+def download_results(keywords, results, images=False, proxy=None, threads=None):
+    asyncio.run(_download_results(keywords, results, images, proxy))
 
 
 @click.group(chain=True)
@@ -211,9 +223,37 @@ def version():
     type=click.Choice(["api", "html", "lite"]),
     help="which backend to use, default=api",
 )
-def text(keywords, output, download, max_results, *args, **kwargs):
+@click.option(
+    "-th",
+    "--threads",
+    default=20,
+    help="download threads, default=20",
+)
+@click.option(
+    "-p",
+    "--proxy",
+    help="proxy server for download, example: socks5://localhost:9150",
+)
+def text(
+    keywords,
+    region,
+    safesearch,
+    timelimit,
+    backend,
+    output,
+    download,
+    threads,
+    max_results,
+    proxy,
+):
     data = []
-    for r in DDGS().text(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).text(
+        keywords=keywords,
+        region=region,
+        safesearch=safesearch,
+        timelimit=timelimit,
+        backend=backend,
+    ):
         if len(data) >= max_results:
             break
         data.append(r)
@@ -226,7 +266,7 @@ def text(keywords, output, download, max_results, *args, **kwargs):
     elif output == "json":
         save_json(f"{filename}.json", data)
     if download:
-        download_results(keywords, data)
+        download_results(keywords, data, proxy=proxy, threads=threads)
 
 
 @cli.command()
@@ -341,9 +381,45 @@ def answers(keywords, output, *args, **kwargs):
     default=False,
     help="download and save images to 'keywords' folder",
 )
-def images(keywords, output, download, max_results, *args, **kwargs):
+@click.option(
+    "-th",
+    "--threads",
+    default=20,
+    help="download threads, default=20",
+)
+@click.option(
+    "-p",
+    "--proxy",
+    help="proxy server for download, example: socks5://localhost:9150",
+)
+def images(
+    keywords,
+    region,
+    safesearch,
+    timelimit,
+    size,
+    color,
+    type_image,
+    layout,
+    license_image,
+    download,
+    threads,
+    max_results,
+    output,
+    proxy,
+):
     data = []
-    for r in DDGS().images(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).images(
+        keywords=keywords,
+        region=region,
+        safesearch=safesearch,
+        timelimit=timelimit,
+        size=size,
+        color=color,
+        type_image=type_image,
+        layout=layout,
+        license_image=license_image,
+    ):
         if len(data) >= max_results:
             break
         data.append(r)
@@ -356,7 +432,7 @@ def images(keywords, output, download, max_results, *args, **kwargs):
     elif output == "json":
         save_json(f"{filename}.json", data)
     if download:
-        download_results(keywords, data, images=True)
+        download_results(keywords, data, images=True, proxy=proxy, threads=threads)
 
 
 @cli.command()
