@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from html import unescape
-from itertools import cycle
+from itertools import cycle, islice
 from random import choice
 from time import sleep
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple
@@ -340,7 +340,8 @@ class DDGS:
             tree = html.fromstring(resp.content)
 
             result_exists = False
-            for i, e in zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr")):
+            data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
+            for i, e in data:
                 if i == 1:
                     href = e.xpath(".//a//@href")
                     href = href[0] if href else None
@@ -349,9 +350,10 @@ class DDGS:
                         or href in cache
                         or href == f"http://www.google.com/search?q={keywords}"
                     ):
-                        continue
-                    cache.add(href)
-                    title = e.xpath(".//a//text()")[0]
+                        [next(data, None) for _ in range(3)]  # skip block(i=1,2,3,4)
+                    else:
+                        cache.add(href)
+                        title = e.xpath(".//a//text()")[0]
                 elif i == 2:
                     body = e.xpath(".//td[@class='result-snippet']//text()")
                     body = "".join(body).strip()
