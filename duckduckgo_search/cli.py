@@ -101,7 +101,9 @@ async def download_file(url, dir_path, filename, sem, proxy):
     for i in range(2):
         try:
             async with sem:
-                async with httpx.AsyncClient(headers=headers, proxies=proxy) as client:
+                async with httpx.AsyncClient(
+                    headers=headers, proxies=proxy, timeout=10
+                ) as client:
                     async with client.stream("GET", url) as resp:
                         resp.raise_for_status()
                         async with aiofiles.open(
@@ -608,7 +610,9 @@ def news(keywords, output, max_results, proxy, *args, **kwargs):
 )
 def maps(keywords, output, max_results, proxy, *args, **kwargs):
     data = []
-    for i, r in enumerate(DDGS(proxies=proxy).maps(keywords=keywords, *args, **kwargs), start=1):
+    for i, r in enumerate(
+        DDGS(proxies=proxy).maps(keywords=keywords, *args, **kwargs), start=1
+    ):
         if len(data) >= max_results:
             break
         data.append(r)
