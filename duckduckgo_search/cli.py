@@ -128,7 +128,7 @@ async def _download_results(keywords, results, images=False, proxy=None, threads
     os.makedirs(path, exist_ok=True)
 
     tasks = []
-    threads = 20 if threads is None else threads
+    threads = 10 if threads is None else threads
     sem = asyncio.Semaphore(threads)
     for i, res in enumerate(results, start=1):
         if images:
