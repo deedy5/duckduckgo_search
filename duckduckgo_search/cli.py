@@ -604,7 +604,7 @@ def news(keywords, output, max_results, proxy, *args, **kwargs):
     help="csv, json (save the results to a csv or json file)",
 )
 @click.option(
-    "-p",
+    "-proxy",
     "--proxy",
     help="the proxy to send requests, example: socks5://localhost:9150",
 )
