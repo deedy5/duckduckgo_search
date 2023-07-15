@@ -103,18 +103,15 @@ async def download_file(url, dir_path, filename, sem, proxy):
             async with sem:
                 async with httpx.AsyncClient(headers=headers, proxies=proxy) as client:
                     async with client.stream("GET", url) as resp:
-                        if resp.status_code == 200:
-                            async with aiofiles.open(
-                                os.path.join(dir_path, filename[:200]), "wb"
-                            ) as file:
-                                async for chunk in resp.aiter_bytes():
-                                    await file.write(chunk)
-                            break
+                        resp.raise_for_status()
+                        async with aiofiles.open(
+                            os.path.join(dir_path, filename[:200]), "wb"
+                        ) as file:
+                            async for chunk in resp.aiter_bytes():
+                                await file.write(chunk)
+                        break
         except (
-            httpx.ConnectTimeout,
-            httpx.ConnectError,
-            httpx.ProxyError,
-            httpx.ReadTimeout,
+            httpx.HTTPError,
             ssl.SSLCertVerificationError,
             ssl.SSLError,
         ) as ex:
