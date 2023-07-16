@@ -101,20 +101,19 @@ async def download_file(url, dir_path, filename, sem, proxy):
     for i in range(2):
         try:
             async with sem:
-                async with httpx.AsyncClient(headers=headers, proxies=proxy) as client:
+                async with httpx.AsyncClient(
+                    headers=headers, proxies=proxy, timeout=10
+                ) as client:
                     async with client.stream("GET", url) as resp:
-                        if resp.status_code == 200:
-                            async with aiofiles.open(
-                                os.path.join(dir_path, filename[:200]), "wb"
-                            ) as file:
-                                async for chunk in resp.aiter_bytes():
-                                    await file.write(chunk)
-                            break
+                        resp.raise_for_status()
+                        async with aiofiles.open(
+                            os.path.join(dir_path, filename[:200]), "wb"
+                        ) as file:
+                            async for chunk in resp.aiter_bytes():
+                                await file.write(chunk)
+                        break
         except (
-            httpx.ConnectTimeout,
-            httpx.ConnectError,
-            httpx.ProxyError,
-            httpx.ReadTimeout,
+            httpx.HTTPError,
             ssl.SSLCertVerificationError,
             ssl.SSLError,
         ) as ex:
@@ -131,7 +130,7 @@ async def _download_results(keywords, results, images=False, proxy=None, threads
     os.makedirs(path, exist_ok=True)
 
     tasks = []
-    threads = 20 if threads is None else threads
+    threads = 10 if threads is None else threads
     sem = asyncio.Semaphore(threads)
     for i, res in enumerate(results, start=1):
         if images:
@@ -232,7 +231,7 @@ def version():
 @click.option(
     "-p",
     "--proxy",
-    help="proxy server for download, example: socks5://localhost:9150",
+    help="the proxy to send requests, example: socks5://localhost:9150",
 )
 def text(
     keywords,
@@ -279,9 +278,14 @@ def text(
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def answers(keywords, output, *args, **kwargs):
+@click.option(
+    "-p",
+    "--proxy",
+    help="the proxy to send requests, example: socks5://localhost:9150",
+)
+def answers(keywords, output, proxy, *args, **kwargs):
     data = []
-    for r in DDGS().answers(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).answers(keywords=keywords, *args, **kwargs):
         data.append(r)
     filename = f"answers_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -390,7 +394,7 @@ def answers(keywords, output, *args, **kwargs):
 @click.option(
     "-p",
     "--proxy",
-    help="proxy server for download, example: socks5://localhost:9150",
+    help="the proxy to send requests, example: socks5://localhost:9150",
 )
 def images(
     keywords,
@@ -484,9 +488,14 @@ def images(
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def videos(keywords, output, max_results, *args, **kwargs):
+@click.option(
+    "-p",
+    "--proxy",
+    help="the proxy to send requests, example: socks5://localhost:9150",
+)
+def videos(keywords, output, max_results, proxy, *args, **kwargs):
     data = []
-    for r in DDGS().videos(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).videos(keywords=keywords, *args, **kwargs):
         if len(data) >= max_results:
             break
         data.append(r)
@@ -533,9 +542,14 @@ def videos(keywords, output, max_results, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def news(keywords, output, max_results, *args, **kwargs):
+@click.option(
+    "-p",
+    "--proxy",
+    help="the proxy to send requests, example: socks5://localhost:9150",
+)
+def news(keywords, output, max_results, proxy, *args, **kwargs):
     data = []
-    for r in DDGS().news(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).news(keywords=keywords, *args, **kwargs):
         if len(data) >= max_results:
             break
         data.append(r)
@@ -589,9 +603,16 @@ def news(keywords, output, max_results, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def maps(keywords, output, max_results, *args, **kwargs):
+@click.option(
+    "-proxy",
+    "--proxy",
+    help="the proxy to send requests, example: socks5://localhost:9150",
+)
+def maps(keywords, output, max_results, proxy, *args, **kwargs):
     data = []
-    for i, r in enumerate(DDGS().maps(keywords=keywords, *args, **kwargs), start=1):
+    for i, r in enumerate(
+        DDGS(proxies=proxy).maps(keywords=keywords, *args, **kwargs), start=1
+    ):
         if len(data) >= max_results:
             break
         data.append(r)
@@ -625,8 +646,13 @@ def maps(keywords, output, max_results, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def translate(keywords, output, *args, **kwargs):
-    data = DDGS().translate(keywords=keywords, *args, **kwargs)
+@click.option(
+    "-p",
+    "--proxy",
+    help="the proxy to send requests, example: socks5://localhost:9150",
+)
+def translate(keywords, output, proxy, *args, **kwargs):
+    data = DDGS(proxies=proxy).translate(keywords=keywords, *args, **kwargs)
     data = [data]
     filename = f"translate_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -651,9 +677,14 @@ def translate(keywords, output, *args, **kwargs):
     default="print",
     help="csv, json (save the results to a csv or json file)",
 )
-def suggestions(keywords, output, *args, **kwargs):
+@click.option(
+    "-p",
+    "--proxy",
+    help="the proxy to send requests, example: socks5://localhost:9150",
+)
+def suggestions(keywords, output, proxy, *args, **kwargs):
     data = []
-    for r in DDGS().suggestions(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).suggestions(keywords=keywords, *args, **kwargs):
         data.append(r)
     filename = (
         f"suggestions_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
