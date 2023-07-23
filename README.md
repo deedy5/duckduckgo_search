@@ -506,7 +506,7 @@ def suggestions(
 from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
-    for r in ddgs.suggestions("fly)
+    for r in ddgs.suggestions("fly"):
         print(r)
 ```
 
