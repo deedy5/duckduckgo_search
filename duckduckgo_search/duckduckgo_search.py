@@ -228,7 +228,7 @@ class DDGS:
                             "title": self._normalize(row["t"]),
                             "href": self._normalize_url(href),
                             "body": body,
-                            "date": row.get("e", None)
+                            "date": row.get("e", None),
                         }
             if result_exists is False:
                 break
