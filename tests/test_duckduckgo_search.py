@@ -13,6 +13,13 @@ def test_text():
         assert len(results) >= 20
 
 
+def test_text_params():
+    with DDGS() as ddgs:
+        ddgs_gen = ddgs.text("cat", safesearch="off", timelimit="m")
+        results = [x for x in islice(ddgs_gen, 25)]
+        assert len(results) >= 20
+
+
 def test_text_html():
     with DDGS() as ddgs:
         ddgs_gen = ddgs.text("eagle", backend="html")
