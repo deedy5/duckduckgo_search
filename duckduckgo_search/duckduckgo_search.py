@@ -186,15 +186,12 @@ class DDGS:
             "vqd": vqd,
             "o": "json",
         }
-        if safesearch == "off":
-            # payload["p"] = '-2'
-            payload["ex"] = "-2"
-        elif safesearch == "moderate":
-            payload["p"] = ""
-            payload["sp"] = "0"
+        safesearch = safesearch.lower()
+        if safesearch == "moderate":
             payload["ex"] = "-1"
+        elif safesearch == "off":
+            payload["ex"] = "-2"        
         elif safesearch == "on":  # strict
-            payload["sp"] = "0"
             payload["p"] = "1"
 
         cache = set()
