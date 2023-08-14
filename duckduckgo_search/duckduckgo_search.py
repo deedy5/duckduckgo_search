@@ -185,6 +185,7 @@ class DDGS:
             "df": timelimit,
             "vqd": vqd,
             "o": "json",
+            "sp": "0",
         }
         safesearch = safesearch.lower()
         if safesearch == "moderate":
