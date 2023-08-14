@@ -191,7 +191,7 @@ class DDGS:
         if safesearch == "moderate":
             payload["ex"] = "-1"
         elif safesearch == "off":
-            payload["ex"] = "-2"        
+            payload["ex"] = "-2"
         elif safesearch == "on":  # strict
             payload["p"] = "1"
 
