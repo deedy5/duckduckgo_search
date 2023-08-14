@@ -20,10 +20,10 @@ REGEX_500_IN_URL = re.compile(r"[0-9]{3}-[0-9]{2}.js")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
 
 USERAGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
 ]
 
 
@@ -185,16 +185,14 @@ class DDGS:
             "df": timelimit,
             "vqd": vqd,
             "o": "json",
+            "sp": "0",
         }
-        if safesearch == "off":
-            # payload["p"] = '-2'
-            payload["ex"] = "-2"
-        elif safesearch == "moderate":
-            payload["p"] = ""
-            payload["sp"] = "0"
+        safesearch = safesearch.lower()
+        if safesearch == "moderate":
             payload["ex"] = "-1"
+        elif safesearch == "off":
+            payload["ex"] = "-2"
         elif safesearch == "on":  # strict
-            payload["sp"] = "0"
             payload["p"] = "1"
 
         cache = set()

@@ -9,7 +9,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Duckduckgo search operators](#duckduckgo-search-operators)
 * [Regions](#regions)
 * [Using proxy](#using-proxy)
-* [1. text() - text search](#1-text---text-search-by-by-duckduckgocom)
+* [1. text() - text search](#1-text---text-search-by-duckduckgocom)
 * [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
 * [3. images() - image search](#3-images---image-search-by-duckduckgocom)
 * [4. videos() - video search](#4-videos---video-search-by-duckduckgocom)
@@ -210,12 +210,12 @@ def text(
 from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
-    for r in ddgs.text('live free or die', region='wt-wt', safesearch='Off', timelimit='y'):
+    for r in ddgs.text('live free or die', region='wt-wt', safesearch='off', timelimit='y'):
         print(r)
 
 # Searching for pdf files
 with DDGS() as ddgs:
-    for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='Off', timelimit='y'):
+    for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y'):
         print(r)
 
 # Using lite backend and limit the number of results to 10
@@ -301,7 +301,7 @@ with DDGS() as ddgs:
     ddgs_images_gen = ddgs.images(
       keywords,
       region="wt-wt",
-      safesearch="Off",
+      safesearch="off",
       size=None,
       color="Monochrome",
       type_image=None,
@@ -351,7 +351,7 @@ with DDGS() as ddgs:
     ddgs_videos_gen = ddgs.videos(
       keywords,
       region="wt-wt",
-      safesearch="Off",
+      safesearch="off",
       timelimit="w",
       resolution="high",
       duration="medium",
@@ -394,7 +394,7 @@ with DDGS() as ddgs:
     ddgs_news_gen = ddgs.news(
       keywords,
       region="wt-wt",
-      safesearch="Off",
+      safesearch="off",
       timelimit="m",
     )
     for r in ddgs_news_gen:
