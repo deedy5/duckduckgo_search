@@ -23,15 +23,16 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "aiofiles>=23.1.0",
-    "click>=8.1.3",
-    "lxml>=4.9.2",
-    "httpx[http2,socks,brotli]>=0.24.1",
+    "aiofiles>=23.2.1",
+    "click>=8.1.7",
+    "lxml>=4.9.3",
+    "httpx[http2,socks,brotli]>=0.25.0",
 ]
 dynamic = ["version"]
 
