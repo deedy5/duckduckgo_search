@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from html import unescape
-from itertools import cycle, islice
+from itertools import cycle
 from random import choice
 from time import sleep
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple
