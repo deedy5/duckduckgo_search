@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.11"]
+        python-version: ["3.8", "3.11", "3.12"]
         
     steps:
     - uses: actions/checkout@v3
@@ -43,7 +43,7 @@ jobs:
         isort duckduckgo_search --profile black --check
     - name: Black
       run: |
-        black --check --diff --target-version=py37 duckduckgo_search
+        black --check --diff --target-version=py38 duckduckgo_search
     - name: Run tests
       run: |
         pytest
