@@ -100,18 +100,17 @@ async def download_file(url, dir_path, filename, sem, proxy):
     headers = {"User-Agent": choice(USERAGENTS)}
     for i in range(2):
         try:
-            async with sem:
-                async with httpx.AsyncClient(
-                    headers=headers, proxies=proxy, timeout=10
-                ) as client:
-                    async with client.stream("GET", url) as resp:
-                        resp.raise_for_status()
-                        async with aiofiles.open(
-                            os.path.join(dir_path, filename[:200]), "wb"
-                        ) as file:
-                            async for chunk in resp.aiter_bytes():
-                                await file.write(chunk)
-                        break
+            async with sem, httpx.AsyncClient(
+                headers=headers, proxies=proxy, timeout=10
+            ) as client:
+                async with client.stream("GET", url) as resp:
+                    resp.raise_for_status()
+                    async with aiofiles.open(
+                        os.path.join(dir_path, filename[:200]), "wb"
+                    ) as file:
+                        async for chunk in resp.aiter_bytes():
+                            await file.write(chunk)
+                    break
         except (
             httpx.HTTPError,
             ssl.SSLCertVerificationError,
@@ -123,26 +122,19 @@ async def download_file(url, dir_path, filename, sem, proxy):
 
 
 async def _download_results(keywords, results, images=False, proxy=None, threads=None):
-    if images:
-        path = f"images_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
-    else:
-        path = f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+    path_type = "images" if images else "text"
+    path = f"{path_type}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     os.makedirs(path, exist_ok=True)
 
-    tasks = []
     threads = 10 if threads is None else threads
     sem = asyncio.Semaphore(threads)
+    tasks = []
     for i, res in enumerate(results, start=1):
-        if images:
-            filename = unquote(res["image"].split("/")[-1].split("?")[0])
-            task = asyncio.create_task(
-                download_file(res["image"], path, f"{i}_{filename}", sem, proxy)
-            )
-        else:
-            filename = unquote(res["href"].split("/")[-1].split("?")[0])
-            task = asyncio.create_task(
-                download_file(res["href"], path, f"{i}_{filename}", sem, proxy)
-            )
+        url = res["image"] if images else res["href"]
+        filename = unquote(url.split("/")[-1].split("?")[0])
+        task = asyncio.create_task(
+            download_file(url, path, f"{i}_{filename}", sem, proxy)
+        )
         tasks.append(task)
 
     with click.progressbar(
