@@ -20,6 +20,7 @@ from .compat import (
 
 # isort: on
 from .duckduckgo_search import DDGS
+from .duckduckgo_search_async import AsyncDDGS
 from .version import __version__
 
 # A do-nothing logging handler
