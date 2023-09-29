@@ -1,46 +1,19 @@
 import logging
-import re
 from collections import deque
-from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from html import unescape
 from itertools import cycle
 from random import choice
 from time import sleep
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple
-from urllib.parse import unquote
 
 import httpx
 from lxml import html
 
+from .models import MapsResult
+from .utils import USERAGENTS, _is_500_in_url, _normalize, _normalize_url
+
 logger = logging.getLogger(__name__)
-
-REGEX_500_IN_URL = re.compile(r"[0-9]{3}-[0-9]{2}.js")
-REGEX_STRIP_TAGS = re.compile("<.*?>")
-
-USERAGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
-]
-
-
-@dataclass
-class MapsResult:
-    title: Optional[str] = None
-    address: Optional[str] = None
-    country_code: Optional[str] = None
-    latitude: Optional[str] = None
-    longitude: Optional[str] = None
-    url: Optional[str] = None
-    desc: Optional[str] = None
-    phone: Optional[str] = None
-    image: Optional[str] = None
-    source: Optional[str] = None
-    links: Optional[str] = None
-    hours: Optional[Dict[str, str]] = None
 
 
 class DDGS:
@@ -78,7 +51,7 @@ class DDGS:
                 resp = self._client.request(
                     method, url, follow_redirects=True, **kwargs
                 )
-                if self._is_500_in_url(str(resp.url)) or resp.status_code == 202:
+                if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                     raise httpx._exceptions.HTTPError("")
                 resp.raise_for_status()
                 if resp.status_code == 200:
@@ -88,7 +61,6 @@ class DDGS:
                 if i >= 2 or "418" in str(ex):
                     raise ex
             sleep(3)
-        return None
 
     def _get_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
@@ -105,23 +77,6 @@ class DDGS:
                     return resp.content[start:end].decode()
                 except ValueError:
                     logger.warning(f"_get_vqd() keywords={keywords} vqd not found")
-        return None
-
-    def _is_500_in_url(self, url: str) -> bool:
-        """something like '506-00.js' inside the url"""
-        return bool(REGEX_500_IN_URL.search(url))
-
-    def _normalize(self, raw_html: str) -> str:
-        """strip HTML tags"""
-        if raw_html:
-            return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html))
-        return ""
-
-    def _normalize_url(self, url: str) -> str:
-        """unquote url and replace spaces with '+'"""
-        if url:
-            return unquote(url).replace(" ", "+")
-        return ""
 
     def text(
         self,
@@ -130,6 +85,7 @@ class DDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         backend: str = "api",
+        max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
@@ -142,16 +98,22 @@ class DDGS:
                 api - collect data from https://duckduckgo.com,
                 html - collect data from https://html.duckduckgo.com,
                 lite - collect data from https://lite.duckduckgo.com.
+            max_results: max number of results. Defaults to None.
         Yields:
             dict with search results.
 
         """
         if backend == "api":
-            yield from self._text_api(keywords, region, safesearch, timelimit)
+            results = self._text_api(keywords, region, safesearch, timelimit)
         elif backend == "html":
-            yield from self._text_html(keywords, region, safesearch, timelimit)
+            results = self._text_html(keywords, region, safesearch, timelimit)
         elif backend == "lite":
-            yield from self._text_lite(keywords, region, timelimit)
+            results = self._text_lite(keywords, region, timelimit)
+
+        for i, result in enumerate(results, start=1):
+            yield result
+            if max_results and i >= max_results:
+                break
 
     def _text_api(
         self,
@@ -219,12 +181,12 @@ class DDGS:
                     and href != f"http://www.google.com/search?q={keywords}"
                 ):
                     cache.add(href)
-                    body = self._normalize(row["a"])
+                    body = _normalize(row["a"])
                     if body:
                         result_exists = True
                         yield {
-                            "title": self._normalize(row["t"]),
-                            "href": self._normalize_url(href),
+                            "title": _normalize(row["t"]),
+                            "href": _normalize_url(href),
                             "body": body,
                         }
             if result_exists is False:
@@ -284,9 +246,9 @@ class DDGS:
                     body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
                     result_exists = True
                     yield {
-                        "title": self._normalize(title[0]) if title else None,
-                        "href": self._normalize_url(href),
-                        "body": self._normalize("".join(body)) if body else None,
+                        "title": _normalize(title[0]) if title else None,
+                        "href": _normalize_url(href),
+                        "body": _normalize("".join(body)) if body else None,
                     }
 
             next_page = tree.xpath('.//div[@class="nav-link"]')
@@ -358,9 +320,9 @@ class DDGS:
                 elif i == 3:
                     result_exists = True
                     yield {
-                        "title": self._normalize(title),
-                        "href": self._normalize_url(href),
-                        "body": self._normalize(body),
+                        "title": _normalize(title),
+                        "href": _normalize_url(href),
+                        "body": _normalize(body),
                     }
             if result_exists is False:
                 break
@@ -377,6 +339,7 @@ class DDGS:
         type_image: Optional[str] = None,
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
+        max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
@@ -395,6 +358,7 @@ class DDGS:
                 Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
                 Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
                 Use Commercially). Defaults to None.
+            max_results: max number of results. Defaults to None.
 
         Yields:
             dict with image search results.
@@ -422,7 +386,7 @@ class DDGS:
             "p": safesearch_base[safesearch.lower()],
         }
 
-        cache = set()
+        cache, results_counter = set(), 0
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
             if resp is None:
@@ -443,13 +407,17 @@ class DDGS:
                     result_exists = True
                     yield {
                         "title": row["title"],
-                        "image": self._normalize_url(image_url),
-                        "thumbnail": self._normalize_url(row["thumbnail"]),
-                        "url": self._normalize_url(row["url"]),
+                        "image": _normalize_url(image_url),
+                        "thumbnail": _normalize_url(row["thumbnail"]),
+                        "url": _normalize_url(row["url"]),
                         "height": row["height"],
                         "width": row["width"],
                         "source": row["source"],
                     }
+                    if max_results and results_counter >= max_results:
+                        break
+                    results_counter += 1
+
             next = resp_json.get("next", None)
             if next:
                 payload["s"] = next.split("s=")[-1].split("&")[0]
@@ -465,6 +433,7 @@ class DDGS:
         resolution: Optional[str] = None,
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
+        max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
@@ -476,6 +445,7 @@ class DDGS:
             resolution: high, standart. Defaults to None.
             duration: short, medium, long. Defaults to None.
             license_videos: creativeCommon, youtube. Defaults to None.
+            max_results: max number of results. Defaults to None.
 
         Yields:
             dict with videos search results
@@ -501,7 +471,7 @@ class DDGS:
             "p": safesearch_base[safesearch.lower()],
         }
 
-        cache = set()
+        cache, results_counter = set(), 0
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
             if resp is None:
@@ -520,6 +490,10 @@ class DDGS:
                     cache.add(row["content"])
                     result_exists = True
                     yield row
+                    results_counter += 1
+                    if max_results and results_counter >= max_results:
+                        break
+
             next = resp_json.get("next", None)
             if next:
                 payload["s"] = next.split("s=")[-1].split("&")[0]
@@ -532,6 +506,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
+        max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
@@ -540,6 +515,7 @@ class DDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m. Defaults to None.
+            max_results: max number of results. Defaults to None.
 
         Yields:
             dict with news search results.
@@ -562,7 +538,7 @@ class DDGS:
             "s": 0,
         }
 
-        cache = set()
+        cache, results_counter = set(), 0
         for _ in range(10):
             resp = self._get_url(
                 "GET", "https://duckduckgo.com/news.js", params=payload
@@ -586,11 +562,15 @@ class DDGS:
                     yield {
                         "date": datetime.utcfromtimestamp(row["date"]).isoformat(),
                         "title": row["title"],
-                        "body": self._normalize(row["excerpt"]),
-                        "url": self._normalize_url(row["url"]),
-                        "image": self._normalize_url(image_url) if image_url else None,
+                        "body": _normalize(row["excerpt"]),
+                        "url": _normalize_url(row["url"]),
+                        "image": _normalize_url(image_url) if image_url else None,
                         "source": row["source"],
                     }
+                    if max_results and results_counter >= max_results:
+                        break
+                    results_counter += 1
+
             next = resp_json.get("next", None)
             if next:
                 payload["s"] = next.split("s=")[-1].split("&")[0]
@@ -714,6 +694,7 @@ class DDGS:
         latitude: Optional[str] = None,
         longitude: Optional[str] = None,
         radius: int = 0,
+        max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
 
@@ -730,6 +711,7 @@ class DDGS:
             longitude: geographic coordinate (east–west position); if latitude and
                 longitude are set, the other parameters are not used. Defaults to None.
             radius: expand the search square by the distance in kilometers. Defaults to 0.
+            max_results: maximum number of results. Defaults to None.
 
         Yields:
             dict with maps search results
@@ -795,7 +777,7 @@ class DDGS:
         work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
 
         # bbox iterate
-        cache = set()
+        cache, results_counter = set(), 0
         stop_find = False
         while work_bboxes and not stop_find:
             lat_t, lon_l, lat_b, lon_r = work_bboxes.pop()
@@ -832,17 +814,21 @@ class DDGS:
                 else:
                     cache.add(f"{result.title} {result.address}")
                     result.country_code = res["country_code"]
-                    result.url = self._normalize_url(res["website"])
+                    result.url = _normalize_url(res["website"])
                     result.phone = res["phone"]
                     result.latitude = res["coordinates"]["latitude"]
                     result.longitude = res["coordinates"]["longitude"]
-                    result.source = self._normalize_url(res["url"])
+                    result.source = _normalize_url(res["url"])
                     if res["embed"]:
                         result.image = res["embed"].get("image", "")
                         result.links = res["embed"].get("third_party_links", "")
                         result.desc = res["embed"].get("description", "")
                     result.hours = res["hours"]
                     yield result.__dict__
+                    results_counter += 1
+                    if max_results and results_counter >= max_results:
+                        stop_find = True
+                        break
 
             # divide the square into 4 parts and add to the queue
             if len(page_data) >= 15:
@@ -888,7 +874,7 @@ class DDGS:
             "POST",
             "https://duckduckgo.com/translation.js",
             params=payload,
-            data=keywords.encode(),
+            content=keywords.encode(),
         )
         if resp is None:
             return None
