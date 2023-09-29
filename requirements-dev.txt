@@ -1,0 +1,6 @@
+aiofiles>=23.2.1
+click>=8.1.7
+lxml>=4.9.3
+httpx[http2,socks,brotli]>=0.25.0
+pytest>=7.4.2
+pytest-asyncio>=0.21.1
