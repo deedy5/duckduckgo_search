@@ -1,5 +1,6 @@
 import re
 from html import unescape
+from typing import Optional
 from urllib.parse import unquote
 
 REGEX_500_IN_URL = re.compile(r"(?:\d{3}-\d{2}\.js)")
@@ -11,6 +12,20 @@ USERAGENTS = [
     "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
 ]
+
+
+def _extract_vqd(html_bytes: bytes) -> Optional[str]:
+    for c1, c2 in (
+        (b'vqd="', b'"'),
+        (b"vqd=", b"&"),
+        (b"vqd='", b"'"),
+    ):
+        try:
+            start = html_bytes.index(c1) + len(c1)
+            end = html_bytes.index(c2, start)
+            return html_bytes[start:end].decode()
+        except ValueError:
+            pass
 
 
 def _is_500_in_url(url: str) -> bool:
