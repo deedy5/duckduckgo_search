@@ -249,7 +249,7 @@ class DDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
-            sleep(0.75)
+            # sleep(0.75)
 
     def _text_lite(
         self,
@@ -323,7 +323,7 @@ class DDGS:
                 break
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content)
-            sleep(0.75)
+            # sleep(0.75)
 
     def images(
         self,

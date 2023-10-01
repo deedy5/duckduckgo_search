@@ -253,7 +253,7 @@ class AsyncDDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
-            await asyncio.sleep(0.75)
+            # await asyncio.sleep(0.75)
 
     async def _text_lite(
         self,
@@ -327,7 +327,7 @@ class AsyncDDGS:
                 break
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content)
-            await asyncio.sleep(0.75)
+            # await asyncio.sleep(0.75)
 
     async def images(
         self,
