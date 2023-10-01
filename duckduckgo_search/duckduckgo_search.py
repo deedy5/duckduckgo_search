@@ -148,8 +148,7 @@ class DDGS:
             payload["p"] = "1"
 
         cache = set()
-        for s in ("0", "20", "70", "120"):
-            payload["s"] = s
+        for _ in range(10):
             resp = self._get_url(
                 "GET", "https://links.duckduckgo.com/d.js", params=payload
             )
@@ -179,8 +178,11 @@ class DDGS:
                             "href": _normalize_url(href),
                             "body": body,
                         }
-            if result_exists is False:
+                else:
+                    next_page_url = row.get("n", None)
+            if result_exists is False or next_page_url is None:
                 break
+            payload["s"] = next_page_url.split("s=")[1].split("&")[0]
 
     def _text_html(
         self,
