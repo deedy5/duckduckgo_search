@@ -3,28 +3,28 @@ from duckduckgo_search import DDGS
 
 def test_text():
     with DDGS() as ddgs:
-        results = [x for x in ddgs.text("cat", max_results=25)]
-        assert len(results) >= 25
+        results = [x for x in ddgs.text("cat", max_results=30)]
+        assert len(results) >= 30
 
 
 def test_text_params():
     with DDGS() as ddgs:
         results = [
-            x for x in ddgs.text("cat", safesearch="off", timelimit="m", max_results=25)
+            x for x in ddgs.text("cat", safesearch="off", timelimit="m", max_results=30)
         ]
-        assert len(results) >= 25
+        assert len(results) >= 30
 
 
 def test_text_html():
     with DDGS() as ddgs:
-        results = [x for x in ddgs.text("eagle", backend="html", max_results=25)]
-        assert len(results) >= 25
+        results = [x for x in ddgs.text("eagle", backend="html", max_results=30)]
+        assert len(results) >= 30
 
 
 def test_text_lite():
     with DDGS() as ddgs:
-        results = [x for x in ddgs.text("dog", backend="lite", max_results=23)]
-        assert len(results) >= 23
+        results = [x for x in ddgs.text("dog", backend="lite", max_results=30)]
+        assert len(results) >= 30
 
 
 def test_images():

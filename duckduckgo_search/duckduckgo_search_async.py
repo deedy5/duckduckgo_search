@@ -11,7 +11,7 @@ import httpx
 from lxml import html
 
 from .models import MapsResult
-from .utils import USERAGENTS, _is_500_in_url, _normalize, _normalize_url
+from .utils import USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url
 
 logger = logging.getLogger(__name__)
 
@@ -68,17 +68,7 @@ class AsyncDDGS:
             "POST", "https://duckduckgo.com", data={"q": keywords}
         )
         if resp:
-            for c1, c2 in (
-                (b'vqd="', b'"'),
-                (b"vqd=", b"&"),
-                (b"vqd='", b"'"),
-            ):
-                try:
-                    start = resp.content.index(c1) + len(c1)
-                    end = resp.content.index(c2, start)
-                    return resp.content[start:end].decode()
-                except ValueError:
-                    logger.warning(f"_get_vqd() keywords={keywords} vqd not found")
+            return _extract_vqd(resp.content)
 
     async def text(
         self,
@@ -162,8 +152,7 @@ class AsyncDDGS:
             payload["p"] = "1"
 
         cache = set()
-        for s in ("0", "20", "70", "120"):
-            payload["s"] = s
+        for _ in range(10):
             resp = await self._get_url(
                 "GET", "https://links.duckduckgo.com/d.js", params=payload
             )
@@ -193,8 +182,11 @@ class AsyncDDGS:
                             "href": _normalize_url(href),
                             "body": body,
                         }
-            if result_exists is False:
+                else:
+                    next_page_url = row.get("n", None)
+            if result_exists is False or next_page_url is None:
                 break
+            payload["s"] = next_page_url.split("s=")[1].split("&")[0]
 
     async def _text_html(
         self,
@@ -263,7 +255,7 @@ class AsyncDDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
-            await asyncio.sleep(0.75)
+            # await asyncio.sleep(0.75)
 
     async def _text_lite(
         self,
@@ -286,12 +278,14 @@ class AsyncDDGS:
 
         payload = {
             "q": keywords,
+            "s": "0",
+            "o": "json",
+            "api": "d.js",
             "kl": region,
             "df": timelimit,
         }
         cache: Set[str] = set()
-        for s in ("0", "20", "70", "120"):
-            payload["s"] = s
+        for _ in range(10):
             resp = await self._get_url(
                 "POST", "https://lite.duckduckgo.com/lite/", data=payload
             )
@@ -328,9 +322,14 @@ class AsyncDDGS:
                         "href": _normalize_url(href),
                         "body": _normalize(body),
                     }
-            if result_exists is False:
+            next_page_s = tree.xpath(
+                "//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value"
+            )
+            if result_exists is False or not next_page_s:
                 break
-            await asyncio.sleep(0.75)
+            payload["s"] = next_page_s[0]
+            payload["vqd"] = _extract_vqd(resp.content)
+            # await asyncio.sleep(0.75)
 
     async def images(
         self,

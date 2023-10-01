@@ -186,13 +186,7 @@ asyncio.run(get_results())
 [Go To TOP](#TOP)
 
 ## 1. text() - text search by duckduckgo.com
-`html` and `lite` backend differ from `api`:</br>
-* don't do an extra request first to get vqd,</br>
-* use POST requests,</br>
-* pause 0.75 seconds between paginations.</br>
 
-If you use `html` or `lite` backend, pause at least 0.75 seconds between text() calls. 
-Otherwise the site will return a 403 status code after a few requests and block your ip for a few seconds.
 ```python
 def text(
     keywords: str,
@@ -339,6 +333,7 @@ with DDGS() as ddgs:
       type_image=None,
       layout=None,
       license_image=None,
+      max_results=100,
     )
     for r in ddgs_images_gen:
         print(r)
@@ -401,6 +396,7 @@ with DDGS() as ddgs:
       timelimit="w",
       resolution="high",
       duration="medium",
+      max_results=100,
     )
     for r in ddgs_videos_gen:
         print(r)
@@ -456,6 +452,7 @@ with DDGS() as ddgs:
       region="wt-wt",
       safesearch="off",
       timelimit="m",
+      max_results=20
     )
     for r in ddgs_news_gen:
         print(r)
@@ -519,7 +516,7 @@ def maps(
 from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
-    for r in ddgs.maps("school", place="Uganda"):
+    for r in ddgs.maps("school", place="Uganda", max_results=50):
         print(r)
 ```
 ***Async***
