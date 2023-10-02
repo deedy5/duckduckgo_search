@@ -17,25 +17,21 @@ logger = logging.getLogger(__name__)
 
 
 class DDGS:
-    """DuckDuckgo_search class to get search results from duckduckgo.com"""
+    """DuckDuckgo_search class to get search results from duckduckgo.com
 
-    def __init__(
-        self,
-        headers=None,
-        proxies=None,
-        timeout=10,
-    ) -> None:
+    Args:
+        headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
+        proxies (dict, optional): Dictionary of proxies for the HTTP client. Defaults to None.
+        timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+    """
+
+    def __init__(self, headers=None, proxies=None, timeout=10) -> None:
         if headers is None:
             headers = {
                 "User-Agent": choice(USERAGENTS),
                 "Referer": "https://duckduckgo.com/",
             }
-        self._client = httpx.Client(
-            headers=headers,
-            proxies=proxies,
-            timeout=timeout,
-            http2=True,
-        )
+        self._client = httpx.Client(headers=headers, proxies=proxies, timeout=timeout, http2=True)
 
     def __enter__(self) -> "DDGS":
         return self
@@ -43,14 +39,10 @@ class DDGS:
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._client.close()
 
-    def _get_url(
-        self, method: str, url: str, **kwargs
-    ) -> Optional[httpx._models.Response]:
+    def _get_url(self, method: str, url: str, **kwargs) -> Optional[httpx._models.Response]:
         for i in range(3):
             try:
-                resp = self._client.request(
-                    method, url, follow_redirects=True, **kwargs
-                )
+                resp = self._client.request(method, url, follow_redirects=True, **kwargs)
                 if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                     raise httpx._exceptions.HTTPError("")
                 resp.raise_for_status()
@@ -130,7 +122,7 @@ class DDGS:
         assert vqd, "error in getting vqd"
 
         payload = {
-            "q": keywords,  #
+            "q": keywords,
             "kl": region,
             "l": region,
             "s": 0,
@@ -149,9 +141,7 @@ class DDGS:
 
         cache = set()
         for _ in range(10):
-            resp = self._get_url(
-                "GET", "https://links.duckduckgo.com/d.js", params=payload
-            )
+            resp = self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             if resp is None:
                 break
             try:
@@ -164,11 +154,7 @@ class DDGS:
             result_exists = False
             for row in page_data:
                 href = row.get("u", None)
-                if (
-                    href
-                    and href not in cache
-                    and href != f"http://www.google.com/search?q={keywords}"
-                ):
+                if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
                     cache.add(href)
                     body = _normalize(row["a"])
                     if body:
@@ -214,9 +200,7 @@ class DDGS:
         }
         cache: Set[str] = set()
         for _ in range(10):
-            resp = self._get_url(
-                "POST", "https://html.duckduckgo.com/html", data=payload
-            )
+            resp = self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if resp is None:
                 break
 
@@ -228,11 +212,7 @@ class DDGS:
             for e in tree.xpath('//div[contains(@class, "results_links")]'):
                 href = e.xpath('.//a[contains(@class, "result__a")]/@href')
                 href = href[0] if href else None
-                if (
-                    href
-                    and href not in cache
-                    and href != f"http://www.google.com/search?q={keywords}"
-                ):
+                if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
                     cache.add(href)
                     title = e.xpath('.//a[contains(@class, "result__a")]/text()')
                     body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
@@ -282,9 +262,7 @@ class DDGS:
         }
         cache: Set[str] = set()
         for _ in range(10):
-            resp = self._get_url(
-                "POST", "https://lite.duckduckgo.com/lite/", data=payload
-            )
+            resp = self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if resp is None:
                 break
 
@@ -299,11 +277,7 @@ class DDGS:
                 if i == 1:
                     href = e.xpath(".//a//@href")
                     href = href[0] if href else None
-                    if (
-                        href is None
-                        or href in cache
-                        or href == f"http://www.google.com/search?q={keywords}"
-                    ):
+                    if href is None or href in cache or href == f"http://www.google.com/search?q={keywords}":
                         [next(data, None) for _ in range(3)]  # skip block(i=1,2,3,4)
                     else:
                         cache.add(href)
@@ -318,9 +292,7 @@ class DDGS:
                         "href": _normalize_url(href),
                         "body": _normalize(body),
                     }
-            next_page_s = tree.xpath(
-                "//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value"
-            )
+            next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
             if result_exists is False or not next_page_s:
                 break
             payload["s"] = next_page_s[0]
@@ -539,9 +511,7 @@ class DDGS:
 
         cache, results_counter = set(), 0
         for _ in range(10):
-            resp = self._get_url(
-                "GET", "https://duckduckgo.com/news.js", params=payload
-            )
+            resp = self._get_url("GET", "https://duckduckgo.com/news.js", params=payload)
             if resp is None:
                 break
             try:
@@ -576,10 +546,7 @@ class DDGS:
             if not result_exists or not next:
                 break
 
-    def answers(
-        self,
-        keywords: str,
-    ) -> Iterator[Dict[str, Optional[str]]]:
+    def answers(self, keywords: str) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
 
         Args:
@@ -649,11 +616,7 @@ class DDGS:
                             "url": subrow["FirstURL"],
                         }
 
-    def suggestions(
-        self,
-        keywords: str,
-        region: str = "wt-wt",
-    ) -> Iterator[Dict[str, Optional[str]]]:
+    def suggestions(self, keywords: str, region: str = "wt-wt") -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
 
         Args:
@@ -792,9 +755,7 @@ class DDGS:
                 "bbox_br": f"{lat_b},{lon_r}",
                 "strict_bbox": "1",
             }
-            resp = self._get_url(
-                "GET", "https://duckduckgo.com/local.js", params=params
-            )
+            resp = self._get_url("GET", "https://duckduckgo.com/local.js", params=params)
             if resp is None:
                 break
             try:
@@ -840,10 +801,7 @@ class DDGS:
                 work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
 
     def translate(
-        self,
-        keywords: str,
-        from_: Optional[str] = None,
-        to: str = "en",
+        self, keywords: str, from_: Optional[str] = None, to: str = "en"
     ) -> Optional[Dict[str, Optional[str]]]:
         """DuckDuckGo translate
 

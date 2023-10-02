@@ -26,20 +26,17 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest pytest-asyncio isort black
+        python -m pip install black isort ruff pytest pytest-asyncio
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
+    - name: Ruff
       run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --ignore=E999
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --ignore=E999    
+        ruff check . --target-version=py38
     - name: Isort
       run: |
         isort duckduckgo_search --profile black --check
     - name: Black
       run: |
         black --check --diff --target-version=py38 duckduckgo_search
-    - name: Test with pytest
+    - name: Pytest
       run: |
         pytest

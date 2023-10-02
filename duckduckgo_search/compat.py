@@ -8,35 +8,15 @@ logger = logging.getLogger(__name__)
 
 # deprecated, for compatibility
 def ddg(
-    keywords,
-    region="wt-wt",
-    safesearch="moderate",
-    time=None,
-    max_results=None,
-    page=1,
-    output=None,
-    download=False,
+    keywords, region="wt-wt", safesearch="moderate", time=None, max_results=None, page=1, output=None, download=False
 ):
     warnings.warn("ddg is deprecated. Use DDGS().text() generator")
-    if time:
-        warnings.warn("parameter time is deprecated, use parameter timelimit")
-    if page:
-        warnings.warn("parameter page is deprecated, use DDGS().text() generator")
-    if max_results:
-        warnings.warn("parameter max_results is deprecated, use DDGS().text()")
-    if output:
-        warnings.warn("parameter output is deprecated")
-    if download:
-        warnings.warn("parameter download is deprecated")
-
     results = []
     for r in DDGS().text(
-        keywords=keywords, region=region, safesearch=safesearch, timelimit=time
+        keywords=keywords, region=region, safesearch=safesearch, timelimit=time, max_results=max_results
     ):
         results.append(r)
-        if (max_results and len(results) >= max_results) or (
-            page and len(results) >= 20
-        ):
+        if page and len(results) >= 20:
             break
     return results
 
@@ -58,17 +38,6 @@ def ddg_images(
     download=False,
 ):
     warnings.warn("ddg_images is deprecated. Use DDGS().images() generator")
-    if time:
-        warnings.warn("parameter time is deprecated, use parameter timelimit")
-    if page:
-        warnings.warn("parameter page is deprecated")
-    if max_results:
-        warnings.warn("parameter max_results is deprecated")
-    if output:
-        warnings.warn("parameter output is deprecated")
-    if download:
-        warnings.warn("parameter download is deprecated")
-
     results = []
     for r in DDGS().images(
         keywords=keywords,
@@ -80,11 +49,10 @@ def ddg_images(
         type_image=type_image,
         layout=layout,
         license_image=license_image,
+        max_results=max_results,
     ):
         results.append(r)
-        if (max_results and len(results) >= max_results) or (
-            page and len(results) >= 90
-        ):
+        if page and len(results) >= 90:
             break
     return results
 
@@ -103,15 +71,6 @@ def ddg_videos(
     output=None,
 ):
     warnings.warn("ddg_videos is deprecated. Use DDGS().videos() generator")
-    if time:
-        warnings.warn("parameter time is deprecated, use parameter timelimit")
-    if page:
-        warnings.warn("parameter page is deprecated")
-    if max_results:
-        warnings.warn("parameter max_results is deprecated")
-    if output:
-        warnings.warn("parameter output is deprecated")
-
     results = []
     for r in DDGS().videos(
         keywords=keywords,
@@ -121,46 +80,23 @@ def ddg_videos(
         resolution=resolution,
         duration=duration,
         license_videos=license_videos,
+        max_results=max_results,
     ):
         results.append(r)
-        if (max_results and len(results) >= max_results) or (
-            page and len(results) >= 50
-        ):
+        if page and len(results) >= 50:
             break
     return results
 
 
 # deprecated, for compatibility
-def ddg_news(
-    keywords,
-    region="wt-wt",
-    safesearch="moderate",
-    time=None,
-    max_results=None,
-    page=1,
-    output=None,
-):
+def ddg_news(keywords, region="wt-wt", safesearch="moderate", time=None, max_results=None, page=1, output=None):
     warnings.warn("ddg_news is deprecated. Use DDGS().news() generator")
-    if time:
-        warnings.warn("parameter time is deprecated, use parameter timelimit")
-    if page:
-        warnings.warn("parameter page is deprecated")
-    if max_results:
-        warnings.warn("parameter max_results is deprecated")
-    if output:
-        warnings.warn("parameter output is deprecated")
-
     results = []
     for r in DDGS().news(
-        keywords=keywords,
-        region=region,
-        safesearch=safesearch,
-        timelimit=time,
+        keywords=keywords, region=region, safesearch=safesearch, timelimit=time, max_results=max_results
     ):
         results.append(r)
-        if (max_results and len(results) >= max_results) or (
-            page and len(results) >= 25
-        ):
+        if page and len(results) >= 25:
             break
     return results
 
@@ -182,11 +118,6 @@ def ddg_maps(
     output=None,
 ):
     warnings.warn("ddg_maps is deprecated. Use DDGS().maps() generator")
-    if max_results:
-        warnings.warn("parameter max_results is deprecated")
-    if output:
-        warnings.warn("parameter output is deprecated")
-
     results = []
     for r in DDGS().maps(
         keywords=keywords,
@@ -200,25 +131,17 @@ def ddg_maps(
         latitude=latitude,
         longitude=longitude,
         radius=radius,
+        max_results=max_results,
     ):
         results.append(r)
-        if (max_results and len(results) >= max_results) or len(results) >= 100:
+        if len(results) >= 100:
             break
     return results
 
 
 # deprecated, for compatibility
-def ddg_answers(
-    keywords,
-    related=False,
-    output=None,
-):
+def ddg_answers(keywords, related=False, output=None):
     warnings.warn("ddg_answers is deprecated. Use DDGS().answers() generator")
-    if related:
-        warnings.warn("parameter related is deprecated")
-    if output:
-        warnings.warn("parameter output is deprecated")
-
     results = []
     for r in DDGS().answers(keywords=keywords):
         results.append(r)
@@ -228,15 +151,8 @@ def ddg_answers(
 
 
 # deprecated, for compatibility
-def ddg_suggestions(
-    keywords,
-    region="wt-wt",
-    output=None,
-):
+def ddg_suggestions(keywords, region="wt-wt", output=None):
     warnings.warn("ddg_suggestions is deprecated. Use DDGS().suggestions() generator")
-    if output:
-        warnings.warn("parameter output is deprecated")
-
     results = []
     for r in DDGS().suggestions(keywords=keywords, region=region):
         results.append(r)
@@ -246,15 +162,7 @@ def ddg_suggestions(
 
 
 # deprecated, for compatibility
-def ddg_translate(
-    keywords,
-    from_=None,
-    to="en",
-    output=None,
-):
+def ddg_translate(keywords, from_=None, to="en", output=None):
     warnings.warn("ddg_translate is deprecated. Use DDGS().translate()")
-    if output:
-        warnings.warn("parameter output is deprecated")
-
     results = DDGS().translate(keywords=keywords, from_=from_, to=to)
     return results
