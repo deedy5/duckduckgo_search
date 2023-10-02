@@ -17,7 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 class DDGS:
-    """DuckDuckgo_search class to get search results from duckduckgo.com"""
+    """DuckDuckgo_search class to get search results from duckduckgo.com
+
+    Args:
+        headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
+        proxies (dict, optional): Dictionary of proxies for the HTTP client. Defaults to None.
+        timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+    """
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
         if headers is None:
