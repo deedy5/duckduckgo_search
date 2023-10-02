@@ -43,3 +43,25 @@ ddgs = "duckduckgo_search.cli:cli"
 
 [tool.setuptools.dynamic]
 version = {attr = "duckduckgo_search.version.__version__"}
+
+[project.optional-dependencies]
+dev = [ 
+    "black>=23.9.1",
+    "isort>=5.12.0",
+    "ruff>=0.0.291",
+    "pytest>=7.4.2",
+    "pytest-asyncio>=0.21.1",
+]
+
+[tool.black]
+line-length = 120
+target-version = ["py38"]
+
+[tool.isort]
+atomic = true
+profile = "black"
+line_length = 120
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
