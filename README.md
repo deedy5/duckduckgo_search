@@ -1,4 +1,4 @@
-![Python >= 3.7](https://img.shields.io/badge/python->=3.8-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/personalized-badge/duckduckgo-search?period=total&units=none&left_color=grey&right_color=blue&left_text=downloads/total)](https://pepy.tech/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/personalized-badge/duckduckgo-search?period=month&units=none&left_color=grey&right_color=blue&left_text=downloads/month)](https://pepy.tech/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/personalized-badge/duckduckgo-search?period=week&units=none&left_color=grey&right_color=blue&left_text=downloads/weak)](https://pepy.tech/project/duckduckgo-search)
+![Python >= 3.8](https://img.shields.io/badge/python->=3.8-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/personalized-badge/duckduckgo-search?period=total&units=none&left_color=grey&right_color=blue&left_text=downloads/total)](https://pepy.tech/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/personalized-badge/duckduckgo-search?period=month&units=none&left_color=grey&right_color=blue&left_text=downloads/month)](https://pepy.tech/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/personalized-badge/duckduckgo-search?period=week&units=none&left_color=grey&right_color=blue&left_text=downloads/weak)](https://pepy.tech/project/duckduckgo-search)
 # Duckduckgo_search<a name="TOP"></a>
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
@@ -8,6 +8,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [CLI version](#cli-version)
 * [Duckduckgo search operators](#duckduckgo-search-operators)
 * [Regions](#regions)
+* [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
 * [Using proxy](#using-proxy)
 * [1. text() - text search](#1-text---text-search-by-duckduckgocom)
 * [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
@@ -150,6 +151,53 @@ ddgs answers -k holocaust -o json
     wt-wt for No region
 ___
 </details>
+
+[Go To TOP](#TOP)
+
+
+## DDGS and AsyncDDGS classes
+
+The DDGS and AsyncDDGS classes are used to retrieve search results from DuckDuckGo.com.
+To use the AsyncDDGS class, you can perform asynchronous operations using Python's asyncio library.
+To initialize an instance of the DDGS or AsyncDDGS classes, you can provide the following optional arguments:
+```python3
+class DDGS:
+    """DuckDuckgo_search class to get search results from duckduckgo.com
+
+    Args:
+        headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
+        proxies (dict, optional): Dictionary of proxies for the HTTP client. Defaults to None.
+        timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+    """
+```
+
+Here is an example of initializing the DDGS class:
+```python3
+from duckduckgo_search import DDGS
+
+with DDGS() as ddgs:
+    results = [r for r in ddgs.text("python programming", max_results=5)]
+    print(results)
+```
+Here is an example of initializing the AsyncDDGS class:
+```python3
+import asyncio
+from duckduckgo_search import AsyncDDGS
+
+async def get_results():
+    async with AsyncDDGS() as ddgs:
+        results = [r async for r in ddgs.text("cat", max_results=5)]
+        return results
+
+async def main():
+    ddgs_results = await get_results()
+    print(ddgs_results)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+It is important to note that the DDGS and AsyncDDGS classes should always be used as a context manager (with statement). 
+This ensures proper resource management and cleanup, as the context manager will automatically handle opening and closing the HTTP client connection.
 
 [Go To TOP](#TOP)
 
