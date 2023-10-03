@@ -21,7 +21,7 @@ class AsyncDDGS:
 
     Args:
         headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
-        proxies (dict, optional): Dictionary of proxies for the HTTP client. Defaults to None.
+        proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
     """
 
