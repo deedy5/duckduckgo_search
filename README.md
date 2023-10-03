@@ -166,7 +166,7 @@ class DDGS:
 
     Args:
         headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
-        proxies (dict, optional): Dictionary of proxies for the HTTP client. Defaults to None.
+        proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
     """
 ```
@@ -255,7 +255,7 @@ def text(
             api - collect data from https://duckduckgo.com,
             html - collect data from https://html.duckduckgo.com,
             lite - collect data from https://lite.duckduckgo.com.
-        max_results: max number of results. Defaults to None.
+        max_results: max number of results. If None, returns results only from the first response. Defaults to None.
     Yields:
         dict with search results.
 
@@ -359,7 +359,7 @@ def images(
             Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
             Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
             Use Commercially). Defaults to None.
-        max_results: max number of results. Defaults to None.
+        max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
     Yields:
         dict with image search results.
@@ -424,7 +424,7 @@ def videos(
         resolution: high, standart. Defaults to None.
         duration: short, medium, long. Defaults to None.
         license_videos: creativeCommon, youtube. Defaults to None.
-        max_results: max number of results. Defaults to None.
+        max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
     Yields:
         dict with videos search results
@@ -482,7 +482,7 @@ def news(
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m. Defaults to None.
-        max_results: max number of results. Defaults to None.
+        max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
     Yields:
         dict with news search results.
@@ -552,7 +552,7 @@ def maps(
             longitude: geographic coordinate (east–west position); if latitude and
                 longitude are set, the other parameters are not used. Defaults to None.
             radius: expand the search square by the distance in kilometers. Defaults to 0.
-            max_results: max number of results. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with maps search results
