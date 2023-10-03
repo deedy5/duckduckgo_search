@@ -6,7 +6,6 @@ using the DuckDuckGo.com search engine.
 
 import logging
 
-# ruff: noqa: F401
 # isort: off
 from .compat import (
     ddg,
