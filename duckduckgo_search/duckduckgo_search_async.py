@@ -80,17 +80,17 @@ class AsyncDDGS:
                 api - collect data from https://duckduckgo.com,
                 html - collect data from https://html.duckduckgo.com,
                 lite - collect data from https://lite.duckduckgo.com.
-            max_results: maximum number of results to return.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
         Yields:
             dict with search results.
 
         """
         if backend == "api":
-            results = self._text_api(keywords, region, safesearch, timelimit)
+            results = self._text_api(keywords, region, safesearch, timelimit, max_results)
         elif backend == "html":
-            results = self._text_html(keywords, region, safesearch, timelimit)
+            results = self._text_html(keywords, region, safesearch, timelimit, max_results)
         elif backend == "lite":
-            results = self._text_lite(keywords, region, timelimit)
+            results = self._text_lite(keywords, region, timelimit, max_results)
 
         results_counter = 0
         async for result in results:
@@ -105,6 +105,7 @@ class AsyncDDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
+        max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
@@ -113,6 +114,7 @@ class AsyncDDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m, y. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with search results.
@@ -168,7 +170,7 @@ class AsyncDDGS:
                         }
                 else:
                     next_page_url = row.get("n", None)
-            if result_exists is False or next_page_url is None:
+            if max_results is None or result_exists is False or next_page_url is None:
                 break
             payload["s"] = next_page_url.split("s=")[1].split("&")[0]
 
@@ -178,6 +180,7 @@ class AsyncDDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
+        max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
@@ -186,6 +189,7 @@ class AsyncDDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m, y. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with search results.
@@ -225,10 +229,12 @@ class AsyncDDGS:
                         "body": _normalize("".join(body)) if body else None,
                     }
 
+            if max_results is None or result_exists is False:
+                break
             next_page = tree.xpath('.//div[@class="nav-link"]')
             next_page = next_page[-1] if next_page else None
-            if next_page is None or result_exists is False:
-                return
+            if next_page is None:
+                break
 
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
@@ -240,6 +246,7 @@ class AsyncDDGS:
         keywords: str,
         region: str = "wt-wt",
         timelimit: Optional[str] = None,
+        max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
@@ -247,6 +254,7 @@ class AsyncDDGS:
             keywords: keywords for query.
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
             timelimit: d, w, m, y. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with search results.
@@ -294,8 +302,10 @@ class AsyncDDGS:
                         "href": _normalize_url(href),
                         "body": _normalize(body),
                     }
+            if max_results is None or result_exists is False:
+                break
             next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
-            if result_exists is False or not next_page_s:
+            if not next_page_s:
                 break
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content)
@@ -331,7 +341,7 @@ class AsyncDDGS:
                 Share (Free to Share and Use), ShareCommercially (Free to Share and Use Commercially),
                 Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
                 Use Commercially). Defaults to None.
-            max_results: Maximum number of results. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with image search results.
@@ -390,12 +400,12 @@ class AsyncDDGS:
                     results_counter += 1
                     if max_results and results_counter >= max_results:
                         break
-
-            next = resp_json.get("next", None)
-            if next:
-                payload["s"] = next.split("s=")[-1].split("&")[0]
-            if next is None or result_exists is False:
+            if max_results is None or result_exists is False:
                 break
+            next = resp_json.get("next", None)
+            if next is None:
+                break
+            payload["s"] = next.split("s=")[-1].split("&")[0]
 
     async def videos(
         self,
@@ -418,7 +428,7 @@ class AsyncDDGS:
             resolution: high, standart. Defaults to None.
             duration: short, medium, long. Defaults to None.
             license_videos: creativeCommon, youtube. Defaults to None.
-            max_results: Maximum number of results. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with videos search results
@@ -466,12 +476,12 @@ class AsyncDDGS:
                     result_counter += 1
                     if max_results and result_counter >= max_results:
                         break
-
-            next = resp_json.get("next", None)
-            if next:
-                payload["s"] = next.split("s=")[-1].split("&")[0]
-            if not result_exists or not next:
+            if max_results is None or result_exists is False:
                 break
+            next = resp_json.get("next", None)
+            if next is None:
+                break
+            payload["s"] = next.split("s=")[-1].split("&")[0]
 
     async def news(
         self,
@@ -488,7 +498,7 @@ class AsyncDDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m. Defaults to None.
-            max_results: Maximum number of results. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with news search results.
@@ -541,12 +551,12 @@ class AsyncDDGS:
                     results_counter += 1
                     if max_results and results_counter >= max_results:
                         break
-
-            next = resp_json.get("next", None)
-            if next:
-                payload["s"] = next.split("s=")[-1].split("&")[0]
-            if not result_exists or not next:
+            if max_results is None or result_exists is False:
                 break
+            next = resp_json.get("next", None)
+            if next is None:
+                break
+            payload["s"] = next.split("s=")[-1].split("&")[0]
 
     async def answers(self, keywords: str) -> AsyncIterator[Dict[str, Optional[str]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
@@ -675,7 +685,7 @@ class AsyncDDGS:
             longitude: geographic coordinate (east–west position); if latitude and
                 longitude are set, the other parameters are not used. Defaults to None.
             radius: expand the search square by the distance in kilometers. Defaults to 0.
-            max_results: maximum number of results. Defaults to None.
+            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Yields:
             dict with maps search results
@@ -791,7 +801,8 @@ class AsyncDDGS:
                     if max_results and results_counter >= max_results:
                         stop_find = True
                         break
-
+            if max_results is None:
+                break
             # divide the square into 4 parts and add to the queue
             if len(page_data) >= 15:
                 lat_middle = (lat_t + lat_b) / 2
