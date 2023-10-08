@@ -126,9 +126,10 @@ class AsyncDDGS:
         assert vqd, "error in getting vqd"
 
         payload = {
-            "q": keywords,  #
+            "q": keywords,
             "kl": region,
             "l": region,
+            "bing_market": region,
             "s": 0,
             "df": timelimit,
             "vqd": vqd,
@@ -147,13 +148,13 @@ class AsyncDDGS:
         for _ in range(10):
             resp = await self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 page_data = resp.json().get("results", None)
             except Exception:
-                break
+                return
             if page_data is None:
-                break
+                return
 
             result_exists = False
             for row in page_data:
@@ -171,7 +172,7 @@ class AsyncDDGS:
                 else:
                     next_page_url = row.get("n", None)
             if max_results is None or result_exists is False or next_page_url is None:
-                break
+                return
             payload["s"] = next_page_url.split("s=")[1].split("&")[0]
 
     async def _text_html(
@@ -208,7 +209,7 @@ class AsyncDDGS:
         for _ in range(10):
             resp = await self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if resp is None:
-                break
+                return
 
             tree = html.fromstring(resp.content)
             if tree.xpath('//div[@class="no-results"]/text()'):
@@ -230,11 +231,11 @@ class AsyncDDGS:
                     }
 
             if max_results is None or result_exists is False:
-                break
+                return
             next_page = tree.xpath('.//div[@class="nav-link"]')
             next_page = next_page[-1] if next_page else None
             if next_page is None:
-                break
+                return
 
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
@@ -274,7 +275,7 @@ class AsyncDDGS:
         for _ in range(10):
             resp = await self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if resp is None:
-                break
+                return
 
             if b"No more results." in resp.content:
                 return
@@ -303,10 +304,10 @@ class AsyncDDGS:
                         "body": _normalize(body),
                     }
             if max_results is None or result_exists is False:
-                break
+                return
             next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
             if not next_page_s:
-                break
+                return
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content)
             # await asyncio.sleep(0.75)
@@ -369,18 +370,18 @@ class AsyncDDGS:
             "p": safesearch_base[safesearch.lower()],
         }
 
-        cache, results_counter = set(), 0
+        cache = set()
         for _ in range(10):
             resp = await self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 resp_json = resp.json()
             except Exception:
-                break
+                return
             page_data = resp_json.get("results", None)
             if page_data is None:
-                break
+                return
 
             result_exists = False
             for row in page_data:
@@ -397,14 +398,13 @@ class AsyncDDGS:
                         "width": row["width"],
                         "source": row["source"],
                     }
-                    results_counter += 1
-                    if max_results and results_counter >= max_results:
-                        break
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
-                break
+                return
             next = resp_json.get("next", None)
             if next is None:
-                break
+                return
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     async def videos(
@@ -454,18 +454,18 @@ class AsyncDDGS:
             "p": safesearch_base[safesearch.lower()],
         }
 
-        cache, result_counter = set(), 0
+        cache = set()
         for _ in range(10):
             resp = await self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 resp_json = resp.json()
             except Exception:
-                break
+                return
             page_data = resp_json.get("results", None)
             if page_data is None:
-                break
+                return
 
             result_exists = False
             for row in page_data:
@@ -473,14 +473,13 @@ class AsyncDDGS:
                     cache.add(row["content"])
                     result_exists = True
                     yield row
-                    result_counter += 1
-                    if max_results and result_counter >= max_results:
-                        break
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
-                break
+                return
             next = resp_json.get("next", None)
             if next is None:
-                break
+                return
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     async def news(
@@ -521,18 +520,18 @@ class AsyncDDGS:
             "s": 0,
         }
 
-        cache, results_counter = set(), 0
+        cache = set()
         for _ in range(10):
             resp = await self._get_url("GET", "https://duckduckgo.com/news.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 resp_json = resp.json()
             except Exception:
-                break
+                return
             page_data = resp_json.get("results", None)
             if page_data is None:
-                break
+                return
 
             result_exists = False
             for row in page_data:
@@ -548,14 +547,13 @@ class AsyncDDGS:
                         "image": _normalize_url(image_url) if image_url else None,
                         "source": row["source"],
                     }
-                    results_counter += 1
-                    if max_results and results_counter >= max_results:
-                        break
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
-                break
+                return
             next = resp_json.get("next", None)
             if next is None:
-                break
+                return
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     async def answers(self, keywords: str) -> AsyncIterator[Dict[str, Optional[str]]]:
@@ -751,9 +749,8 @@ class AsyncDDGS:
         work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
 
         # bbox iterate
-        cache, results_counter = set(), 0
-        stop_find = False
-        while work_bboxes and not stop_find:
+        cache = set()
+        while work_bboxes:
             lat_t, lon_l, lat_b, lon_r = work_bboxes.pop()
             params = {
                 "q": keywords,
@@ -769,13 +766,13 @@ class AsyncDDGS:
             }
             resp = await self._get_url("GET", "https://duckduckgo.com/local.js", params=params)
             if resp is None:
-                break
+                return
             try:
                 page_data = resp.json().get("results", [])
             except Exception:
-                break
+                return
             if page_data is None:
-                break
+                return
 
             for res in page_data:
                 result = MapsResult()
@@ -797,12 +794,10 @@ class AsyncDDGS:
                         result.desc = res["embed"].get("description", "")
                     result.hours = res["hours"]
                     yield result.__dict__
-                    results_counter += 1
-                    if max_results and results_counter >= max_results:
-                        stop_find = True
-                        break
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None:
-                break
+                return
             # divide the square into 4 parts and add to the queue
             if len(page_data) >= 15:
                 lat_middle = (lat_t + lat_b) / 2

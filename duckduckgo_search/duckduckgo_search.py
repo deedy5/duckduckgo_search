@@ -127,6 +127,7 @@ class DDGS:
             "q": keywords,
             "kl": region,
             "l": region,
+            "bing_market": f"{region.split('-')[0]}-{region.split('-')[-1].upper()}",
             "s": 0,
             "df": timelimit,
             "vqd": vqd,
@@ -145,13 +146,13 @@ class DDGS:
         for _ in range(10):
             resp = self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 page_data = resp.json().get("results", None)
             except Exception:
-                break
+                return
             if page_data is None:
-                break
+                return
 
             result_exists, next_page_url = False, None
             for row in page_data:
@@ -169,7 +170,7 @@ class DDGS:
                 else:
                     next_page_url = row.get("n", None)
             if max_results is None or result_exists is False or next_page_url is None:
-                break
+                return
             payload["s"] = next_page_url.split("s=")[1].split("&")[0]
 
     def _text_html(
@@ -206,7 +207,7 @@ class DDGS:
         for _ in range(10):
             resp = self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if resp is None:
-                break
+                return
 
             tree = html.fromstring(resp.content)
             if tree.xpath('//div[@class="no-results"]/text()'):
@@ -228,11 +229,11 @@ class DDGS:
                     }
 
             if max_results is None or result_exists is False:
-                break
+                return
             next_page = tree.xpath('.//div[@class="nav-link"]')
             next_page = next_page[-1] if next_page else None
             if next_page is None:
-                break
+                return
 
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
@@ -272,7 +273,7 @@ class DDGS:
         for _ in range(10):
             resp = self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if resp is None:
-                break
+                return
 
             if b"No more results." in resp.content:
                 return
@@ -301,10 +302,10 @@ class DDGS:
                         "body": _normalize(body),
                     }
             if max_results is None or result_exists is False:
-                break
+                return
             next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
             if not next_page_s:
-                break
+                return
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content)
             # sleep(0.75)
@@ -367,18 +368,18 @@ class DDGS:
             "p": safesearch_base[safesearch.lower()],
         }
 
-        cache, results_counter = set(), 0
+        cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 resp_json = resp.json()
             except Exception:
-                break
+                return
             page_data = resp_json.get("results", None)
             if page_data is None:
-                break
+                return
 
             result_exists = False
             for row in page_data:
@@ -395,14 +396,13 @@ class DDGS:
                         "width": row["width"],
                         "source": row["source"],
                     }
-                    if max_results and results_counter >= max_results:
-                        break
-                    results_counter += 1
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
-                break
+                return
             next = resp_json.get("next", None)
             if next is None:
-                break
+                return
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     def videos(
@@ -452,18 +452,18 @@ class DDGS:
             "p": safesearch_base[safesearch.lower()],
         }
 
-        cache, results_counter = set(), 0
+        cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 resp_json = resp.json()
             except Exception:
-                break
+                return
             page_data = resp_json.get("results", None)
             if page_data is None:
-                break
+                return
 
             result_exists = False
             for row in page_data:
@@ -471,14 +471,13 @@ class DDGS:
                     cache.add(row["content"])
                     result_exists = True
                     yield row
-                    results_counter += 1
-                    if max_results and results_counter >= max_results:
-                        break
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
-                break
+                return
             next = resp_json.get("next", None)
             if next is None:
-                break
+                return
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     def news(
@@ -519,18 +518,18 @@ class DDGS:
             "s": 0,
         }
 
-        cache, results_counter = set(), 0
+        cache = set()
         for _ in range(10):
             resp = self._get_url("GET", "https://duckduckgo.com/news.js", params=payload)
             if resp is None:
-                break
+                return
             try:
                 resp_json = resp.json()
             except Exception:
-                break
+                return
             page_data = resp_json.get("results", None)
             if page_data is None:
-                break
+                return
 
             result_exists = False
             for row in page_data:
@@ -546,14 +545,13 @@ class DDGS:
                         "image": _normalize_url(image_url) if image_url else None,
                         "source": row["source"],
                     }
-                    if max_results and results_counter >= max_results:
-                        break
-                    results_counter += 1
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
-                break
+                return
             next = resp_json.get("next", None)
             if next is None:
-                break
+                return
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     def answers(self, keywords: str) -> Iterator[Dict[str, Optional[str]]]:
@@ -749,9 +747,8 @@ class DDGS:
         work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
 
         # bbox iterate
-        cache, results_counter = set(), 0
-        stop_find = False
-        while work_bboxes and not stop_find:
+        cache = set()
+        while work_bboxes:
             lat_t, lon_l, lat_b, lon_r = work_bboxes.pop()
             params = {
                 "q": keywords,
@@ -767,13 +764,13 @@ class DDGS:
             }
             resp = self._get_url("GET", "https://duckduckgo.com/local.js", params=params)
             if resp is None:
-                break
+                return
             try:
                 page_data = resp.json().get("results", [])
             except Exception:
-                break
+                return
             if page_data is None:
-                break
+                return
 
             for res in page_data:
                 result = MapsResult()
@@ -795,12 +792,10 @@ class DDGS:
                         result.desc = res["embed"].get("description", "")
                     result.hours = res["hours"]
                     yield result.__dict__
-                    results_counter += 1
-                    if max_results and results_counter >= max_results:
-                        stop_find = True
-                        break
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None:
-                break
+                return
             # divide the square into 4 parts and add to the queue
             if len(page_data) >= 15:
                 lat_middle = (lat_t + lat_b) / 2

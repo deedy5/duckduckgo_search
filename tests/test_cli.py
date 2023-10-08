@@ -1,6 +1,5 @@
 import os
 import shutil
-from itertools import islice
 
 from click.testing import CliRunner
 
@@ -58,9 +57,9 @@ def test_translate_command():
 def test_save_csv():
     keywords = "butterfly"
     with DDGS() as ddgs:
-        ddgs_gen = ddgs.text(keywords)
-        results = [x for x in islice(ddgs_gen, 25)]
-        assert len(results) >= 22
+        ddgs_gen = ddgs.text(keywords, max_results=30)
+        results = [x for x in ddgs_gen]
+        assert len(results) == 30
 
     save_csv(f"{keywords}.csv", results)
 
@@ -78,9 +77,9 @@ def test_save_csv():
 def test_save_json():
     keywords = "chicago"
     with DDGS() as ddgs:
-        ddgs_gen = ddgs.text(keywords)
-        results = [x for x in islice(ddgs_gen, 25)]
-        assert len(results) >= 22
+        ddgs_gen = ddgs.text(keywords, max_results=30)
+        results = [x for x in ddgs_gen]
+        assert len(results) == 30
 
     save_json(f"{keywords}.json", results)
 
@@ -97,8 +96,8 @@ def test_save_json():
 
 def test_text_download():
     keywords = "maradona"
-    results = [x for x in islice(DDGS().text(keywords), 10)]
-    assert len(results) >= 8
+    results = [x for x in DDGS().text(keywords, max_results=8)]
+    assert len(results) == 8
 
     download_results(keywords, results)
 
@@ -123,7 +122,7 @@ def test_text_download():
 
 def test_images_download():
     keywords = "real madrid"
-    results = [x for x in islice(DDGS().images(keywords), 10)]
+    results = [x for x in DDGS().images(keywords, max_results=8)]
     assert len(results) >= 8
 
     download_results(keywords, results, images=True)
