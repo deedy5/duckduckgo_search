@@ -127,6 +127,7 @@ class DDGS:
             "q": keywords,
             "kl": region,
             "l": region,
+            "bing_market": f"{region.split('-')[0]}-{region.split('-')[-1].upper()}",
             "s": 0,
             "df": timelimit,
             "vqd": vqd,

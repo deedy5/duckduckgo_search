@@ -126,9 +126,10 @@ class AsyncDDGS:
         assert vqd, "error in getting vqd"
 
         payload = {
-            "q": keywords,  #
+            "q": keywords,
             "kl": region,
             "l": region,
+            "bing_market": region,
             "s": 0,
             "df": timelimit,
             "vqd": vqd,
