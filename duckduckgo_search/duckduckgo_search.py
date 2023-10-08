@@ -295,11 +295,13 @@ class DDGS:
                     body = e.xpath(".//td[@class='result-snippet']//text()")
                     body = "".join(body).strip()
                 elif i == 3:
+                    i_date = "".join(e.xpath('.//span[2]//text()')).strip()
                     result_exists = True
                     yield {
                         "title": _normalize(title),
                         "href": _normalize_url(href),
                         "body": _normalize(body),
+                        "datetime":_normalize(i_date),
                     }
             if max_results is None or result_exists is False:
                 return
