@@ -156,7 +156,9 @@ class DDGS:
 
             result_exists, next_page_url = False, None
             for row in page_data:
+                i_time = row.get('e', None)
                 href = row.get("u", None)
+                source = row.get('i', None)
                 if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
                     cache.add(href)
                     body = _normalize(row["a"])
@@ -166,6 +168,8 @@ class DDGS:
                             "title": _normalize(row["t"]),
                             "href": _normalize_url(href),
                             "body": body,
+                            "source": source,
+                            "datetime" : i_time,
                         }
                 else:
                     next_page_url = row.get("n", None)
