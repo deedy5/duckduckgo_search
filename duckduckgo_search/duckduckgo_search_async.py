@@ -29,6 +29,7 @@ class AsyncDDGS:
         if headers is None:
             headers = {
                 "User-Agent": choice(USERAGENTS),
+                "Accept": "application/json, text/javascript, */*; q=0.01",
                 "Referer": "https://duckduckgo.com/",
             }
         self._client = httpx.AsyncClient(headers=headers, proxies=proxies, timeout=timeout, http2=True)
@@ -363,7 +364,6 @@ class AsyncDDGS:
         payload = {
             "l": region,
             "o": "json",
-            "s": 0,
             "q": keywords,
             "vqd": vqd,
             "f": f"{timelimit},{size},{color},{type_image},{layout},{license_image}",
