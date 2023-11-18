@@ -30,6 +30,7 @@ class AsyncDDGS:
             headers = {
                 "User-Agent": choice(USERAGENTS),
                 "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Accept-Language": "en-US,en;q=0.5",
                 "Referer": "https://duckduckgo.com/",
             }
         self._client = httpx.AsyncClient(headers=headers, proxies=proxies, timeout=timeout, http2=True)
@@ -44,9 +45,11 @@ class AsyncDDGS:
         for i in range(3):
             try:
                 resp = await self._client.request(method, url, follow_redirects=True, **kwargs)
-                if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
+                if _is_500_in_url(str(resp.url)):
                     raise httpx._exceptions.HTTPError("")
                 resp.raise_for_status()
+                if resp.status_code == 202:
+                    return 202
                 if resp.status_code == 200:
                     return resp
             except Exception as ex:
@@ -131,7 +134,7 @@ class AsyncDDGS:
             "kl": region,
             "l": region,
             "bing_market": region,
-            "s": 0,
+            "s": "0",
             "df": timelimit,
             "vqd": vqd,
             "o": "json",
@@ -146,10 +149,13 @@ class AsyncDDGS:
             payload["p"] = "1"
 
         cache = set()
-        for _ in range(10):
+        for _ in range(11):
             resp = await self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             if resp is None:
                 return
+            if resp == 202:
+                payload["s"] = f"{int(payload['s']) + 50}"
+                continue
             try:
                 page_data = resp.json().get("results", None)
             except Exception:
@@ -202,15 +208,19 @@ class AsyncDDGS:
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
+            "s": "0",
             "kl": region,
             "p": safesearch_base[safesearch.lower()],
             "df": timelimit,
         }
         cache: Set[str] = set()
-        for _ in range(10):
+        for _ in range(11):
             resp = await self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if resp is None:
                 return
+            if resp == 202:
+                payload["s"] = f"{int(payload['s']) + 50}"
+                continue
 
             tree = html.fromstring(resp.content)
             if tree.xpath('//div[@class="no-results"]/text()'):
@@ -241,7 +251,6 @@ class AsyncDDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
-            # await asyncio.sleep(0.75)
 
     async def _text_lite(
         self,
@@ -273,10 +282,13 @@ class AsyncDDGS:
             "df": timelimit,
         }
         cache: Set[str] = set()
-        for _ in range(10):
+        for _ in range(11):
             resp = await self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if resp is None:
                 return
+            if resp == 202:
+                payload["s"] = f"{int(payload['s']) + 50}"
+                continue
 
             if b"No more results." in resp.content:
                 return
@@ -311,7 +323,6 @@ class AsyncDDGS:
                 return
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content)
-            # await asyncio.sleep(0.75)
 
     async def images(
         self,
