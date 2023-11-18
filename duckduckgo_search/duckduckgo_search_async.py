@@ -30,6 +30,7 @@ class AsyncDDGS:
             headers = {
                 "User-Agent": choice(USERAGENTS),
                 "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Accept-Language": "en-US,en;q=0.5",
                 "Referer": "https://duckduckgo.com/",
             }
         self._client = httpx.AsyncClient(headers=headers, proxies=proxies, timeout=timeout, http2=True)
