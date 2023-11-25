@@ -1,6 +1,13 @@
+from time import sleep
 import pytest
 
 from duckduckgo_search import AsyncDDGS
+
+
+@pytest.fixture(autouse=True)
+def slow_down_tests():
+    yield
+    sleep(1)
 
 
 @pytest.mark.asyncio

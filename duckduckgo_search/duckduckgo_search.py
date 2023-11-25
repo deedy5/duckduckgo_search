@@ -1,6 +1,6 @@
 import logging
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from itertools import cycle
 from random import choice
@@ -10,8 +10,9 @@ from typing import Deque, Dict, Iterator, Optional, Set, Tuple
 import httpx
 from lxml import html
 
+from .exceptions import APIException, DuckDuckGoSearchException, HTTPException, RateLimitException, TimeoutException
 from .models import MapsResult
-from .utils import USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url
+from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +28,9 @@ class DDGS:
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
         if headers is None:
-            headers = {
-                "User-Agent": choice(USERAGENTS),
-                "Accept": "application/json, text/javascript, */*; q=0.01",
-                "Accept-Language": "en-US,en;q=0.5",
-                "Referer": "https://duckduckgo.com/",
-            }
+            headers = HEADERS
+            headers["User-Agent"] = choice(USERAGENTS)
+        self.proxies = proxies
         self._client = httpx.Client(headers=headers, proxies=proxies, timeout=timeout, http2=True)
 
     def __enter__(self) -> "DDGS":
@@ -42,27 +40,32 @@ class DDGS:
         self._client.close()
 
     def _get_url(self, method: str, url: str, **kwargs) -> Optional[httpx._models.Response]:
-        for i in range(3):
-            try:
-                resp = self._client.request(method, url, follow_redirects=True, **kwargs)
-                if _is_500_in_url(str(resp.url)):
-                    raise httpx._exceptions.HTTPError("")
-                resp.raise_for_status()
-                if resp.status_code == 202:
-                    return 202
-                if resp.status_code == 200:
-                    return resp
-            except Exception as ex:
-                logger.warning(f"_get_url() {url} {type(ex).__name__} {ex}")
-                if i >= 2 or "418" in str(ex):
-                    raise ex
-            sleep(3)
+        try:
+            resp = self._client.request(method, url, follow_redirects=True, **kwargs)
+            if _is_500_in_url(str(resp.url)) or resp.status_code == 403:
+                raise APIException(f"_get_url() {url} 500 in url")
+            if resp.status_code == 202:
+                raise RateLimitException(f"_get_url() {url} RateLimitError: resp.status_code==202")
+            if resp.status_code == 200:
+                return resp
+            resp.raise_for_status()
+        except httpx.TimeoutException as ex:
+            raise TimeoutException(f"_get_url() {url} TimeoutException: {ex}")
+        except httpx.HTTPError as ex:
+            raise HTTPException(f"_get_url() {url} HttpError: {ex}")
+        except Exception as ex:
+            raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}")
 
     def _get_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
-            return _extract_vqd(resp.content)
+            return _extract_vqd(resp.content, keywords)
+
+    def _sleep(self) -> None:
+        """Sleep between API requests if proxies is None."""
+        if self.proxies is None:
+            sleep(0.75)
 
     def text(
         self,
@@ -96,10 +99,11 @@ class DDGS:
         elif backend == "lite":
             results = self._text_lite(keywords, region, timelimit, max_results)
 
-        for i, result in enumerate(results, start=1):
-            yield result
-            if max_results and i >= max_results:
-                break
+        if results:
+            for i, result in enumerate(results, start=1):
+                yield result
+                if max_results and i >= max_results:
+                    break
 
     def _text_api(
         self,
@@ -125,7 +129,6 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        assert vqd, "error in getting vqd"
 
         payload = {
             "q": keywords,
@@ -151,9 +154,7 @@ class DDGS:
             resp = self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             if resp is None:
                 return
-            if resp == 202:
-                payload["s"] = f"{int(payload['s']) + 50}"
-                continue
+
             try:
                 page_data = resp.json().get("results", None)
             except Exception:
@@ -179,6 +180,7 @@ class DDGS:
             if max_results is None or result_exists is False or next_page_url is None:
                 return
             payload["s"] = next_page_url.split("s=")[1].split("&")[0]
+            self._sleep()
 
     def _text_html(
         self,
@@ -216,9 +218,6 @@ class DDGS:
             resp = self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if resp is None:
                 return
-            if resp == 202:
-                payload["s"] = f"{int(payload['s']) + 50}"
-                continue
 
             tree = html.fromstring(resp.content)
             if tree.xpath('//div[@class="no-results"]/text()'):
@@ -249,6 +248,7 @@ class DDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
+            self._sleep()
 
     def _text_lite(
         self,
@@ -279,20 +279,17 @@ class DDGS:
             "kl": region,
             "df": timelimit,
         }
+
         cache: Set[str] = set()
         for _ in range(11):
             resp = self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if resp is None:
                 return
-            if resp == 202:
-                payload["s"] = f"{int(payload['s']) + 50}"
-                continue
 
             if b"No more results." in resp.content:
                 return
 
             tree = html.fromstring(resp.content)
-
             result_exists = False
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
             for i, e in data:
@@ -320,7 +317,8 @@ class DDGS:
             if not next_page_s:
                 return
             payload["s"] = next_page_s[0]
-            payload["vqd"] = _extract_vqd(resp.content)
+            payload["vqd"] = _extract_vqd(resp.content, keywords)
+            self._sleep()
 
     def images(
         self,
@@ -361,7 +359,6 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        assert vqd, "error in getting vqd"
 
         safesearch_base = {"on": 1, "moderate": 1, "off": -1}
         timelimit = f"time:{timelimit}" if timelimit else ""
@@ -415,6 +412,7 @@ class DDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
+            self._sleep()
 
     def videos(
         self,
@@ -446,7 +444,6 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        assert vqd, "error in getting vqd"
 
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         timelimit = f"publishedAfter:{timelimit}" if timelimit else ""
@@ -490,6 +487,7 @@ class DDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
+            self._sleep()
 
     def news(
         self,
@@ -515,7 +513,6 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        assert vqd, "error in getting vqd"
 
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
@@ -549,7 +546,7 @@ class DDGS:
                     image_url = row.get("image", None)
                     result_exists = True
                     yield {
-                        "date": datetime.utcfromtimestamp(row["date"]).isoformat(),
+                        "date": datetime.fromtimestamp(row["date"], timezone.utc).isoformat(),
                         "title": row["title"],
                         "body": _normalize(row["excerpt"]),
                         "url": _normalize_url(row["url"]),
@@ -564,6 +561,7 @@ class DDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
+            self._sleep()
 
     def answers(self, keywords: str) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
@@ -701,7 +699,6 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
-        assert vqd, "error in getting vqd"
 
         # if longitude and latitude are specified, skip the request about bbox to the nominatim api
         if latitude and longitude:
@@ -816,6 +813,7 @@ class DDGS:
                 bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
                 bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
                 work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
+            self._sleep()
 
     def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
@@ -834,7 +832,6 @@ class DDGS:
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd("translate")
-        assert vqd, "error in getting vqd"
 
         payload = {
             "vqd": vqd,
