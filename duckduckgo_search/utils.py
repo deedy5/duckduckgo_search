@@ -3,9 +3,18 @@ from html import unescape
 from typing import Optional
 from urllib.parse import unquote
 
+from .exceptions import VQDExtractionException
+
+
 REGEX_500_IN_URL = re.compile(r"(?:\d{3}-\d{2}\.js)")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
 
+HEADERS = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://duckduckgo.com/",
+}
 USERAGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
@@ -14,7 +23,7 @@ USERAGENTS = [
 ]
 
 
-def _extract_vqd(html_bytes: bytes) -> Optional[str]:
+def _extract_vqd(html_bytes: bytes, keywords: str) -> Optional[str]:
     for c1, c2 in (
         (b'vqd="', b'"'),
         (b"vqd=", b"&"),
@@ -26,6 +35,7 @@ def _extract_vqd(html_bytes: bytes) -> Optional[str]:
             return html_bytes[start:end].decode()
         except ValueError:
             pass
+    raise VQDExtractionException(f"Could not extract vqd. {keywords=}")
 
 
 def _is_500_in_url(url: str) -> bool:
