@@ -65,7 +65,7 @@ class AsyncDDGS:
     async def _sleep(self) -> None:
         """Sleep between API requests if proxies is None."""
         if self.proxies is None:
-            asyncio.sleep(0.75)
+            await asyncio.sleep(0.75)
 
     async def text(
         self,
