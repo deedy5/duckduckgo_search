@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.11", "3.12.0-rc.3"]
-        
+        python-version: ["3.8", "3.12"]
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -26,17 +26,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install black isort ruff pytest pytest-asyncio
+        python -m pip install ruff pytest pytest-asyncio
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Ruff
       run: |
-        ruff check . --target-version=py38
-    - name: Isort
-      run: |
-        isort duckduckgo_search --profile black --check
-    - name: Black
-      run: |
-        black --check --diff --target-version=py38 duckduckgo_search
+        ruff format . --check --target-version py38
     - name: Pytest
       run: |
         pytest
