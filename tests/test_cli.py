@@ -1,12 +1,20 @@
 import os
 import shutil
+from time import sleep
 
+import pytest
 from click.testing import CliRunner
 
 from duckduckgo_search import DDGS, __version__
 from duckduckgo_search.cli import cli, download_results, save_csv, save_json
 
 runner = CliRunner()
+
+
+@pytest.fixture(autouse=True)
+def slow_down_tests():
+    yield
+    sleep(1)
 
 
 def test_version_command():
