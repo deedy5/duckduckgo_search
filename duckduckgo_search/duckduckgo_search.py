@@ -42,7 +42,7 @@ class DDGS:
     def _get_url(self, method: str, url: str, **kwargs) -> Optional[httpx._models.Response]:
         try:
             resp = self._client.request(method, url, follow_redirects=True, **kwargs)
-            if _is_500_in_url(str(resp.url)):
+            if _is_500_in_url(str(resp.url)) or resp.status_code == 403:
                 raise APIException(f"_get_url() {url} 500 in url")
             if resp.status_code == 202:
                 raise RateLimitException(f"_get_url() {url} RateLimitError: resp.status_code==202")
