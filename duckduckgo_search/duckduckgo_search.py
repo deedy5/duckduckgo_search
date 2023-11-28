@@ -43,14 +43,16 @@ class DDGS:
         try:
             resp = self._client.request(method, url, follow_redirects=True, **kwargs)
             if _is_500_in_url(str(resp.url)) or resp.status_code == 403:
-                raise APIException(f"_get_url() {url} 500 in url")
+                raise APIException(f"_get_url() {url}")
             if resp.status_code == 202:
-                raise RateLimitException(f"_get_url() {url} RateLimitError: resp.status_code==202")
+                raise RateLimitException(f"_get_url() {url}")
             if resp.status_code == 200:
                 return resp
             resp.raise_for_status()
         except httpx.TimeoutException as ex:
             raise TimeoutException(f"_get_url() {url} TimeoutException: {ex}")
+        except (APIException, RateLimitException):
+            raise
         except httpx.HTTPError as ex:
             raise HTTPException(f"_get_url() {url} HttpError: {ex}")
         except Exception as ex:
@@ -227,7 +229,12 @@ class DDGS:
             for e in tree.xpath('//div[contains(@class, "results_links")]'):
                 href = e.xpath('.//a[contains(@class, "result__a")]/@href')
                 href = href[0] if href else None
-                if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
+                if (
+                    href
+                    and href not in cache
+                    and href != f"http://www.google.com/search?q={keywords}"
+                    and not href.startswith("https://duckduckgo.com/y.js?ad_domain")
+                ):
                     cache.add(href)
                     title = e.xpath('.//a[contains(@class, "result__a")]/text()')
                     body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
@@ -296,7 +303,12 @@ class DDGS:
                 if i == 1:
                     href = e.xpath(".//a//@href")
                     href = href[0] if href else None
-                    if href is None or href in cache or href == f"http://www.google.com/search?q={keywords}":
+                    if (
+                        href is None
+                        or href in cache
+                        or href == f"http://www.google.com/search?q={keywords}"
+                        or href.startswith("https://duckduckgo.com/y.js?ad_domain")
+                    ):
                         [next(data, None) for _ in range(3)]  # skip block(i=1,2,3,4)
                     else:
                         cache.add(href)
