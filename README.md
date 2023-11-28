@@ -10,7 +10,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Regions](#regions)
 * [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
 * [Using proxy](#using-proxy)
-* [Exceptions] (#exceptions)
+* [Exceptions](#exceptions)
 * [1. text() - text search](#1-text---text-search-by-duckduckgocom)
 * [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
 * [3. images() - image search](#3-images---image-search-by-duckduckgocom)
@@ -219,18 +219,6 @@ with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as
     for r in ddgs.text("something you need", max_results=50):
         print(r)
 ```
-*3. Async*
-```python3
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as ddgs:
-        async for r in ddgs.text("cat", max_results=50):
-            print(r)
-
-asyncio.run(get_results())
-```
 
 [Go To TOP](#TOP)
 
@@ -287,19 +275,6 @@ with DDGS() as ddgs:
     for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10):
         print(r)
 ```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        async for result in ddgs.text("cat", max_results=50):
-            print(result)
-
-asyncio.run(get_results())
-```
-
 
 [Go To TOP](#TOP)
 
@@ -324,18 +299,6 @@ from duckduckgo_search import DDGS
 with DDGS() as ddgs:
     for r in ddgs.answers("sun"):
         print(r)
-```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        async for r in ddgs.answers("sun"):
-            print(r)
-
-asyncio.run(get_results())
 ```
 
 [Go To TOP](#TOP)
@@ -399,18 +362,6 @@ with DDGS() as ddgs:
     for r in ddgs_images_gen:
         print(r)
 ```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        async for r in ddgs.images("butterfly", max_results=50):
-            print(r)
-
-asyncio.run(get_results())
-```
 
 [Go To TOP](#TOP)
 
@@ -462,19 +413,6 @@ with DDGS() as ddgs:
     for r in ddgs_videos_gen:
         print(r)
 ```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        async for r in ddgs.videos("tesla", max_results=50):
-            print(r)
-
-asyncio.run(get_results())
-```
-
 
 [Go To TOP](#TOP)
 
@@ -517,18 +455,6 @@ with DDGS() as ddgs:
     )
     for r in ddgs_news_gen:
         print(r)
-```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        async for r in ddgs.news("holiday", max_results=15):
-            print(r)
-
-asyncio.run(get_results())
 ```
 
 [Go To TOP](#TOP)
@@ -580,18 +506,6 @@ with DDGS() as ddgs:
     for r in ddgs.maps("school", place="Uganda", max_results=50):
         print(r)
 ```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        async for r in ddgs.maps("school", place="Berlin", max_results=50):
-            print(r)
-
-asyncio.run(get_results())
-```
 
 [Go To TOP](#TOP)
 
@@ -624,21 +538,8 @@ with DDGS() as ddgs:
     r = ddgs.translate(keywords, to="de")
     print(r)
 ```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        r = await ddgs.translate("school", to="de"):
-        print(r)
-
-asyncio.run(get_results())
-```
 
 [Go To TOP](#TOP)
-
 
 ## 8. suggestions() - suggestions by duckduckgo.com
 
@@ -664,18 +565,6 @@ from duckduckgo_search import DDGS
 with DDGS() as ddgs:
     for r in ddgs.suggestions("fly"):
         print(r)
-```
-***Async***
-```python
-import asyncio
-from duckduckgo_search import AsyncDDGS
-
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        async for r in ddgs.suggestions("fly"):
-            print(r)
-
-asyncio.run(get_results())
 ```
 
 [Go To TOP](#TOP)
