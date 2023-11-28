@@ -10,6 +10,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Regions](#regions)
 * [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
 * [Using proxy](#using-proxy)
+* [Exceptions] (#exceptions)
 * [1. text() - text search](#1-text---text-search-by-duckduckgocom)
 * [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
 * [3. images() - image search](#3-images---image-search-by-duckduckgocom)
@@ -196,7 +197,7 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-It is important to note that the DDGS and AsyncDDGS classes should always be used as a context manager (with statement). 
+It is important to note that the DDGS and AsyncDDGS classes should always be used as a context manager (with statement).
 This ensures proper resource management and cleanup, as the context manager will automatically handle opening and closing the HTTP client connection.
 
 [Go To TOP](#TOP)
@@ -230,6 +231,18 @@ async def get_results():
 
 asyncio.run(get_results())
 ```
+
+[Go To TOP](#TOP)
+
+## Exceptions
+
+Exceptions:
+- `APIException`: Raised when there is an issue with the API request.
+- `DuckDuckGoSearchException`: Raised when there is a generic exception during the API request.
+- `HTTPException`: Raised when there is an HTTP error during the API request.
+- `RateLimitException`: Raised when the API rate limit is exceeded.
+- `TimeoutException`: Raised when there is a timeout during the API request.
+- `VQDExtractionException`: Raised when there is an error extracting the VQD value for a search query.
 
 [Go To TOP](#TOP)
 
