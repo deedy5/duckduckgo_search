@@ -204,7 +204,7 @@ class DDGS:
 
         """
         assert keywords, "keywords is mandatory"
-        
+
         self._client.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {

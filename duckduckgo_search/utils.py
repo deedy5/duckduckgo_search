@@ -44,7 +44,7 @@ def _text_extract_json(html_bytes: bytes) -> Optional[str]:
     try:
         start = html_bytes.index(b"DDG.pageLayout.load('d',") + 24
         end = html_bytes.index(b");DDG.duckbar.load(", start)
-        data = html_bytes[start: end]
+        data = html_bytes[start:end]
         return json.loads(data)
     except ValueError:
         pass
