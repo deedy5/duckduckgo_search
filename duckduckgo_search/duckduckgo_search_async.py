@@ -162,7 +162,7 @@ class AsyncDDGS:
             if page_data is None:
                 return
 
-            result_exists = False
+            result_exists, next_page_url = False, None
             for row in page_data:
                 href = row.get("u", None)
                 if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
