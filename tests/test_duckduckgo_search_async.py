@@ -7,7 +7,7 @@ from duckduckgo_search import AsyncDDGS
 @pytest.fixture(autouse=True)
 def slow_down_tests():
     yield
-    sleep(1)
+    sleep(2)
 
 
 @pytest.mark.asyncio
