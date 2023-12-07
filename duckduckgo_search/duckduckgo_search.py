@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import deque
 from datetime import datetime, timezone
@@ -12,7 +13,7 @@ from lxml import html
 
 from .exceptions import APIException, DuckDuckGoSearchException, HTTPException, RateLimitException, TimeoutException
 from .models import MapsResult
-from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url
+from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,7 @@ class DDGS:
             "s": "0",
             "df": timelimit,
             "vqd": vqd,
-            "o": "json",
+            # "o": "json",
             "sp": "0",
         }
         safesearch = safesearch.lower()
@@ -157,10 +158,7 @@ class DDGS:
             if resp is None:
                 return
 
-            try:
-                page_data = resp.json().get("results", None)
-            except Exception:
-                return
+            page_data = _text_extract_json(resp.content)
             if page_data is None:
                 return
 
@@ -207,6 +205,7 @@ class DDGS:
         """
         assert keywords, "keywords is mandatory"
 
+        self._client.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
@@ -214,6 +213,7 @@ class DDGS:
             "kl": region,
             "p": safesearch_base[safesearch.lower()],
             "df": timelimit,
+            "b": "",
         }
         cache: Set[str] = set()
         for _ in range(11):

@@ -12,7 +12,7 @@ from lxml import html
 
 from .exceptions import APIException, DuckDuckGoSearchException, HTTPException, RateLimitException, TimeoutException
 from .models import MapsResult
-from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url
+from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ class AsyncDDGS:
             "s": "0",
             "df": timelimit,
             "vqd": vqd,
-            "o": "json",
+            # "o": "json",
             "sp": "0",
         }
         safesearch = safesearch.lower()
@@ -158,14 +158,11 @@ class AsyncDDGS:
             if resp is None:
                 return
 
-            try:
-                page_data = resp.json().get("results", None)
-            except Exception:
-                return
+            page_data = _text_extract_json(resp.content)
             if page_data is None:
                 return
 
-            result_exists = False
+            result_exists, next_page_url = False, None
             for row in page_data:
                 href = row.get("u", None)
                 if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
@@ -208,6 +205,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
+        self._client.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,

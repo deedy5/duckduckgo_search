@@ -14,7 +14,7 @@ runner = CliRunner()
 @pytest.fixture(autouse=True)
 def slow_down_tests():
     yield
-    sleep(1)
+    sleep(2)
 
 
 def test_version_command():

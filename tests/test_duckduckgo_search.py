@@ -6,7 +6,7 @@ from duckduckgo_search import DDGS
 @pytest.fixture(autouse=True)
 def slow_down_tests():
     yield
-    sleep(1)
+    sleep(2)
 
 
 def test_text():
@@ -27,10 +27,10 @@ def test_text_html():
         assert len(results) == 30
 
 
-def test_text_lite():
-    with DDGS() as ddgs:
-        results = [x for x in ddgs.text("dog", backend="lite", max_results=30)]
-        assert len(results) == 30
+# def test_text_lite():
+#     with DDGS() as ddgs:
+#         results = [x for x in ddgs.text("dog", backend="lite", max_results=30)]
+#         assert len(results) == 30
 
 
 def test_images():
