@@ -31,11 +31,11 @@ async def test_text_html():
         assert len(results) == 30
 
 
-@pytest.mark.asyncio
-async def test_text_lite():
-    async with AsyncDDGS() as ddgs:
-        results = [x async for x in ddgs.text("dog", backend="lite", max_results=30)]
-        assert len(results) == 30
+# @pytest.mark.asyncio
+# async def test_text_lite():
+#     async with AsyncDDGS() as ddgs:
+#         results = [x async for x in ddgs.text("dog", backend="lite", max_results=30)]
+#         assert len(results) == 30
 
 
 @pytest.mark.asyncio

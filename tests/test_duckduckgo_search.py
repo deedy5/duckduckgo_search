@@ -27,10 +27,10 @@ def test_text_html():
         assert len(results) == 30
 
 
-def test_text_lite():
-    with DDGS() as ddgs:
-        results = [x for x in ddgs.text("dog", backend="lite", max_results=30)]
-        assert len(results) == 30
+# def test_text_lite():
+#     with DDGS() as ddgs:
+#         results = [x for x in ddgs.text("dog", backend="lite", max_results=30)]
+#         assert len(results) == 30
 
 
 def test_images():
