@@ -204,7 +204,8 @@ class DDGS:
 
         """
         assert keywords, "keywords is mandatory"
-
+        
+        self._client.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
@@ -212,6 +213,7 @@ class DDGS:
             "kl": region,
             "p": safesearch_base[safesearch.lower()],
             "df": timelimit,
+            "b": "",
         }
         cache: Set[str] = set()
         for _ in range(11):
