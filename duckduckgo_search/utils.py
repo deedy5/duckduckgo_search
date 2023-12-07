@@ -1,3 +1,4 @@
+import json
 import re
 from html import unescape
 from typing import Optional
@@ -36,6 +37,17 @@ def _extract_vqd(html_bytes: bytes, keywords: str) -> Optional[str]:
         except ValueError:
             pass
     raise VQDExtractionException(f"Could not extract vqd. {keywords=}")
+
+
+def _text_extract_json(html_bytes: bytes) -> Optional[str]:
+    """text(backend="api") -> extract json from html"""
+    try:
+        start = html_bytes.index(b"DDG.pageLayout.load('d',") + 24
+        end = html_bytes.index(b");DDG.duckbar.load(", start)
+        data = html_bytes[start: end]
+        return json.loads(data)
+    except ValueError:
+        pass
 
 
 def _is_500_in_url(url: str) -> bool:
