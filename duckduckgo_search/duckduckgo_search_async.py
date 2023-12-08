@@ -31,7 +31,7 @@ class AsyncDDGS:
             headers = HEADERS
             headers["User-Agent"] = choice(USERAGENTS)
         self.proxies = proxies
-        self._client = httpx.AsyncClient(headers=headers, proxies=proxies, timeout=timeout, http2=True)
+        self._client = httpx.AsyncClient(headers=headers, proxies=proxies, timeout=timeout, http2=True, verify=False)
 
     async def __aenter__(self) -> "AsyncDDGS":
         return self
