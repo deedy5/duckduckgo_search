@@ -32,7 +32,7 @@ class DDGS:
             headers = HEADERS
             headers["User-Agent"] = choice(USERAGENTS)
         self.proxies = proxies
-        self._client = httpx.Client(headers=headers, proxies=proxies, timeout=timeout, http2=True)
+        self._client = httpx.Client(headers=headers, proxies=proxies, timeout=timeout, http2=True, verify=False)
 
     def __enter__(self) -> "DDGS":
         return self
