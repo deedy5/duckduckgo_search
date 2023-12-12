@@ -28,10 +28,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "aiofiles>=23.2.1",
     "click>=8.1.7",
     "lxml>=4.9.3",
-    "httpx[http2,socks,brotli]>=0.25.1",
+    "curl_cffi>=0.5.10"
 ]
 dynamic = ["version"]
 

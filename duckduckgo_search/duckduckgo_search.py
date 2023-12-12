@@ -1,4 +1,3 @@
-import json
 import logging
 from collections import deque
 from datetime import datetime, timezone
@@ -8,10 +7,10 @@ from random import choice
 from time import sleep
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple
 
-import httpx
 from lxml import html
+from curl_cffi import requests
 
-from .exceptions import APIException, DuckDuckGoSearchException, HTTPException, RateLimitException, TimeoutException
+from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
 from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
 
@@ -31,31 +30,25 @@ class DDGS:
         if headers is None:
             headers = HEADERS
             headers["User-Agent"] = choice(USERAGENTS)
-        self.proxies = proxies
-        self._client = httpx.Client(headers=headers, proxies=proxies, timeout=timeout, http2=True, verify=False)
+        self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
+        self._session = requests.Session(
+            headers=headers, proxies=self.proxies, timeout=timeout, http_version=2, impersonate="chrome110"
+        )
 
     def __enter__(self) -> "DDGS":
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self._client.close()
+        self._session.close()
 
-    def _get_url(self, method: str, url: str, **kwargs) -> Optional[httpx._models.Response]:
+    def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
-            resp = self._client.request(method, url, follow_redirects=True, **kwargs)
-            if _is_500_in_url(str(resp.url)) or resp.status_code == 403:
-                raise APIException(f"_get_url() {url}")
-            if resp.status_code == 202:
-                raise RateLimitException(f"_get_url() {url}")
+            resp = self._session.request(method, url, **kwargs)
+            resp.raise_for_status()
+            if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
+                raise
             if resp.status_code == 200:
                 return resp
-            resp.raise_for_status()
-        except httpx.TimeoutException as ex:
-            raise TimeoutException(f"_get_url() {url} TimeoutException: {ex}")
-        except (APIException, RateLimitException):
-            raise
-        except httpx.HTTPError as ex:
-            raise HTTPException(f"_get_url() {url} HttpError: {ex}")
         except Exception as ex:
             raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}")
 
@@ -205,7 +198,7 @@ class DDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        self._client.headers["Referer"] = "https://html.duckduckgo.com/"
+        self._session.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
@@ -857,7 +850,7 @@ class DDGS:
             "POST",
             "https://duckduckgo.com/translation.js",
             params=payload,
-            content=keywords.encode(),
+            data=keywords.encode(),
         )
         if resp is None:
             return None
