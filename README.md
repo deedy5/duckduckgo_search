@@ -38,21 +38,21 @@ python -m duckduckgo_search --help
 CLI examples:
 ```python3
 # text search
-ddgs text -k 'ayrton senna'
+ddgs text -k "ayrton senna"
 # text search via proxy (example: Tor Browser)
-ddgs text -k 'china is a global threat' -p socks5://localhost:9150
+ddgs text -k "china is a global threat" -p socks5://localhost:9150
 # find and download pdf files
 ddgs text -k "russia filetype:pdf" -m 50 -d
 # find in es-es region and download pdf files via proxy (example: Tor browser)
 ddgs text -k "embajada a tamorlán filetype:pdf" -r es-es -m 50 -d -p socks5://localhost:9150
 # find and download xls files from a specific site
-ddgs text -k 'sanctions filetype:xls site:gov.ua' -m 50 -d
+ddgs text -k "sanctions filetype:xls site:gov.ua" -m 50 -d
 # find and download any doc(x) files from a specific site
-ddgs text -k 'filetype:doc site:mos.ru' -m 50 -d
+ddgs text -k "filetype:doc site:mos.ru" -m 50 -d
 # find and download images
 ddgs images -k "yuri kuklachev cat theatre" -m 500 -s off -d
 # find in br-br region and download images via proxy (example: Tor browser) in 10 threads
-ddgs images -k 'rio carnival' -r br-br -s off -m 500 -d -th 10 -p socks5://localhost:9150
+ddgs images -k "rio carnival" -r br-br -s off -m 500 -d -th 10 -p socks5://localhost:9150
 # get latest news
 ddgs news -k "ukraine war" -s off -t d -m 10
 # get last day's news and save it to a csv file
