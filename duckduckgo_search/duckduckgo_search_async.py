@@ -7,10 +7,10 @@ from itertools import cycle
 from random import choice
 from typing import AsyncIterator, Deque, Dict, Optional, Set, Tuple
 
-import httpx
 from lxml import html
+from curl_cffi import requests
 
-from .exceptions import APIException, DuckDuckGoSearchException, HTTPException, RateLimitException, TimeoutException
+from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
 from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
 
@@ -31,30 +31,24 @@ class AsyncDDGS:
             headers = HEADERS
             headers["User-Agent"] = choice(USERAGENTS)
         self.proxies = proxies
-        self._client = httpx.AsyncClient(headers=headers, proxies=proxies, timeout=timeout, http2=True, verify=False)
+        self._session = requests.AsyncSession(
+            headers=headers, proxies=proxies, timeout=timeout, http_version=2, impersonate="chrome110"
+        )
 
     async def __aenter__(self) -> "AsyncDDGS":
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        await self._client.aclose()
+        await self._session.__aexit__()
 
-    async def _get_url(self, method: str, url: str, **kwargs) -> Optional[httpx._models.Response]:
+    async def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
-            resp = await self._client.request(method, url, follow_redirects=True, **kwargs)
-            if _is_500_in_url(str(resp.url)) or resp.status_code == 403:
-                raise APIException(f"_get_url() {url}")
-            if resp.status_code == 202:
-                raise RateLimitException(f"_get_url() {url}")
+            resp = await self._session.request(method, url, **kwargs)
+            resp.raise_for_status()
+            if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
+                raise
             if resp.status_code == 200:
                 return resp
-            resp.raise_for_status()
-        except httpx.TimeoutException as ex:
-            raise TimeoutException(f"_get_url() {url} TimeoutException: {ex}")
-        except (APIException, RateLimitException):
-            raise
-        except httpx.HTTPError as ex:
-            raise HTTPException(f"_get_url() {url} HttpError: {ex}")
         except Exception as ex:
             raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}")
 
@@ -205,7 +199,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        self._client.headers["Referer"] = "https://html.duckduckgo.com/"
+        self._session.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
@@ -856,7 +850,7 @@ class AsyncDDGS:
             "POST",
             "https://duckduckgo.com/translation.js",
             params=payload,
-            content=keywords.encode(),
+            data=keywords.encode(),
         )
         if resp is None:
             return None

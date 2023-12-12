@@ -1,16 +1,14 @@
-import asyncio
 import csv
 import json
 import logging
 import os
-import ssl
+from concurrent.futures import as_completed, ThreadPoolExecutor
 from datetime import datetime
 from random import choice
 from urllib.parse import unquote
 
-import aiofiles
 import click
-import httpx
+from curl_cffi import requests
 
 from .duckduckgo_search import DDGS, USERAGENTS
 from .version import __version__
@@ -80,47 +78,35 @@ def sanitize_keywords(keywords):
     return keywords
 
 
-async def download_file(url, dir_path, filename, sem, proxy):
+def download_file(url, dir_path, filename, proxy):
     headers = {"User-Agent": choice(USERAGENTS)}
-    for i in range(2):
-        try:
-            async with sem, httpx.AsyncClient(headers=headers, proxies=proxy, timeout=10) as client:
-                async with client.stream("GET", url) as resp:
-                    resp.raise_for_status()
-                    async with aiofiles.open(os.path.join(dir_path, filename[:200]), "wb") as file:
-                        async for chunk in resp.aiter_bytes():
-                            await file.write(chunk)
-                    break
-        except (httpx.HTTPError, ssl.SSLCertVerificationError, ssl.SSLError) as ex:
-            logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
-        except ValueError as ex:
-            raise ex
+    try:
+        resp = requests.get(url, headers=headers, proxies=proxy, timeout=10, impersonate="chrome110")
+        resp.raise_for_status()
+        with open(os.path.join(dir_path, filename[:200]), "wb") as file:
+            for chunk in resp.aiter_content():
+                file.write(chunk)
+    except Exception as ex:
+        logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
 
-async def _download_results(keywords, results, images=False, proxy=None, threads=None):
+def download_results(keywords, results, images=False, proxy=None, threads=None):
     path_type = "images" if images else "text"
     path = f"{path_type}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     os.makedirs(path, exist_ok=True)
 
     threads = 10 if threads is None else threads
-    sem = asyncio.Semaphore(threads)
-    tasks = []
-    for i, res in enumerate(results, start=1):
-        url = res["image"] if images else res["href"]
-        filename = unquote(url.split("/")[-1].split("?")[0])
-        task = asyncio.create_task(download_file(url, path, f"{i}_{filename}", sem, proxy))
-        tasks.append(task)
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = []
+        for i, res in enumerate(results, start=1):
+            url = res["image"] if images else res["href"]
+            filename = unquote(url.split("/")[-1].split("?")[0])
+            f = executor.submit(download_file, url, path, f"{i}_{filename}", proxy)
+            futures.append(f)
 
-    with click.progressbar(length=len(tasks), label="Downloading", show_percent=True, show_pos=True, width=50) as bar:
-        for future in asyncio.as_completed(tasks):
-            await future
-            bar.update(1)
-
-    await asyncio.gather(*tasks)
-
-
-def download_results(keywords, results, images=False, proxy=None, threads=None):
-    asyncio.run(_download_results(keywords, results, images, proxy))
+        with click.progressbar(length=len(futures), label="Downloading", show_percent=True, show_pos=True, width=50) as bar:
+            for future in as_completed(futures):
+                bar.update(1)
 
 
 @click.group(chain=True)
