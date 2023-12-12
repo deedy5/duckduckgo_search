@@ -81,11 +81,12 @@ def sanitize_keywords(keywords):
 def download_file(url, dir_path, filename, proxy):
     headers = {"User-Agent": choice(USERAGENTS)}
     try:
-        resp = requests.get(url, headers=headers, proxies=proxy, timeout=10, impersonate="chrome110")
-        resp.raise_for_status()
-        with open(os.path.join(dir_path, filename[:200]), "wb") as file:
-            for chunk in resp.aiter_content():
-                file.write(chunk)
+        with requests.Session(headers=headers, proxies=proxy, impersonate="chrome110") as session:
+            resp = session.get(url, stream=True)
+            resp.raise_for_status()
+            with open(os.path.join(dir_path, filename[:200]), "wb") as file:
+                for chunk in resp.iter_content():
+                    file.write(chunk)
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
@@ -94,6 +95,7 @@ def download_results(keywords, results, images=False, proxy=None, threads=None):
     path_type = "images" if images else "text"
     path = f"{path_type}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     os.makedirs(path, exist_ok=True)
+    proxy = {"http": proxy, "https": proxy}
 
     threads = 10 if threads is None else threads
     with ThreadPoolExecutor(max_workers=threads) as executor:
@@ -106,6 +108,7 @@ def download_results(keywords, results, images=False, proxy=None, threads=None):
 
         with click.progressbar(length=len(futures), label="Downloading", show_percent=True, show_pos=True, width=50) as bar:
             for future in as_completed(futures):
+                future.result()
                 bar.update(1)
 
 
