@@ -225,11 +225,7 @@ with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as
 ## Exceptions
 
 Exceptions:
-- `APIException`: Raised when there is an issue with the API request.
 - `DuckDuckGoSearchException`: Raised when there is a generic exception during the API request.
-- `HTTPException`: Raised when there is an HTTP error during the API request.
-- `RateLimitException`: Raised when the API rate limit is exceeded.
-- `TimeoutException`: Raised when there is a timeout during the API request.
 - `VQDExtractionException`: Raised when there is an error extracting the VQD value for a search query.
 
 [Go To TOP](#TOP)
