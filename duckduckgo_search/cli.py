@@ -34,7 +34,7 @@ COLORS = {
 
 
 def save_json(jsonfile, data):
-    with open(jsonfile, "w") as file:
+    with open(jsonfile, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
 
