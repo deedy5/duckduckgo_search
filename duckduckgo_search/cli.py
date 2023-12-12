@@ -106,7 +106,9 @@ def download_results(keywords, results, images=False, proxy=None, threads=None):
             f = executor.submit(download_file, url, path, f"{i}_{filename}", proxy)
             futures.append(f)
 
-        with click.progressbar(length=len(futures), label="Downloading", show_percent=True, show_pos=True, width=50) as bar:
+        with click.progressbar(
+            length=len(futures), label="Downloading", show_percent=True, show_pos=True, width=50
+        ) as bar:
             for future in as_completed(futures):
                 future.result()
                 bar.update(1)
