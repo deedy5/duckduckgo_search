@@ -39,11 +39,11 @@ class AsyncDDGS:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        await self._session.__aexit__()
+        self._session.close()
 
     async def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
-            resp = await self._session.request(method, url, **kwargs)
+            resp = self._session.request(method, url, **kwargs)
             resp.raise_for_status()
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                 raise
