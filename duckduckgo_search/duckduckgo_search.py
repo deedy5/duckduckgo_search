@@ -30,8 +30,10 @@ class DDGS:
         if headers is None:
             headers = HEADERS
             headers["User-Agent"] = choice(USERAGENTS)
-        self.proxies = proxies
-        self._session = requests.Session(headers=headers, proxies=proxies, timeout=timeout, http_version=2, impersonate="chrome110")
+        self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
+        self._session = requests.Session(
+            headers=headers, proxies=self.proxies, timeout=timeout, http_version=2, impersonate="chrome110"
+        )
 
     def __enter__(self) -> "DDGS":
         return self
@@ -46,7 +48,7 @@ class DDGS:
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                 raise
             if resp.status_code == 200:
-                return resp            
+                return resp
         except Exception as ex:
             raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}")
 

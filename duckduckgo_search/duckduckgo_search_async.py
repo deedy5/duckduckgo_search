@@ -30,9 +30,9 @@ class AsyncDDGS:
         if headers is None:
             headers = HEADERS
             headers["User-Agent"] = choice(USERAGENTS)
-        self.proxies = proxies
-        self._session = requests.AsyncSession(
-            headers=headers, proxies=proxies, timeout=timeout, http_version=2, impersonate="chrome110"
+        self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
+        self._session = requests.Session(
+            headers=headers, proxies=self.proxies, timeout=timeout, http_version=2, impersonate="chrome110"
         )
 
     async def __aenter__(self) -> "AsyncDDGS":
