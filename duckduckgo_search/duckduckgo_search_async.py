@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import sys
 from collections import deque
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -13,6 +15,9 @@ from .models import MapsResult
 from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _random_browser, _text_extract_json
 
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
+# Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
+if sys.platform.lower().startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 class AsyncDDGS:
