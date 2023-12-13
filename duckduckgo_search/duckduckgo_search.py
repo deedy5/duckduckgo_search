@@ -3,8 +3,6 @@ from collections import deque
 from datetime import datetime, timezone
 from decimal import Decimal
 from itertools import cycle
-from random import choice
-from time import sleep
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple
 
 from lxml import html
@@ -12,9 +10,9 @@ from curl_cffi import requests
 
 from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
-from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
+from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _random_browser, _text_extract_json
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("duckduckgo_search.DDGS")
 
 
 class DDGS:
@@ -27,13 +25,11 @@ class DDGS:
     """
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
-        if headers is None:
-            headers = HEADERS
-            headers["User-Agent"] = choice(USERAGENTS)
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
         self._session = requests.Session(
-            headers=headers, proxies=self.proxies, timeout=timeout, http_version=2, impersonate="chrome110"
+            headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser()
         )
+        self._session.headers["Referer"] = "https://duckduckgo.com/"
 
     def __enter__(self) -> "DDGS":
         return self
@@ -44,6 +40,9 @@ class DDGS:
     def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
             resp = self._session.request(method, url, **kwargs)
+            logger.debug(
+                f"_get_url() {url} status={resp.status_code} http_ver={resp.http_version} elapsed={resp.elapsed} size={len(resp.content)}"
+            )
             resp.raise_for_status()
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                 raise
@@ -57,11 +56,6 @@ class DDGS:
         resp = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
             return _extract_vqd(resp.content, keywords)
-
-    def _sleep(self) -> None:
-        """Sleep between API requests if proxies is None."""
-        if self.proxies is None:
-            sleep(0.75)
 
     def text(
         self,
@@ -151,7 +145,7 @@ class DDGS:
             if resp is None:
                 return
 
-            page_data = _text_extract_json(resp.content)
+            page_data = _text_extract_json(resp.content, keywords)
             if page_data is None:
                 return
 
@@ -173,7 +167,6 @@ class DDGS:
             if max_results is None or result_exists is False or next_page_url is None:
                 return
             payload["s"] = next_page_url.split("s=")[1].split("&")[0]
-            self._sleep()
 
     def _text_html(
         self,
@@ -248,7 +241,6 @@ class DDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
-            self._sleep()
 
     def _text_lite(
         self,
@@ -271,6 +263,7 @@ class DDGS:
         """
         assert keywords, "keywords is mandatory"
 
+        self._session.headers["Referer"] = "https://lite.duckduckgo.com/"
         payload = {
             "q": keywords,
             "s": "0",
@@ -323,7 +316,6 @@ class DDGS:
                 return
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content, keywords)
-            self._sleep()
 
     def images(
         self,
@@ -417,7 +409,6 @@ class DDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
-            self._sleep()
 
     def videos(
         self,
@@ -492,7 +483,6 @@ class DDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
-            self._sleep()
 
     def news(
         self,
@@ -566,7 +556,6 @@ class DDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
-            self._sleep()
 
     def answers(self, keywords: str) -> Iterator[Dict[str, Optional[str]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
@@ -753,7 +742,7 @@ class DDGS:
         lat_b -= Decimal(radius) * Decimal(0.008983)
         lon_l -= Decimal(radius) * Decimal(0.008983)
         lon_r += Decimal(radius) * Decimal(0.008983)
-        logging.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
+        logger.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         # сreate a queue of search squares (bboxes)
         work_bboxes: Deque[Tuple[Decimal, Decimal, Decimal, Decimal]] = deque()
@@ -818,7 +807,6 @@ class DDGS:
                 bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
                 bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
                 work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
-            self._sleep()
 
     def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
