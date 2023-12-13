@@ -40,9 +40,7 @@ class DDGS:
     def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
             resp = self._session.request(method, url, **kwargs)
-            logger.debug(
-                f"_get_url() {url} status={resp.status_code} http_ver={resp.http_version} elapsed={resp.elapsed} size={len(resp.content)}"
-            )
+            logger.debug(f"_get_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp.content)}")
             resp.raise_for_status()
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                 raise
