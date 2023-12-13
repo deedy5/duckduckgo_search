@@ -4,13 +4,13 @@ import logging
 import os
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from datetime import datetime
-from random import choice
 from urllib.parse import unquote
 
 import click
 from curl_cffi import requests
 
-from .duckduckgo_search import DDGS, USERAGENTS
+from .duckduckgo_search import DDGS
+from .utils import _random_browser
 from .version import __version__
 
 logger = logging.getLogger(__name__)
@@ -79,14 +79,11 @@ def sanitize_keywords(keywords):
 
 
 def download_file(url, dir_path, filename, proxy):
-    headers = {"User-Agent": choice(USERAGENTS)}
     try:
-        with requests.Session(headers=headers, proxies=proxy, impersonate="chrome110") as session:
-            resp = session.get(url, stream=True)
-            resp.raise_for_status()
-            with open(os.path.join(dir_path, filename[:200]), "wb") as file:
-                for chunk in resp.iter_content():
-                    file.write(chunk)
+        resp = requests.get(url, proxies=proxy, impersonate=_random_browser(), timeout=10)
+        resp.raise_for_status()
+        with open(os.path.join(dir_path, filename[:200]), "wb") as file:
+            file.write(resp.content)
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 

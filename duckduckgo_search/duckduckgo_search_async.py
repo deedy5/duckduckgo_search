@@ -1,10 +1,10 @@
 import asyncio
 import logging
+import sys
 from collections import deque
 from datetime import datetime, timezone
 from decimal import Decimal
 from itertools import cycle
-from random import choice
 from typing import AsyncIterator, Deque, Dict, Optional, Set, Tuple
 
 from lxml import html
@@ -12,9 +12,12 @@ from curl_cffi import requests
 
 from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
-from .utils import HEADERS, USERAGENTS, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
+from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _random_browser, _text_extract_json
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
+# Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
+if sys.platform.lower().startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 class AsyncDDGS:
@@ -27,13 +30,11 @@ class AsyncDDGS:
     """
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
-        if headers is None:
-            headers = HEADERS
-            headers["User-Agent"] = choice(USERAGENTS)
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
-        self._session = requests.Session(
-            headers=headers, proxies=self.proxies, timeout=timeout, http_version=2, impersonate="chrome110"
+        self._session = requests.AsyncSession(
+            headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser()
         )
+        self._session.headers["Referer"] = "https://duckduckgo.com/"
 
     async def __aenter__(self) -> "AsyncDDGS":
         return self
@@ -43,7 +44,8 @@ class AsyncDDGS:
 
     async def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
-            resp = self._session.request(method, url, **kwargs)
+            resp = await self._session.request(method, url, **kwargs)
+            logger.debug(f"_get_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp.content)}")
             resp.raise_for_status()
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                 raise
@@ -57,11 +59,6 @@ class AsyncDDGS:
         resp = await self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         if resp:
             return _extract_vqd(resp.content, keywords)
-
-    async def _sleep(self) -> None:
-        """Sleep between API requests if proxies is None."""
-        if self.proxies is None:
-            await asyncio.sleep(0.75)
 
     async def text(
         self,
@@ -152,7 +149,7 @@ class AsyncDDGS:
             if resp is None:
                 return
 
-            page_data = _text_extract_json(resp.content)
+            page_data = _text_extract_json(resp.content, keywords)
             if page_data is None:
                 return
 
@@ -174,7 +171,6 @@ class AsyncDDGS:
             if max_results is None or result_exists is False or next_page_url is None:
                 return
             payload["s"] = next_page_url.split("s=")[1].split("&")[0]
-            await self._sleep()
 
     async def _text_html(
         self,
@@ -248,7 +244,6 @@ class AsyncDDGS:
             names = next_page.xpath('.//input[@type="hidden"]/@name')
             values = next_page.xpath('.//input[@type="hidden"]/@value')
             payload = {n: v for n, v in zip(names, values)}
-            await self._sleep()
 
     async def _text_lite(
         self,
@@ -271,6 +266,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
+        self._session.headers["Referer"] = "https://lite.duckduckgo.com/"
         payload = {
             "q": keywords,
             "s": "0",
@@ -323,7 +319,6 @@ class AsyncDDGS:
                 return
             payload["s"] = next_page_s[0]
             payload["vqd"] = _extract_vqd(resp.content, keywords)
-            await self._sleep()
 
     async def images(
         self,
@@ -417,7 +412,6 @@ class AsyncDDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
-            await self._sleep()
 
     async def videos(
         self,
@@ -492,7 +486,6 @@ class AsyncDDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
-            await self._sleep()
 
     async def news(
         self,
@@ -566,7 +559,6 @@ class AsyncDDGS:
             if next is None:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
-            await self._sleep()
 
     async def answers(self, keywords: str) -> AsyncIterator[Dict[str, Optional[str]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
@@ -753,7 +745,7 @@ class AsyncDDGS:
         lat_b -= Decimal(radius) * Decimal(0.008983)
         lon_l -= Decimal(radius) * Decimal(0.008983)
         lon_r += Decimal(radius) * Decimal(0.008983)
-        logging.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
+        logger.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         # сreate a queue of search squares (bboxes)
         work_bboxes: Deque[Tuple[Decimal, Decimal, Decimal, Decimal]] = deque()
@@ -818,7 +810,6 @@ class AsyncDDGS:
                 bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
                 bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
                 work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
-            await self._sleep()
 
     async def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"

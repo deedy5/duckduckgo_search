@@ -226,7 +226,6 @@ with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as
 
 Exceptions:
 - `DuckDuckGoSearchException`: Raised when there is a generic exception during the API request.
-- `VQDExtractionException`: Raised when there is an error extracting the VQD value for a search query.
 
 [Go To TOP](#TOP)
 
