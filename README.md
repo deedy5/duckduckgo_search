@@ -183,7 +183,12 @@ with DDGS() as ddgs:
 Here is an example of initializing the AsyncDDGS class:
 ```python3
 import asyncio
+import sys
 from duckduckgo_search import AsyncDDGS
+
+# bypass curl-cffi NotImplementedError in windows https://curl-cffi.readthedocs.io/en/latest/faq/
+if sys.platform.lower().startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def get_results():
     async with AsyncDDGS() as ddgs:
