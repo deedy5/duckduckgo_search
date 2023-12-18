@@ -9,7 +9,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Duckduckgo search operators](#duckduckgo-search-operators)
 * [Regions](#regions)
 * [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
-* [Using proxy](#using-proxy)
+* [Proxies](#proxies)
 * [Exceptions](#exceptions)
 * [1. text() - text search](#1-text---text-search-by-duckduckgocom)
 * [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
@@ -207,7 +207,13 @@ This ensures proper resource management and cleanup, as the context manager will
 
 [Go To TOP](#TOP)
 
-## Using proxy
+## Proxies
+Proxy can be specified as a dictionary or just a string
+```python
+proxies = {"http": "socks5://localhost:9150", "https": "socks5://localhost:9150"}
+proxies = "socks5://localhost:9150"
+```
+
 *1. The easiest way. Launch the Tor Browser*
 ```python3
 from duckduckgo_search import DDGS
