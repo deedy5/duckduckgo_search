@@ -9,7 +9,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Duckduckgo search operators](#duckduckgo-search-operators)
 * [Regions](#regions)
 * [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
-* [Using proxy](#using-proxy)
+* [Proxies](#proxies)
 * [Exceptions](#exceptions)
 * [1. text() - text search](#1-text---text-search-by-duckduckgocom)
 * [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
@@ -183,7 +183,12 @@ with DDGS() as ddgs:
 Here is an example of initializing the AsyncDDGS class:
 ```python3
 import asyncio
+import sys
 from duckduckgo_search import AsyncDDGS
+
+# bypass curl-cffi NotImplementedError in windows https://curl-cffi.readthedocs.io/en/latest/faq/
+if sys.platform.lower().startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def get_results():
     async with AsyncDDGS() as ddgs:
@@ -202,7 +207,13 @@ This ensures proper resource management and cleanup, as the context manager will
 
 [Go To TOP](#TOP)
 
-## Using proxy
+## Proxies
+Proxy can be specified as a dictionary or just a string
+```python
+proxies = {"http": "socks5://localhost:9150", "https": "socks5://localhost:9150"}
+proxies = "socks5://localhost:9150"
+```
+
 *1. The easiest way. Launch the Tor Browser*
 ```python3
 from duckduckgo_search import DDGS

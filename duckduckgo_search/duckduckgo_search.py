@@ -43,7 +43,7 @@ class DDGS:
             logger.debug(f"_get_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp.content)}")
             resp.raise_for_status()
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
-                raise
+                raise DuckDuckGoSearchException("Ratelimit")
             if resp.status_code == 200:
                 return resp
         except Exception as ex:
