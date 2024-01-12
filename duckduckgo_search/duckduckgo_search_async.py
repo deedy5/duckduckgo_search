@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import sys
 from collections import deque
@@ -31,34 +32,35 @@ class AsyncDDGS:
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
-        self._session = requests.AsyncSession(
+        self._asession = requests.AsyncSession(
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser()
         )
-        self._session.headers["Referer"] = "https://duckduckgo.com/"
+        self._asession.headers["Referer"] = "https://duckduckgo.com/"
 
     async def __aenter__(self) -> "AsyncDDGS":
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        self._session.close()
+        return self._asession.close()
 
-    async def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
+    async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
-            resp = await self._session.request(method, url, **kwargs)
-            logger.debug(f"_get_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp.content)}")
+            resp = await self._asession.request(method, url, stream=True, **kwargs)
+            resp_content = await resp.acontent()
+            logger.debug(f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {resp_content}")
             resp.raise_for_status()
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                 raise DuckDuckGoSearchException("Ratelimit")
             if resp.status_code == 200:
-                return resp
+                return resp_content
         except Exception as ex:
-            raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}")
+            raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}")
 
-    async def _get_vqd(self, keywords: str) -> Optional[str]:
+    async def _aget_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
-        resp = await self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
-        if resp:
-            return _extract_vqd(resp.content, keywords)
+        resp_content = await self._aget_url("POST", "https://duckduckgo.com", data={"q": keywords})
+        if resp_content:
+            return _extract_vqd(resp_content, keywords)
 
     async def text(
         self,
@@ -122,7 +124,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        vqd = await self._get_vqd(keywords)
+        vqd = await self._aget_vqd(keywords)
 
         payload = {
             "q": keywords,
@@ -145,11 +147,11 @@ class AsyncDDGS:
 
         cache = set()
         for _ in range(11):
-            resp = await self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
-            if resp is None:
+            resp_content = await self._aget_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
+            if resp_content is None:
                 return
 
-            page_data = _text_extract_json(resp.content, keywords)
+            page_data = _text_extract_json(resp_content, keywords)
             if page_data is None:
                 return
 
@@ -195,7 +197,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        self._session.headers["Referer"] = "https://html.duckduckgo.com/"
+        self._asession.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
@@ -206,11 +208,11 @@ class AsyncDDGS:
         }
         cache: Set[str] = set()
         for _ in range(11):
-            resp = await self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
-            if resp is None:
+            resp_content = await self._aget_url("POST", "https://html.duckduckgo.com/html", data=payload)
+            if resp_content is None:
                 return
 
-            tree = html.fromstring(resp.content)
+            tree = html.fromstring(resp_content)
             if tree.xpath('//div[@class="no-results"]/text()'):
                 return
 
@@ -266,7 +268,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        self._session.headers["Referer"] = "https://lite.duckduckgo.com/"
+        self._asession.headers["Referer"] = "https://lite.duckduckgo.com/"
         payload = {
             "q": keywords,
             "s": "0",
@@ -277,14 +279,14 @@ class AsyncDDGS:
         }
         cache: Set[str] = set()
         for _ in range(11):
-            resp = await self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
-            if resp is None:
+            resp_content = await self._aget_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
+            if resp_content is None:
                 return
 
-            if b"No more results." in resp.content:
+            if b"No more results." in resp_content:
                 return
 
-            tree = html.fromstring(resp.content)
+            tree = html.fromstring(resp_content)
 
             result_exists = False
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
@@ -318,7 +320,7 @@ class AsyncDDGS:
             if not next_page_s:
                 return
             payload["s"] = next_page_s[0]
-            payload["vqd"] = _extract_vqd(resp.content, keywords)
+            payload["vqd"] = _extract_vqd(resp_content, keywords)
 
     async def images(
         self,
@@ -358,7 +360,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        vqd = await self._get_vqd(keywords)
+        vqd = await self._aget_vqd(keywords)
 
         safesearch_base = {"on": 1, "moderate": 1, "off": -1}
         timelimit = f"time:{timelimit}" if timelimit else ""
@@ -378,11 +380,11 @@ class AsyncDDGS:
 
         cache = set()
         for _ in range(10):
-            resp = await self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
-            if resp is None:
+            resp_content = await self._aget_url("GET", "https://duckduckgo.com/i.js", params=payload)
+            if resp_content is None:
                 return
             try:
-                resp_json = resp.json()
+                resp_json = json.loads(resp_content)
             except Exception:
                 return
             page_data = resp_json.get("results", None)
@@ -442,7 +444,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        vqd = await self._get_vqd(keywords)
+        vqd = await self._aget_vqd(keywords)
 
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         timelimit = f"publishedAfter:{timelimit}" if timelimit else ""
@@ -461,11 +463,11 @@ class AsyncDDGS:
 
         cache = set()
         for _ in range(10):
-            resp = await self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
-            if resp is None:
+            resp_content = await self._aget_url("GET", "https://duckduckgo.com/v.js", params=payload)
+            if resp_content is None:
                 return
             try:
-                resp_json = resp.json()
+                resp_json = json.loads(resp_content)
             except Exception:
                 return
             page_data = resp_json.get("results", None)
@@ -510,7 +512,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        vqd = await self._get_vqd(keywords)
+        vqd = await self._aget_vqd(keywords)
 
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
@@ -526,11 +528,11 @@ class AsyncDDGS:
 
         cache = set()
         for _ in range(10):
-            resp = await self._get_url("GET", "https://duckduckgo.com/news.js", params=payload)
-            if resp is None:
+            resp_content = await self._aget_url("GET", "https://duckduckgo.com/news.js", params=payload)
+            if resp_content is None:
                 return
             try:
-                resp_json = resp.json()
+                resp_json = json.loads(resp_content)
             except Exception:
                 return
             page_data = resp_json.get("results", None)
@@ -577,11 +579,11 @@ class AsyncDDGS:
             "format": "json",
         }
 
-        resp = await self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
-        if resp is None:
+        resp_content = await self._aget_url("GET", "https://api.duckduckgo.com/", params=payload)
+        if resp_content is None:
             yield None
         try:
-            page_data = resp.json()
+            page_data = json.loads(resp_content)
         except Exception:
             page_data = None
 
@@ -601,11 +603,11 @@ class AsyncDDGS:
             "q": f"{keywords}",
             "format": "json",
         }
-        resp = await self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
-        if resp is None:
+        resp_content = await self._aget_url("GET", "https://api.duckduckgo.com/", params=payload)
+        if resp_content is None:
             yield None
         try:
-            page_data = resp.json().get("RelatedTopics", None)
+            page_data = json.loads(resp_content).get("RelatedTopics", None)
         except Exception:
             page_data = None
 
@@ -647,11 +649,11 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
         }
-        resp = await self._get_url("GET", "https://duckduckgo.com/ac", params=payload)
-        if resp is None:
+        resp_content = await self._aget_url("GET", "https://duckduckgo.com/ac", params=payload)
+        if resp_content is None:
             yield None
         try:
-            page_data = resp.json()
+            page_data = json.loads(resp_content)
             for r in page_data:
                 yield r
         except Exception:
@@ -695,7 +697,7 @@ class AsyncDDGS:
 
         assert keywords, "keywords is mandatory"
 
-        vqd = await self._get_vqd(keywords)
+        vqd = await self._aget_vqd(keywords)
 
         # if longitude and latitude are specified, skip the request about bbox to the nominatim api
         if latitude and longitude:
@@ -725,15 +727,15 @@ class AsyncDDGS:
                     "format": "jsonv2",
                 }
             try:
-                resp = await self._get_url(
+                resp_content = await self._aget_url(
                     "GET",
                     "https://nominatim.openstreetmap.org/search.php",
                     params=params,
                 )
-                if resp is None:
+                if resp_content is None:
                     yield None
 
-                coordinates = resp.json()[0]["boundingbox"]
+                coordinates = json.loads(resp_content)[0]["boundingbox"]
                 lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
                 lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
             except Exception as ex:
@@ -767,11 +769,11 @@ class AsyncDDGS:
                 "bbox_br": f"{lat_b},{lon_r}",
                 "strict_bbox": "1",
             }
-            resp = await self._get_url("GET", "https://duckduckgo.com/local.js", params=params)
-            if resp is None:
+            resp_content = await self._aget_url("GET", "https://duckduckgo.com/local.js", params=params)
+            if resp_content is None:
                 return
             try:
-                page_data = resp.json().get("results", [])
+                page_data = json.loads(resp_content).get("results", [])
             except Exception:
                 return
             if page_data is None:
@@ -827,7 +829,7 @@ class AsyncDDGS:
 
         assert keywords, "keywords is mandatory"
 
-        vqd = await self._get_vqd("translate")
+        vqd = await self._aget_vqd("translate")
 
         payload = {
             "vqd": vqd,
@@ -837,16 +839,16 @@ class AsyncDDGS:
         if from_:
             payload["from"] = from_
 
-        resp = await self._get_url(
+        resp_content = await self._aget_url(
             "POST",
             "https://duckduckgo.com/translation.js",
             params=payload,
             data=keywords.encode(),
         )
-        if resp is None:
+        if resp_content is None:
             return None
         try:
-            page_data = resp.json()
+            page_data = json.loads(resp_content)
             page_data["original"] = keywords
         except Exception:
             page_data = None
