@@ -183,23 +183,43 @@ with DDGS() as ddgs:
 Here is an example of initializing the AsyncDDGS class:
 ```python3
 import asyncio
+import logging
 import sys
+from itertools import chain
+from random import shuffle
+
+import requests
 from duckduckgo_search import AsyncDDGS
 
 # bypass curl-cffi NotImplementedError in windows https://curl-cffi.readthedocs.io/en/latest/faq/
 if sys.platform.lower().startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-async def get_results():
-    async with AsyncDDGS() as ddgs:
-        results = [r async for r in ddgs.text("cat", max_results=5)]
+def get_words():
+    word_site = "https://www.mit.edu/~ecprice/wordlist.10000"
+    resp = requests.get(word_site)
+    words = resp.text.splitlines()
+    return words
+
+async def aget_results(word):
+    async with AsyncDDGS(proxies=proxies) as ddgs:
+        results = [r async for r in ddgs.text(word, max_results=None)]
         return results
 
 async def main():
-    ddgs_results = await get_results()
-    print(ddgs_results)
+    words = get_words()
+    shuffle(words)
+    tasks = []
+    for word in words[:10]:
+        tasks.append(aget_results(word))
+    results = await asyncio.gather(*tasks)
+    print(f"Done")
+    for r in chain.from_iterable(results):
+        print(r)
+    
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     asyncio.run(main())
 ```
 It is important to note that the DDGS and AsyncDDGS classes should always be used as a context manager (with statement).

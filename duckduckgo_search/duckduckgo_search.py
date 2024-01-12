@@ -5,8 +5,8 @@ from decimal import Decimal
 from itertools import cycle
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple
 
-from lxml import html
 from curl_cffi import requests
+from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
@@ -16,15 +16,16 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 
 
 class DDGS:
-    """DuckDuckgo_search class to get search results from duckduckgo.com
-
-    Args:
-        headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
-        proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
-        timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-    """
+    """DuckDuckgo_search class to get search results from duckduckgo.com."""
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
+        """Initialize the DDGS object.
+
+        Args:
+            headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
+            proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
+            timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+        """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
         self._session = requests.Session(
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser()
@@ -32,9 +33,11 @@ class DDGS:
         self._session.headers["Referer"] = "https://duckduckgo.com/"
 
     def __enter__(self) -> "DDGS":
+        """A context manager method that is called when entering the 'with' statement."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Closes the session."""
         self._session.close()
 
     def _get_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
@@ -47,7 +50,7 @@ class DDGS:
             if resp.status_code == 200:
                 return resp
         except Exception as ex:
-            raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}")
+            raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}") from ex
 
     def _get_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
@@ -64,7 +67,7 @@ class DDGS:
         backend: str = "api",
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -76,6 +79,7 @@ class DDGS:
                 html - collect data from https://html.duckduckgo.com,
                 lite - collect data from https://lite.duckduckgo.com.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
+
         Yields:
             dict with search results.
 
@@ -101,7 +105,7 @@ class DDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -174,7 +178,7 @@ class DDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -247,7 +251,7 @@ class DDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -328,7 +332,7 @@ class DDGS:
         license_image: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo images search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -419,7 +423,7 @@ class DDGS:
         license_videos: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -490,7 +494,7 @@ class DDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo news search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -556,7 +560,7 @@ class DDGS:
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     def answers(self, keywords: str) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
+        """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -605,7 +609,7 @@ class DDGS:
             page_data = None
 
         if page_data:
-            for i, row in enumerate(page_data):
+            for row in page_data:
                 topic = row.get("Name", None)
                 if not topic:
                     icon = row["Icon"].get("URL", None)
@@ -626,7 +630,7 @@ class DDGS:
                         }
 
     def suggestions(self, keywords: str, region: str = "wt-wt") -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
+        """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -635,7 +639,6 @@ class DDGS:
         Yields:
             dict with suggestions results.
         """
-
         assert keywords, "keywords is mandatory"
 
         payload = {
@@ -647,8 +650,7 @@ class DDGS:
             return None
         try:
             page_data = resp.json()
-            for r in page_data:
-                yield r
+            yield from page_data
         except Exception:
             pass
 
@@ -667,7 +669,7 @@ class DDGS:
         radius: int = 0,
         max_results: Optional[int] = None,
     ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query
@@ -687,7 +689,6 @@ class DDGS:
         Yields:
             dict with maps search results
         """
-
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd(keywords)
@@ -809,7 +810,7 @@ class DDGS:
     def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
     ) -> Optional[Dict[str, Optional[str]]]:
-        """DuckDuckGo translate
+        """DuckDuckGo translate.
 
         Args:
             keywords: string or a list of strings to translate
@@ -819,7 +820,6 @@ class DDGS:
         Returns:
             dict with translated keywords.
         """
-
         assert keywords, "keywords is mandatory"
 
         vqd = self._get_vqd("translate")

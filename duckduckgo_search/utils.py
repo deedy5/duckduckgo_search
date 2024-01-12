@@ -9,40 +9,36 @@ from curl_cffi.requests import BrowserType
 
 from .exceptions import DuckDuckGoSearchException
 
-
 BROWSERS = [x.value for x in BrowserType]
 REGEX_500_IN_URL = re.compile(r"(?:\d{3}-\d{2}\.js)")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
+REGEX_VQD = re.compile(rb"""vqd=['"]?([^&"']+)""")
 
 
 def _extract_vqd(html_bytes: bytes, keywords: str) -> Optional[str]:
-    for c1, c2 in (
-        (b'vqd="', b'"'),
-        (b"vqd=", b"&"),
-        (b"vqd='", b"'"),
-    ):
-        try:
-            start = html_bytes.index(c1) + len(c1)
-            end = html_bytes.index(c2, start)
-            return html_bytes[start:end].decode()
-        except Exception:
-            pass
+    """Extract vqd from html using a regular expression."""
+    try:
+        match = REGEX_VQD.search(html_bytes)
+        if match:
+            return match.group(1).decode()
+    except Exception:
+        pass
     raise DuckDuckGoSearchException(f"_extract_vqd() {keywords=} Could not extract vqd.")
 
 
 def _text_extract_json(html_bytes: bytes, keywords: str) -> Optional[str]:
-    """text(backend="api") -> extract json from html"""
+    """text(backend="api") -> extract json from html."""
     try:
         start = html_bytes.index(b"DDG.pageLayout.load('d',") + 24
         end = html_bytes.index(b");DDG.duckbar.load(", start)
         data = html_bytes[start:end]
         return json.loads(data)
     except Exception as ex:
-        raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} {type(ex).__name__}: {ex}")
+        raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} {type(ex).__name__}: {ex}") from ex
 
 
 def _is_500_in_url(url: str) -> bool:
-    """something like '506-00.js' inside the url"""
+    """Something like '506-00.js' inside the url."""
     return bool(REGEX_500_IN_URL.search(url))
 
 
@@ -52,10 +48,10 @@ def _normalize(raw_html: str) -> str:
 
 
 def _normalize_url(url: str) -> str:
-    """Unquote URL and replace spaces with '+'"""
+    """Unquote URL and replace spaces with '+'."""
     return unquote(url.replace(" ", "+")) if url else ""
 
 
 def _random_browser() -> BrowserType:
-    """Return a random browser from the curl-cffi"""
+    """Return a random browser from the curl-cffi."""
     return choice(BROWSERS)

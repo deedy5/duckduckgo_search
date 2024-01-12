@@ -4,6 +4,8 @@ from typing import Dict, Optional
 
 @dataclass
 class MapsResult:
+    """Represents a result from the maps search."""
+
     title: Optional[str] = None
     address: Optional[str] = None
     country_code: Optional[str] = None
