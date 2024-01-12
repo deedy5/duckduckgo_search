@@ -33,12 +33,12 @@ COLORS = {
 }
 
 
-def save_json(jsonfile, data):
+def _save_json(jsonfile, data):
     with open(jsonfile, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
 
-def save_csv(csvfile, data):
+def _save_csv(csvfile, data):
     with open(csvfile, "w", newline="", encoding="utf-8") as file:
         if data:
             headers = data[0].keys()
@@ -47,7 +47,7 @@ def save_csv(csvfile, data):
             writer.writerows(data)
 
 
-def print_data(data):
+def _print_data(data):
     if data:
         for i, e in enumerate(data, start=1):
             click.secho(f"{i}.\t    {'=' * 78}", bg="black", fg="white")
@@ -64,7 +64,7 @@ def print_data(data):
             input()
 
 
-def sanitize_keywords(keywords):
+def _sanitize_keywords(keywords):
     keywords = (
         keywords.replace("filetype", "")
         .replace(":", "")
@@ -78,7 +78,7 @@ def sanitize_keywords(keywords):
     return keywords
 
 
-def download_file(url, dir_path, filename, proxy):
+def _download_file(url, dir_path, filename, proxy):
     try:
         resp = requests.get(url, proxies=proxy, impersonate=_random_browser(), timeout=10)
         resp.raise_for_status()
@@ -88,7 +88,7 @@ def download_file(url, dir_path, filename, proxy):
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
 
-def download_results(keywords, results, images=False, proxy=None, threads=None):
+def _download_results(keywords, results, images=False, proxy=None, threads=None):
     path_type = "images" if images else "text"
     path = f"{path_type}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     os.makedirs(path, exist_ok=True)
@@ -100,7 +100,7 @@ def download_results(keywords, results, images=False, proxy=None, threads=None):
         for i, res in enumerate(results, start=1):
             url = res["image"] if images else res["href"]
             filename = unquote(url.split("/")[-1].split("?")[0])
-            f = executor.submit(download_file, url, path, f"{i}_{filename}", proxy)
+            f = executor.submit(_download_file, url, path, f"{i}_{filename}", proxy)
             futures.append(f)
 
         with click.progressbar(
@@ -113,11 +113,18 @@ def download_results(keywords, results, images=False, proxy=None, threads=None):
 
 @click.group(chain=True)
 def cli():
+    """A decorator that creates a command group.
+
+    This decorator is used to create a group of commands.
+    The `chain=True` parameter allows the commands in the group to be chained together,
+    meaning the output of one command can be used as the input for the next command.
+    """
     pass
 
 
 @cli.command()
 def version():
+    """A command-line interface command that prints and returns the current version of the program."""
     print(__version__)
     return __version__
 
@@ -134,6 +141,7 @@ def version():
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def text(keywords, region, safesearch, timelimit, backend, output, download, threads, max_results, proxy):
+    """CLI function to perform a text search using DuckDuckGo API."""
     data = []
     for r in DDGS(proxies=proxy).text(
         keywords=keywords,
@@ -144,33 +152,34 @@ def text(keywords, region, safesearch, timelimit, backend, output, download, thr
         max_results=max_results,
     ):
         data.append(r)
-    keywords = sanitize_keywords(keywords)
+    keywords = _sanitize_keywords(keywords)
     filename = f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print" and not download:
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
     if download:
-        download_results(keywords, data, proxy=proxy, threads=threads)
+        _download_results(keywords, data, proxy=proxy, threads=threads)
 
 
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="answers search, keywords for query")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
-def answers(keywords, output, proxy, **kwargs):
+def answers(keywords, output, proxy):
+    """CLI function to perform a answers search using DuckDuckGo API."""
     data = []
     for r in DDGS(proxies=proxy).answers(keywords=keywords):
         data.append(r)
-    filename = f"answers_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    filename = f"answers_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -233,6 +242,7 @@ def images(
     output,
     proxy,
 ):
+    """CLI function to perform a images search using DuckDuckGo API."""
     data = []
     for r in DDGS(proxies=proxy).images(
         keywords=keywords,
@@ -247,16 +257,16 @@ def images(
         max_results=max_results,
     ):
         data.append(r)
-    keywords = sanitize_keywords(keywords)
-    filename = f"images_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    keywords = _sanitize_keywords(keywords)
+    filename = f"images_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print" and not download:
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
     if download:
-        download_results(keywords, data, images=True, proxy=proxy, threads=threads)
+        _download_results(keywords, data, images=True, proxy=proxy, threads=threads)
 
 
 @cli.command()
@@ -271,6 +281,7 @@ def images(
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def videos(keywords, region, safesearch, timelimit, resolution, duration, license_videos, max_results, output, proxy):
+    """CLI function to perform a videos search using DuckDuckGo API."""
     data = []
     for r in DDGS(proxies=proxy).videos(
         keywords=keywords,
@@ -283,13 +294,13 @@ def videos(keywords, region, safesearch, timelimit, resolution, duration, licens
         max_results=max_results,
     ):
         data.append(r)
-    filename = f"videos_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    filename = f"videos_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -301,18 +312,19 @@ def videos(keywords, region, safesearch, timelimit, resolution, duration, licens
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def news(keywords, region, safesearch, timelimit, max_results, output, proxy):
+    """CLI function to perform a news search using DuckDuckGo API."""
     data = []
     for r in DDGS(proxies=proxy).news(
         keywords=keywords, region=region, safesearch=safesearch, timelimit=timelimit, max_results=max_results
     ):
         data.append(r)
-    filename = f"news_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    filename = f"news_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -346,6 +358,7 @@ def maps(
     output,
     proxy,
 ):
+    """CLI function to perform a maps search using DuckDuckGo API."""
     data = []
     for i, r in enumerate(
         DDGS(proxies=proxy).maps(
@@ -367,13 +380,13 @@ def maps(
         data.append(r)
         if i % 100 == 0:
             print(i)
-    filename = f"maps_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    filename = f"maps_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -383,15 +396,16 @@ def maps(
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def translate(keywords, from_, to, output, proxy):
+    """CLI function to perform translate using DuckDuckGo API."""
     data = DDGS(proxies=proxy).translate(keywords=keywords, from_=from_, to=to)
     data = [data]
-    filename = f"translate_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    filename = f"translate_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
 
 
 @cli.command()
@@ -400,16 +414,17 @@ def translate(keywords, from_, to, output, proxy):
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def suggestions(keywords, region, output, proxy):
+    """CLI function to perform a suggestions search using DuckDuckGo API."""
     data = []
     for r in DDGS(proxies=proxy).suggestions(keywords=keywords, region=region):
         data.append(r)
-    filename = f"suggestions_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
+    filename = f"suggestions_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
-        print_data(data)
+        _print_data(data)
     elif output == "csv":
-        save_csv(f"{filename}.csv", data)
+        _save_csv(f"{filename}.csv", data)
     elif output == "json":
-        save_json(f"{filename}.json", data)
+        _save_json(f"{filename}.json", data)
 
 
 if __name__ == "__main__":

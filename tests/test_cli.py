@@ -4,7 +4,7 @@ import shutil
 from click.testing import CliRunner
 
 from duckduckgo_search import DDGS, __version__
-from duckduckgo_search.cli import cli, download_results, save_csv, save_json
+from duckduckgo_search.cli import _download_results, _save_csv, _save_json, cli
 
 runner = CliRunner()
 
@@ -61,7 +61,7 @@ def test_save_csv():
         results = [x for x in ddgs_gen]
         assert len(results) == 30
 
-    save_csv(f"{keywords}.csv", results)
+    _save_csv(f"{keywords}.csv", results)
 
     # delete files and folders contains keyword in name
     not_files = True
@@ -81,7 +81,7 @@ def test_save_json():
         results = [x for x in ddgs_gen]
         assert len(results) == 30
 
-    save_json(f"{keywords}.json", results)
+    _save_json(f"{keywords}.json", results)
 
     # delete files and folders contains keyword in name
     not_files = True
@@ -99,7 +99,7 @@ def test_text_download():
     results = [x for x in DDGS().text(keywords, max_results=8)]
     assert len(results) == 8
 
-    download_results(keywords, results)
+    _download_results(keywords, results)
 
     # delete files contains keyword in name
     files = False
@@ -125,7 +125,7 @@ def test_images_download():
     results = [x for x in DDGS().images(keywords, max_results=8)]
     assert len(results) >= 8
 
-    download_results(keywords, results, images=True)
+    _download_results(keywords, results, images=True)
 
     # delete files contains keyword in name
     files = False
