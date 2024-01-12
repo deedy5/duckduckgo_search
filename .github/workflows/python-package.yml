@@ -30,6 +30,7 @@ jobs:
         python -m pip install .[dev]
     - name: Ruff
       run: |
+        ruff check .
         ruff format . --check --target-version py38
     - name: Pytest
       run: |
