@@ -94,12 +94,8 @@ class AsyncDDGS:
         elif backend == "lite":
             results = self._text_lite(keywords, region, timelimit, max_results)
 
-        results_counter = 0
         async for result in results:
             yield result
-            results_counter += 1
-            if max_results and results_counter >= max_results:
-                break
 
     async def _text_api(
         self,
@@ -168,6 +164,8 @@ class AsyncDDGS:
                             "href": _normalize_url(href),
                             "body": body,
                         }
+                        if max_results and len(cache) >= max_results:
+                            return
                 else:
                     next_page_url = row.get("n", None)
             if max_results is None or result_exists is False or next_page_url is None:
@@ -235,7 +233,8 @@ class AsyncDDGS:
                         "href": _normalize_url(href),
                         "body": _normalize("".join(body)) if body else None,
                     }
-
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
                 return
             next_page = tree.xpath('.//div[@class="nav-link"]')
@@ -314,6 +313,8 @@ class AsyncDDGS:
                         "href": _normalize_url(href),
                         "body": _normalize(body),
                     }
+                    if max_results and len(cache) >= max_results:
+                        return
             if max_results is None or result_exists is False:
                 return
             next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
