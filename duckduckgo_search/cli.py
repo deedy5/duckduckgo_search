@@ -132,7 +132,7 @@ def version():
 @click.option("-d", "--download", is_flag=True, default=False, help="download results to 'keywords' folder")
 @click.option("-b", "--backend", default="api", type=click.Choice(["api", "html", "lite"]), help="which backend to use")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def text(keywords, region, safesearch, timelimit, backend, output, download, threads, max_results, proxy):
     data = []
     for r in DDGS(proxies=proxy).text(
@@ -159,10 +159,10 @@ def text(keywords, region, safesearch, timelimit, backend, output, download, thr
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="answers search, keywords for query")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
-def answers(keywords, output, proxy, *args, **kwargs):
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+def answers(keywords, output, proxy, **kwargs):
     data = []
-    for r in DDGS(proxies=proxy).answers(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).answers(keywords=keywords):
         data.append(r)
     filename = f"answers_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -216,7 +216,7 @@ def answers(keywords, output, proxy, *args, **kwargs):
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
 @click.option("-d", "--download", is_flag=True, default=False, help="download and save images to 'keywords' folder")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def images(
     keywords,
     region,
@@ -269,10 +269,19 @@ def images(
 @click.option("-lic", "--license_videos", default=None, type=click.Choice(["creativeCommon", "youtube"]))
 @click.option("-m", "--max_results", default=50, help="maximum number of results, default=50")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
-def videos(keywords, output, max_results, proxy, *args, **kwargs):
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+def videos(keywords, region, safesearch, timelimit, resolution, duration, license_videos, max_results, output, proxy):
     data = []
-    for r in DDGS(proxies=proxy).videos(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).videos(
+        keywords=keywords,
+        region=region,
+        safesearch=safesearch,
+        timelimit=timelimit,
+        resolution=resolution,
+        duration=duration,
+        license_videos=license_videos,
+        max_results=max_results,
+    ):
         data.append(r)
     filename = f"videos_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -290,10 +299,12 @@ def videos(keywords, output, max_results, proxy, *args, **kwargs):
 @click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
 @click.option("-m", "--max_results", default=25, help="maximum number of results, default=25")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
-def news(keywords, output, max_results, proxy, *args, **kwargs):
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+def news(keywords, region, safesearch, timelimit, max_results, output, proxy):
     data = []
-    for r in DDGS(proxies=proxy).news(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).news(
+        keywords=keywords, region=region, safesearch=safesearch, timelimit=timelimit, max_results=max_results
+    ):
         data.append(r)
     filename = f"news_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -318,10 +329,41 @@ def news(keywords, output, max_results, proxy, *args, **kwargs):
 @click.option("-r", "--radius", default=0, help="expand the search square by the distance in kilometers")
 @click.option("-m", "--max_results", default=50, help="number of results, default=50")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-proxy", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
-def maps(keywords, output, max_results, proxy, *args, **kwargs):
+@click.option("-proxy", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+def maps(
+    keywords,
+    place,
+    street,
+    city,
+    county,
+    state,
+    country,
+    postalcode,
+    latitude,
+    longitude,
+    radius,
+    max_results,
+    output,
+    proxy,
+):
     data = []
-    for i, r in enumerate(DDGS(proxies=proxy).maps(keywords=keywords, *args, **kwargs), start=1):
+    for i, r in enumerate(
+        DDGS(proxies=proxy).maps(
+            keywords=keywords,
+            place=place,
+            street=street,
+            city=city,
+            county=county,
+            state=state,
+            country=country,
+            postalcode=postalcode,
+            latitude=latitude,
+            longitude=longitude,
+            radius=radius,
+            max_results=max_results,
+        ),
+        start=1,
+    ):
         data.append(r)
         if i % 100 == 0:
             print(i)
@@ -339,9 +381,9 @@ def maps(keywords, output, max_results, proxy, *args, **kwargs):
 @click.option("-f", "--from_", help="What language to translate from (defaults automatically)")
 @click.option("-t", "--to", default="en", help="de, ru, fr, etc. What language to translate, defaults='en'")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
-def translate(keywords, output, proxy, *args, **kwargs):
-    data = DDGS(proxies=proxy).translate(keywords=keywords, *args, **kwargs)
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+def translate(keywords, from_, to, output, proxy):
+    data = DDGS(proxies=proxy).translate(keywords=keywords, from_=from_, to=to)
     data = [data]
     filename = f"translate_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -356,10 +398,10 @@ def translate(keywords, output, proxy, *args, **kwargs):
 @click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://localhost:9150")
-def suggestions(keywords, output, proxy, *args, **kwargs):
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+def suggestions(keywords, region, output, proxy):
     data = []
-    for r in DDGS(proxies=proxy).suggestions(keywords=keywords, *args, **kwargs):
+    for r in DDGS(proxies=proxy).suggestions(keywords=keywords, region=region):
         data.append(r)
     filename = f"suggestions_{sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
