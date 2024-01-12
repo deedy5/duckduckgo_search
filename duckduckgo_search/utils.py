@@ -35,7 +35,7 @@ def _text_extract_json(html_bytes: bytes, keywords: str) -> Optional[str]:
         data = html_bytes[start:end]
         return json.loads(data)
     except Exception as ex:
-        raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} {type(ex).__name__}: {ex}")
+        raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} {type(ex).__name__}: {ex}") from ex
 
 
 def _is_500_in_url(url: str) -> bool:

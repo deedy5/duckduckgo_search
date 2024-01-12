@@ -54,7 +54,7 @@ class AsyncDDGS:
             if resp.status_code == 200:
                 return resp_content
         except Exception as ex:
-            raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}")
+            raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
 
     async def _aget_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
@@ -613,7 +613,7 @@ class AsyncDDGS:
             page_data = None
 
         if page_data:
-            for i, row in enumerate(page_data):
+            for row in page_data:
                 topic = row.get("Name", None)
                 if not topic:
                     icon = row["Icon"].get("URL", None)

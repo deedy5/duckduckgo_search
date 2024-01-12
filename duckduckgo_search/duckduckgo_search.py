@@ -47,7 +47,7 @@ class DDGS:
             if resp.status_code == 200:
                 return resp
         except Exception as ex:
-            raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}")
+            raise DuckDuckGoSearchException(f"_get_url() {url} {type(ex).__name__}: {ex}") from ex
 
     def _get_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
@@ -605,7 +605,7 @@ class DDGS:
             page_data = None
 
         if page_data:
-            for i, row in enumerate(page_data):
+            for row in page_data:
                 topic = row.get("Name", None)
                 if not topic:
                     icon = row["Icon"].get("URL", None)
@@ -647,8 +647,7 @@ class DDGS:
             return None
         try:
             page_data = resp.json()
-            for r in page_data:
-                yield r
+            yield from page_data
         except Exception:
             pass
 
