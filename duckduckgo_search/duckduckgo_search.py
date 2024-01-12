@@ -5,8 +5,8 @@ from decimal import Decimal
 from itertools import cycle
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple
 
-from lxml import html
 from curl_cffi import requests
+from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
