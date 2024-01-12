@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def ddg(
     keywords, region="wt-wt", safesearch="moderate", time=None, max_results=None, page=1, output=None, download=False
 ):
-    warnings.warn("ddg is deprecated. Use DDGS().text() generator")
+    warnings.warn("ddg is deprecated. Use DDGS().text() generator", stacklevel=2)
     results = []
     for r in DDGS().text(
         keywords=keywords, region=region, safesearch=safesearch, timelimit=time, max_results=max_results
@@ -37,7 +37,7 @@ def ddg_images(
     output=None,
     download=False,
 ):
-    warnings.warn("ddg_images is deprecated. Use DDGS().images() generator")
+    warnings.warn("ddg_images is deprecated. Use DDGS().images() generator", stacklevel=2)
     results = []
     for r in DDGS().images(
         keywords=keywords,
@@ -70,7 +70,7 @@ def ddg_videos(
     page=1,
     output=None,
 ):
-    warnings.warn("ddg_videos is deprecated. Use DDGS().videos() generator")
+    warnings.warn("ddg_videos is deprecated. Use DDGS().videos() generator", stacklevel=2)
     results = []
     for r in DDGS().videos(
         keywords=keywords,
@@ -90,7 +90,7 @@ def ddg_videos(
 
 # deprecated, for compatibility
 def ddg_news(keywords, region="wt-wt", safesearch="moderate", time=None, max_results=None, page=1, output=None):
-    warnings.warn("ddg_news is deprecated. Use DDGS().news() generator")
+    warnings.warn("ddg_news is deprecated. Use DDGS().news() generator", stacklevel=2)
     results = []
     for r in DDGS().news(
         keywords=keywords, region=region, safesearch=safesearch, timelimit=time, max_results=max_results
@@ -117,7 +117,7 @@ def ddg_maps(
     max_results=None,
     output=None,
 ):
-    warnings.warn("ddg_maps is deprecated. Use DDGS().maps() generator")
+    warnings.warn("ddg_maps is deprecated. Use DDGS().maps() generator", stacklevel=2)
     results = []
     for r in DDGS().maps(
         keywords=keywords,
@@ -141,7 +141,7 @@ def ddg_maps(
 
 # deprecated, for compatibility
 def ddg_answers(keywords, related=False, output=None):
-    warnings.warn("ddg_answers is deprecated. Use DDGS().answers() generator")
+    warnings.warn("ddg_answers is deprecated. Use DDGS().answers() generator", stacklevel=2)
     results = []
     for r in DDGS().answers(keywords=keywords):
         results.append(r)
@@ -152,7 +152,7 @@ def ddg_answers(keywords, related=False, output=None):
 
 # deprecated, for compatibility
 def ddg_suggestions(keywords, region="wt-wt", output=None):
-    warnings.warn("ddg_suggestions is deprecated. Use DDGS().suggestions() generator")
+    warnings.warn("ddg_suggestions is deprecated. Use DDGS().suggestions() generator", stacklevel=2)
     results = []
     for r in DDGS().suggestions(keywords=keywords, region=region):
         results.append(r)
@@ -163,6 +163,6 @@ def ddg_suggestions(keywords, region="wt-wt", output=None):
 
 # deprecated, for compatibility
 def ddg_translate(keywords, from_=None, to="en", output=None):
-    warnings.warn("ddg_translate is deprecated. Use DDGS().translate()")
+    warnings.warn("ddg_translate is deprecated. Use DDGS().translate()", stacklevel=2)
     results = DDGS().translate(keywords=keywords, from_=from_, to=to)
     return results
