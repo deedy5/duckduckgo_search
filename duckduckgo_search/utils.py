@@ -16,7 +16,7 @@ REGEX_VQD = re.compile(rb"""vqd=['"]?([^&"']+)""")
 
 
 def _extract_vqd(html_bytes: bytes, keywords: str) -> Optional[str]:
-    """Extract vqd from html using a regular expression"""
+    """Extract vqd from html using a regular expression."""
     try:
         match = REGEX_VQD.search(html_bytes)
         if match:
@@ -27,7 +27,7 @@ def _extract_vqd(html_bytes: bytes, keywords: str) -> Optional[str]:
 
 
 def _text_extract_json(html_bytes: bytes, keywords: str) -> Optional[str]:
-    """text(backend="api") -> extract json from html"""
+    """text(backend="api") -> extract json from html."""
     try:
         start = html_bytes.index(b"DDG.pageLayout.load('d',") + 24
         end = html_bytes.index(b");DDG.duckbar.load(", start)
@@ -38,7 +38,7 @@ def _text_extract_json(html_bytes: bytes, keywords: str) -> Optional[str]:
 
 
 def _is_500_in_url(url: str) -> bool:
-    """Something like '506-00.js' inside the url"""
+    """Something like '506-00.js' inside the url."""
     return bool(REGEX_500_IN_URL.search(url))
 
 
@@ -48,10 +48,10 @@ def _normalize(raw_html: str) -> str:
 
 
 def _normalize_url(url: str) -> str:
-    """Unquote URL and replace spaces with '+'"""
+    """Unquote URL and replace spaces with '+'."""
     return unquote(url.replace(" ", "+")) if url else ""
 
 
 def _random_browser() -> BrowserType:
-    """Return a random browser from the curl-cffi"""
+    """Return a random browser from the curl-cffi."""
     return choice(BROWSERS)

@@ -22,15 +22,16 @@ if sys.platform.lower().startswith("win"):
 
 
 class AsyncDDGS:
-    """DuckDuckgo_search async class to get search results from duckduckgo.com
-
-    Args:
-        headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
-        proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
-        timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-    """
+    """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
+        """Initialize the AsyncDDGS object.
+
+        Args:
+            headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
+            proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
+            timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+        """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
         self._asession = requests.AsyncSession(
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser()
@@ -38,9 +39,11 @@ class AsyncDDGS:
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
 
     async def __aenter__(self) -> "AsyncDDGS":
+        """A context manager method that is called when entering the 'with' statement."""
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Closes the session."""
         return self._asession.close()
 
     async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
@@ -71,7 +74,7 @@ class AsyncDDGS:
         backend: str = "api",
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -83,6 +86,7 @@ class AsyncDDGS:
                 html - collect data from https://html.duckduckgo.com,
                 lite - collect data from https://lite.duckduckgo.com.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
+
         Yields:
             dict with search results.
 
@@ -105,7 +109,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -180,7 +184,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -253,7 +257,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+        """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -336,7 +340,7 @@ class AsyncDDGS:
         license_image: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo images search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -427,7 +431,7 @@ class AsyncDDGS:
         license_videos: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -498,7 +502,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo news search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -564,7 +568,7 @@ class AsyncDDGS:
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
     async def answers(self, keywords: str) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
+        """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -634,7 +638,7 @@ class AsyncDDGS:
                         }
 
     async def suggestions(self, keywords: str, region: str = "wt-wt") -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
+        """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
@@ -643,7 +647,6 @@ class AsyncDDGS:
         Yields:
             dict with suggestions results.
         """
-
         assert keywords, "keywords is mandatory"
 
         payload = {
@@ -675,7 +678,7 @@ class AsyncDDGS:
         radius: int = 0,
         max_results: Optional[int] = None,
     ) -> AsyncIterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
+        """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query
@@ -686,8 +689,8 @@ class AsyncDDGS:
             state: state of search. Defaults to None.
             country: country of search. Defaults to None.
             postalcode: postalcode of search. Defaults to None.
-            latitude: geographic coordinate (north–south position). Defaults to None.
-            longitude: geographic coordinate (east–west position); if latitude and
+            latitude: geographic coordinate (north-south position). Defaults to None.
+            longitude: geographic coordinate (east-west position); if latitude and
                 longitude are set, the other parameters are not used. Defaults to None.
             radius: expand the search square by the distance in kilometers. Defaults to 0.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
@@ -695,7 +698,6 @@ class AsyncDDGS:
         Yields:
             dict with maps search results
         """
-
         assert keywords, "keywords is mandatory"
 
         vqd = await self._aget_vqd(keywords)
@@ -817,7 +819,7 @@ class AsyncDDGS:
     async def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
     ) -> Optional[Dict[str, Optional[str]]]:
-        """DuckDuckGo translate
+        """DuckDuckGo translate.
 
         Args:
             keywords: string or a list of strings to translate
@@ -827,7 +829,6 @@ class AsyncDDGS:
         Returns:
             dict with translated keywords.
         """
-
         assert keywords, "keywords is mandatory"
 
         vqd = await self._aget_vqd("translate")

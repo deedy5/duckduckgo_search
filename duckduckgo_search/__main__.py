@@ -1,4 +1,4 @@
-"""for using as 'python3 -m duckduckgo_search'"""
+"""For using as 'python3 -m duckduckgo_search'."""
 from .cli import cli
 
 if __name__ == "__main__":
