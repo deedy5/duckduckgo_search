@@ -6,9 +6,10 @@ from collections import deque
 from datetime import datetime, timezone
 from decimal import Decimal
 from itertools import cycle
-from typing import AsyncIterator, Deque, Dict, Optional, Set, Tuple
+from typing import AsyncGenerator, Deque, Dict, Optional, Set, Tuple
 
 from curl_cffi import requests
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
@@ -21,7 +22,7 @@ if sys.platform.lower().startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
-class AsyncDDGS:
+class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
@@ -73,7 +74,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         backend: str = "api",
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -108,7 +109,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -183,7 +184,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -256,7 +257,7 @@ class AsyncDDGS:
         region: str = "wt-wt",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -339,7 +340,7 @@ class AsyncDDGS:
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -430,7 +431,7 @@ class AsyncDDGS:
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -501,7 +502,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -567,7 +568,7 @@ class AsyncDDGS:
                 return
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
-    async def answers(self, keywords: str) -> AsyncIterator[Dict[str, Optional[str]]]:
+    async def answers(self, keywords: str) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -637,7 +638,7 @@ class AsyncDDGS:
                             "url": subrow["FirstURL"],
                         }
 
-    async def suggestions(self, keywords: str, region: str = "wt-wt") -> AsyncIterator[Dict[str, Optional[str]]]:
+    async def suggestions(self, keywords: str, region: str = "wt-wt") -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -677,7 +678,7 @@ class AsyncDDGS:
         longitude: Optional[str] = None,
         radius: int = 0,
         max_results: Optional[int] = None,
-    ) -> AsyncIterator[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:

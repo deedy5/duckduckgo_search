@@ -29,8 +29,9 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1.7",
-    "lxml>=4.9.3",
-    "curl_cffi>=0.5.10"
+    "docstring_inheritance>=2.1.2",
+    "curl_cffi>=0.5.10",
+    "lxml>=4.9.3"
 ]
 dynamic = ["version"]
 
@@ -63,9 +64,5 @@ select = [
     "B",  # flake8-bugbear
     "SIM",  # flake8-simplify
     "I",  # isort
-    "D",  # pydocstyle
 ]
 ignore = ["D100"]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
