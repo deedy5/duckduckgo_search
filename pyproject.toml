@@ -63,9 +63,5 @@ select = [
     "B",  # flake8-bugbear
     "SIM",  # flake8-simplify
     "I",  # isort
-    "D",  # pydocstyle
 ]
 ignore = ["D100"]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
