@@ -44,7 +44,7 @@ def _is_500_in_url(url: str) -> bool:
 
 def _normalize(raw_html: str) -> str:
     """Strip HTML tags from the raw_html string."""
-    return unescape(re.sub(REGEX_STRIP_TAGS, "", raw_html)) if raw_html else ""
+    return unescape(REGEX_STRIP_TAGS.sub("", raw_html)) if raw_html else ""
 
 
 def _normalize_url(url: str) -> str:
