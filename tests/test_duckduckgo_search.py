@@ -68,3 +68,14 @@ def test_translate():
         "translated": "Schule",
         "original": "school",
     }
+
+
+def test_verify_warning(caplog):
+    DDGS(verify=False)
+    assert "WARNING" in caplog.text
+
+
+def test_verify_false_text():
+    with DDGS(verify=False) as ddgs:
+        results = [x for x in ddgs.text("cat", max_results=30)]
+        assert len(results) == 30

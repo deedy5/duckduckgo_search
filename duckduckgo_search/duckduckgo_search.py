@@ -8,8 +8,8 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 
 
 class DDGS(AsyncDDGS):
-    def __init__(self, headers=None, proxies=None, timeout=10):
-        super().__init__(headers, proxies, timeout)
+    def __init__(self, headers=None, proxies=None, timeout=10, verify=True):
+        super().__init__(headers, proxies, timeout, verify)
         self._loop = asyncio.new_event_loop()
 
     def __enter__(self) -> "DDGS":

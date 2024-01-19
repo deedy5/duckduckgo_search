@@ -81,3 +81,15 @@ async def test_translate():
         "translated": "Schule",
         "original": "school",
     }
+
+
+def test_verify_warning(caplog):
+    AsyncDDGS(verify=False)
+    assert "WARNING" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_verify_false_text():
+    async with AsyncDDGS(verify=False) as ddgs:
+        results = [x async for x in ddgs.text("cat", max_results=30)]
+        assert len(results) == 30

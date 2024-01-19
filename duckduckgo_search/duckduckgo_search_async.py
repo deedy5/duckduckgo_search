@@ -16,6 +16,7 @@ from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
 from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _random_browser, _text_extract_json
 
+logging.basicConfig()
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
 # Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
 if sys.platform.lower().startswith("win"):
@@ -25,18 +26,22 @@ if sys.platform.lower().startswith("win"):
 class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
-    def __init__(self, headers=None, proxies=None, timeout=10) -> None:
+    def __init__(self, headers=None, proxies=None, timeout=10, verify=True) -> None:
         """Initialize the AsyncDDGS object.
 
         Args:
             headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
             proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+            verify  (bool, optional): Whether or not to verify HTTPS requests. Defaults to True.
         """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
         self._asession = requests.AsyncSession(
-            headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser()
+            headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser(), verify=verify
         )
+        logger.warning("AsyncDDGS verify flag set to False. HTTPS requests "
+                       "will not be verified. This is not recommended unless "
+                       "you are aware of the risks.")
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
 
     async def __aenter__(self) -> "AsyncDDGS":
