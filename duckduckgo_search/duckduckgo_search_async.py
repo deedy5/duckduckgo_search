@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import warnings
 import sys
 from collections import deque
 from datetime import datetime, timezone
@@ -16,7 +17,6 @@ from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
 from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _random_browser, _text_extract_json
 
-logging.basicConfig()
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
 # Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
 if sys.platform.lower().startswith("win"):
@@ -39,9 +39,11 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
         self._asession = requests.AsyncSession(
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser(), verify=verify
         )
-        logger.warning("AsyncDDGS verify flag set to False. HTTPS requests "
-                       "will not be verified. This is not recommended unless "
-                       "you are aware of the risks.")
+        if not verify:
+            warnings.warn(
+                "AsyncDDGS verify flag set to False. HTTPS requests "
+                "will not be verified. This is not recommended unless "
+                "you are aware of the risks.", UserWarning)
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
 
     async def __aenter__(self) -> "AsyncDDGS":

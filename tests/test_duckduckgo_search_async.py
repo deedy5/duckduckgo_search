@@ -1,4 +1,5 @@
 import pytest
+import warnings
 
 from duckduckgo_search import AsyncDDGS
 
@@ -84,8 +85,14 @@ async def test_translate():
 
 
 def test_verify_warning(caplog):
-    AsyncDDGS(verify=False)
-    assert "WARNING" in caplog.text
+    with pytest.warns(UserWarning, match="verify"):
+        AsyncDDGS(verify=False)
+
+
+def test_no_verify_warning(caplog):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        AsyncDDGS()
 
 
 @pytest.mark.asyncio

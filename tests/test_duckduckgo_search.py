@@ -1,3 +1,6 @@
+import pytest
+import warnings
+
 from duckduckgo_search import DDGS
 
 
@@ -71,8 +74,14 @@ def test_translate():
 
 
 def test_verify_warning(caplog):
-    DDGS(verify=False)
-    assert "WARNING" in caplog.text
+    with pytest.warns(UserWarning, match="verify"):
+        DDGS(verify=False)
+
+
+def test_no_verify_warning(caplog):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        DDGS()
 
 
 def test_verify_false_text():
