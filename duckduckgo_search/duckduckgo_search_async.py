@@ -53,9 +53,9 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
             resp.raise_for_status()
             resp_content = await resp.acontent()
             logger.debug(f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}")
-            if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
+            if _is_500_in_url(str(resp.url)) :
                 raise DuckDuckGoSearchException("Ratelimit")
-            if resp.status_code == 200:
+            if resp.status_code == 200 or resp.status_code == 202:
                 return resp_content
         except Exception as ex:
             raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
