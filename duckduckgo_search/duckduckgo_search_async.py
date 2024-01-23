@@ -678,6 +678,7 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
         longitude: Optional[str] = None,
         radius: int = 0,
         max_results: Optional[int] = None,
+        raw_results: bool = False,
     ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
@@ -695,6 +696,8 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
                 longitude are set, the other parameters are not used. Defaults to None.
             radius: expand the search square by the distance in kilometers. Defaults to 0.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
+            raw_results: if True, returns results in the same format as the DuckDuckGo API. Otherwise,
+                the result dicts are returned with the same structure as the MapsResults class.
 
         Yields:
             dict with maps search results
@@ -784,13 +787,16 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
                 return
 
             for res in page_data:
-                result = MapsResult()
-                result.title = res["name"]
-                result.address = res["address"]
-                if f"{result.title} {result.address}" in cache:
+                if f"{res['name']} {res['address']}" in cache:
                     continue
+
+                cache.add(f"{res['name']} {res['address']}")
+                if raw_results:
+                    yield res
                 else:
-                    cache.add(f"{result.title} {result.address}")
+                    result = MapsResult()
+                    result.title = res["name"]
+                    result.address = res["address"]
                     result.country_code = res["country_code"]
                     result.url = _normalize_url(res["website"])
                     result.phone = res["phone"]
@@ -803,8 +809,8 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
                         result.desc = res["embed"].get("description", "")
                     result.hours = res["hours"]
                     yield result.__dict__
-                    if max_results and len(cache) >= max_results:
-                        return
+                if max_results and len(cache) >= max_results:
+                    return
             if max_results is None:
                 return
             # divide the square into 4 parts and add to the queue

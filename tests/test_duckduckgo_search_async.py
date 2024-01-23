@@ -1,6 +1,7 @@
 import pytest
 
 from duckduckgo_search import AsyncDDGS
+from duckduckgo_search.models import MapsResult
 
 
 @pytest.mark.asyncio
@@ -57,6 +58,24 @@ async def test_maps():
     async with AsyncDDGS() as ddgs:
         results = [x async for x in ddgs.maps("school", place="London", max_results=30)]
         assert len(results) == 30
+
+
+@pytest.mark.asyncio
+async def test_maps_structured_results():
+    async with AsyncDDGS() as ddgs:
+        results = [x async for x in ddgs.maps("school", place="London", max_results=30)]
+        for res in results:
+            MapsResult(**res)
+
+
+@pytest.mark.asyncio
+async def test_maps_raw_results():
+    async with AsyncDDGS() as ddgs:
+        results = [x async for x in ddgs.maps("school", place="London", max_results=30, raw_results=True)]
+        for res in results:
+            with pytest.raises(TypeError) as excinfo:
+                MapsResult(**res)
+            assert "unexpected keyword argument" in str(excinfo.value)
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,7 @@
+import pytest
+
 from duckduckgo_search import DDGS
+from duckduckgo_search.models import MapsResult
 
 
 def test_text():
@@ -47,6 +50,22 @@ def test_maps():
     with DDGS() as ddgs:
         results = [x for x in ddgs.maps("school", place="London", max_results=30)]
         assert len(results) == 30
+
+
+def test_maps_structured_results():
+    with DDGS() as ddgs:
+        results = [x for x in ddgs.maps("school", place="London", max_results=30)]
+        for res in results:
+            MapsResult(**res)
+
+
+def test_maps_raw_results():
+    with DDGS() as ddgs:
+        results = [x for x in ddgs.maps("school", place="London", max_results=30, raw_results=True)]
+        for res in results:
+            with pytest.raises(TypeError) as excinfo:
+                MapsResult(**res)
+            assert "unexpected keyword argument" in str(excinfo.value)
 
 
 def test_answers():
