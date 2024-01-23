@@ -679,7 +679,7 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
         radius: int = 0,
         max_results: Optional[int] = None,
         raw_results: bool = False,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> AsyncGenerator[Dict[str, Optional[str|int|float|list|dict]], None]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:
