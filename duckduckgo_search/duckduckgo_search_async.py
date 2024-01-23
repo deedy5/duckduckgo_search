@@ -697,7 +697,7 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
             radius: expand the search square by the distance in kilometers. Defaults to 0.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
             raw_results: if True, returns results in the same format as the DuckDuckGo API. Otherwise,
-                the result dicts are returned with the same structure as the MapsResults class.
+                the result dicts are returned with the same structure as the MapsResults class. Defaults to False.
 
         Yields:
             dict with maps search results
