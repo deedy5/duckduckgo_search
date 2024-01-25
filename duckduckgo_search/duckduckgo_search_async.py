@@ -6,7 +6,7 @@ from collections import deque
 from datetime import datetime, timezone
 from decimal import Decimal
 from itertools import cycle
-from typing import AsyncGenerator, Deque, Dict, Optional, Set, Tuple
+from typing import AsyncGenerator, Deque, Dict, Optional, Set, Tuple, Union
 
 from curl_cffi import requests
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -679,7 +679,7 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
         radius: int = 0,
         max_results: Optional[int] = None,
         raw_results: bool = False,
-    ) -> AsyncGenerator[Dict[str, Optional[str|int|float|list|dict]], None]:
+    ) -> AsyncGenerator[Dict[str, Optional[Union[str, int, float, list, dict]]], None]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:

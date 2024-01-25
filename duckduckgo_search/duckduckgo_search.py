@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Generator, Optional
+from typing import Dict, Generator, Optional, Union
 
 from .duckduckgo_search_async import AsyncDDGS
 
@@ -53,7 +53,7 @@ class DDGS(AsyncDDGS):
         async_gen = super().suggestions(*args, **kwargs)
         return self._iter_over_async(async_gen)
 
-    def maps(self, *args, **kwargs) -> Generator[Dict[str, Optional[str|int|float|list|dict]], None, None]:
+    def maps(self, *args, **kwargs) -> Generator[Dict[str, Optional[Union[str, int, float, list, dict]]], None, None]:
         async_gen = super().maps(*args, **kwargs)
         return self._iter_over_async(async_gen)
 
