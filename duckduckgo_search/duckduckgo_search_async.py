@@ -14,7 +14,7 @@ from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
 from .models import MapsResult
-from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _random_browser, _text_extract_json
+from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
 
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
 # Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
@@ -35,7 +35,7 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
         """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
         self._asession = requests.AsyncSession(
-            headers=headers, proxies=self.proxies, timeout=timeout, impersonate=_random_browser()
+            headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
 

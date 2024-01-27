@@ -1,15 +1,11 @@
 import json
 import re
 from html import unescape
-from random import choice
 from typing import Optional
 from urllib.parse import unquote
 
-from curl_cffi.requests import BrowserType
-
 from .exceptions import DuckDuckGoSearchException
 
-BROWSERS = [x.value for x in BrowserType]
 REGEX_500_IN_URL = re.compile(r"(?:\d{3}-\d{2}\.js)")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
 REGEX_VQD = re.compile(rb"""vqd=['"]?([^&"']+)""")
@@ -50,8 +46,3 @@ def _normalize(raw_html: str) -> str:
 def _normalize_url(url: str) -> str:
     """Unquote URL and replace spaces with '+'."""
     return unquote(url.replace(" ", "+")) if url else ""
-
-
-def _random_browser() -> BrowserType:
-    """Return a random browser from the curl-cffi."""
-    return choice(BROWSERS)
