@@ -48,7 +48,7 @@ version = {attr = "duckduckgo_search.version.__version__"}
 dev = [
     "ruff>=0.1.6",
     "pytest>=7.4.2",
-    "pytest-asyncio>=0.21.1",
+    "pytest-asyncio==0.21.1",
 ]
 
 [tool.ruff]
