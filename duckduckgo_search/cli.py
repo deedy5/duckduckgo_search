@@ -10,7 +10,6 @@ import click
 from curl_cffi import requests
 
 from .duckduckgo_search import DDGS
-from .utils import _random_browser
 from .version import __version__
 
 logger = logging.getLogger(__name__)
@@ -80,7 +79,7 @@ def _sanitize_keywords(keywords):
 
 def _download_file(url, dir_path, filename, proxy):
     try:
-        resp = requests.get(url, proxies=proxy, impersonate=_random_browser(), timeout=10)
+        resp = requests.get(url, proxies=proxy, impersonate="chrome", timeout=10)
         resp.raise_for_status()
         with open(os.path.join(dir_path, filename[:200]), "wb") as file:
             file.write(resp.content)
