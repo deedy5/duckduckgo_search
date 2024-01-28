@@ -1,4 +1,4 @@
 click>=8.1.7
-curl_cffi>=0.5.10
+curl_cffi>=0.6.0b7
 docstring_inheritance>=2.1.2
 lxml>=4.9.3
