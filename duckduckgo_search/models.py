@@ -16,5 +16,8 @@ class MapsResult:
     phone: Optional[str] = None
     image: Optional[str] = None
     source: Optional[str] = None
-    links: Optional[str] = None
     hours: Optional[Dict[str, str]] = None
+    category: Optional[str] = None
+    facebook: Optional[str] = None
+    instagram: Optional[str] = None
+    twitter: Optional[str] = None
