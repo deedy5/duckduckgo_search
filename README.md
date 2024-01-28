@@ -3,6 +3,8 @@
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
+**⚠️ Warning: use AsyncDDGS in asynchronous code**
+
 ## Table of Contents
 * [Install](#install)
 * [CLI version](#cli-version)
