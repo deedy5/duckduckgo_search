@@ -1,3 +1,2 @@
 ruff>=0.1.6
 pytest>=7.4.2
-pytest-asyncio==0.21.1
