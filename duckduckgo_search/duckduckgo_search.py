@@ -3,12 +3,14 @@ import logging
 from typing import Dict, Generator, Optional
 
 from .duckduckgo_search_async import AsyncDDGS
+from .exceptions import DuckDuckGoSearchException
 
 logger = logging.getLogger("duckduckgo_search.DDGS")
 
 
 class DDGS(AsyncDDGS):
     def __init__(self, headers=None, proxies=None, timeout=10):
+        self._check_async()
         super().__init__(headers, proxies, timeout)
         self._loop = asyncio.new_event_loop()
 
@@ -17,6 +19,11 @@ class DDGS(AsyncDDGS):
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._loop.run_until_complete(self.__aexit__(exc_type, exc_val, exc_tb))
+
+    def _check_async(self):
+        """Raises an exception if DDGS is used in async code."""
+        if asyncio.get_event_loop().is_running():
+            raise DuckDuckGoSearchException("DDGS is not compatible with async code. Use AsyncDDGS instead.")
 
     def _iter_over_async(self, ait):
         """Iterate over an async generator."""
