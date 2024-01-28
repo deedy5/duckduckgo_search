@@ -799,9 +799,12 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
                     result.source = _normalize_url(res["url"])
                     if res["embed"]:
                         result.image = res["embed"].get("image", "")
-                        result.links = res["embed"].get("third_party_links", "")
                         result.desc = res["embed"].get("description", "")
                     result.hours = res["hours"]
+                    result.category = res["ddg_category"]
+                    result.facebook = f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None
+                    result.instagram = f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None
+                    result.twitter = f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None
                     yield result.__dict__
                     if max_results and len(cache) >= max_results:
                         return
