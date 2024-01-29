@@ -28,10 +28,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "click>=8.1.7",
     "docstring_inheritance>=2.1.2",
+    "click>=8.1.7",    
     "curl_cffi>=0.6.0b7",
-    "lxml>=4.9.3"
+    "lxml>=4.9.3",
+    "nest-asyncio>=1.6.0"
 ]
 dynamic = ["version"]
 
