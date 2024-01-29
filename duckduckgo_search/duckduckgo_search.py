@@ -1,38 +1,34 @@
 import asyncio
 import logging
+import warnings
 from typing import Dict, Generator, Optional
 
+import nest_asyncio
+
 from .duckduckgo_search_async import AsyncDDGS
-from .exceptions import DuckDuckGoSearchException
 
 logger = logging.getLogger("duckduckgo_search.DDGS")
+nest_asyncio.apply()
 
 
 class DDGS(AsyncDDGS):
     def __init__(self, headers=None, proxies=None, timeout=10):
-        self._check_async()
+        if asyncio.get_event_loop().is_running():
+            warnings.warn("DDGS running in an async loop. This may cause errors. Use AsyncDDGS instead.", stacklevel=2)
         super().__init__(headers, proxies, timeout)
-        self._loop = asyncio.new_event_loop()
+        self._loop = asyncio.get_event_loop()
 
     def __enter__(self) -> "DDGS":
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self._loop.run_until_complete(self.__aexit__(exc_type, exc_val, exc_tb))
+        self._loop.create_task(self.__aexit__(exc_type, exc_val, exc_tb))
 
-    def _check_async(self):
-        """Raises an exception if DDGS is used in async code."""
-        if asyncio.get_event_loop().is_running():
-            raise DuckDuckGoSearchException("DDGS is not compatible with async code. Use AsyncDDGS instead.")
-
-    def _iter_over_async(self, ait):
+    def _iter_over_async(self, async_gen):
         """Iterate over an async generator."""
-        ait = ait.__aiter__()
-        get_next = ait.__anext__
         while True:
             try:
-                obj = self._loop.run_until_complete(get_next())
-                yield obj
+                yield self._loop.run_until_complete(async_gen.__anext__())
             except StopAsyncIteration:
                 break
 
