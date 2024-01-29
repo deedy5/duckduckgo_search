@@ -25,14 +25,11 @@ class DDGS(AsyncDDGS):
         if asyncio.get_event_loop().is_running():
             raise DuckDuckGoSearchException("DDGS is not compatible with async code. Use AsyncDDGS instead.")
 
-    def _iter_over_async(self, ait):
+    def _iter_over_async(self, async_gen):
         """Iterate over an async generator."""
-        ait = ait.__aiter__()
-        get_next = ait.__anext__
         while True:
             try:
-                obj = self._loop.run_until_complete(get_next())
-                yield obj
+                yield self._loop.run_until_complete(async_gen.__anext__())
             except StopAsyncIteration:
                 break
 
