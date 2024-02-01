@@ -8,21 +8,24 @@ import nest_asyncio
 from .duckduckgo_search_async import AsyncDDGS
 
 logger = logging.getLogger("duckduckgo_search.DDGS")
-nest_asyncio.apply()
 
 
 class DDGS(AsyncDDGS):
     def __init__(self, headers=None, proxies=None, timeout=10):
-        if asyncio.get_event_loop().is_running():
-            warnings.warn("DDGS running in an async loop. This may cause errors. Use AsyncDDGS instead.", stacklevel=2)
         super().__init__(headers, proxies, timeout)
-        self._loop = asyncio.get_event_loop()
+        if asyncio.get_event_loop().is_running():
+            nest_asyncio.apply()
+            warnings.warn("DDGS running in an async loop. This may cause errors. Use AsyncDDGS instead.", stacklevel=2)
+            self._loop = asyncio.get_running_loop()
+        else:
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
 
     def __enter__(self) -> "DDGS":
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self._loop.create_task(self.__aexit__(exc_type, exc_val, exc_tb))
+        self._loop.run_until_complete(self.__aexit__(exc_type, exc_val, exc_tb))
 
     def _iter_over_async(self, async_gen):
         """Iterate over an async generator."""
