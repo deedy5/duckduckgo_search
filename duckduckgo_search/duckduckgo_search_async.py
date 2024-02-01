@@ -33,7 +33,7 @@ class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
             proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
         """
-        self.proxies = proxies if proxies and isinstance(proxies, dict) else {"http": proxies, "https": proxies}
+        self.proxies = proxies if proxies and isinstance(proxies, dict) else {"all": proxies}
         self._asession = requests.AsyncSession(
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
         )
