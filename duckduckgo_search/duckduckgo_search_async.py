@@ -9,7 +9,6 @@ from itertools import cycle
 from typing import AsyncGenerator, Deque, Dict, Optional, Set, Tuple
 
 from curl_cffi import requests
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
@@ -22,7 +21,7 @@ if sys.platform.lower().startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
-class AsyncDDGS(metaclass=GoogleDocstringInheritanceMeta):
+class AsyncDDGS:
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
     def __init__(self, headers=None, proxies=None, timeout=10) -> None:
