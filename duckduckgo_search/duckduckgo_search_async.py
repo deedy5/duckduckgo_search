@@ -729,6 +729,7 @@ class AsyncDDGS:
                     "polygon_geojson": "0",
                     "format": "jsonv2",
                 }
+                params = {k: v for k, v in params.items() if v is not None}
             try:
                 resp_content = await self._aget_url(
                     "GET",
