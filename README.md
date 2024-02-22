@@ -224,8 +224,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     asyncio.run(main())
 ```
-It is important to note that the DDGS and AsyncDDGS classes should always be used as a context manager (with statement).
-This ensures proper resource management and cleanup, as the context manager will automatically handle opening and closing the HTTP client connection.
+***⚠️ Always use DDGS and AsyncDDGS as a context manager (`with DDGS() as ddgs:` or `async with AsyncDDGS as addgs:`).***
 
 [Go To TOP](#TOP)
 
@@ -272,7 +271,7 @@ def text(
     timelimit: Optional[str] = None,
     backend: str = "api",
     max_results: Optional[int] = None,
-) -> Iterator[Dict[str, Optional[str]]]:
+) -> Generator[Dict[str, Optional[str]], None, None]:
     """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
 
     Args:
@@ -295,13 +294,15 @@ def text(
 from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
-    for r in ddgs.text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10):
-        print(r)
+    results = [r for r in ddgs.text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
 
 # Searching for pdf files
 with DDGS() as ddgs:
-    for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10):
-        print(r)
+    results = [for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
 ```
 
 [Go To TOP](#TOP)
@@ -309,7 +310,7 @@ with DDGS() as ddgs:
 ## 2. answers() - instant answers by duckduckgo.com
 
 ```python
-def answers(keywords: str) -> Iterator[Dict[str, Optional[str]]]::
+def answers(keywords: str) -> Generator[Dict[str, Optional[str]], None, None]:
     """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
 
     Args:
@@ -325,8 +326,11 @@ def answers(keywords: str) -> Iterator[Dict[str, Optional[str]]]::
 from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
-    for r in ddgs.answers("sun"):
-        print(r)
+    results = [r for r in ddgs.answers("sun")]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.answers("sun")]
 ```
 
 [Go To TOP](#TOP)
@@ -345,7 +349,7 @@ def images(
     layout: Optional[str] = None,
     license_image: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Iterator[Dict[str, Optional[str]]]:
+) -> Generator[Dict[str, Optional[str]], None, None]:
     """DuckDuckGo images search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -387,8 +391,11 @@ with DDGS() as ddgs:
       license_image=None,
       max_results=100,
     )
-    for r in ddgs_images_gen:
-        print(r)
+    results = [r for r in ddgs_images_gen]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.images('sun', region='wt-wt', safesearch='off', max_results=20)]
 ```
 
 [Go To TOP](#TOP)
@@ -405,7 +412,7 @@ def videos(
     duration: Optional[str] = None,
     license_videos: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Iterator[Dict[str, Optional[str]]]:
+) -> Generator[Dict[str, Optional[str]], None, None]:
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -438,8 +445,11 @@ with DDGS() as ddgs:
       duration="medium",
       max_results=100,
     )
-    for r in ddgs_videos_gen:
-        print(r)
+    results = [r for r in ddgs_videos_gen]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
 ```
 
 [Go To TOP](#TOP)
@@ -453,7 +463,7 @@ def news(
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Iterator[Dict[str, Optional[str]]]:
+) -> Generator[Dict[str, Optional[str]], None, None]:
     """DuckDuckGo news search. Query params: https://duckduckgo.com/params
 
     Args:
@@ -481,8 +491,11 @@ with DDGS() as ddgs:
       timelimit="m",
       max_results=20
     )
-    for r in ddgs_news_gen:
-        print(r)
+    results = [r for r in ddgs_news_gen]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)]
 ```
 
 [Go To TOP](#TOP)
@@ -531,8 +544,11 @@ def maps(
 from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
-    for r in ddgs.maps("school", place="Uganda", max_results=50):
-        print(r)
+    results = [r for r in ddgs.maps("school", place="Uganda", max_results=50)]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.maps('shop', place="Baltimor", max_results=10)]
 ```
 
 [Go To TOP](#TOP)
@@ -545,7 +561,7 @@ def translate(
     keywords: str,
     from_: Optional[str] = None,
     to: str = "en",
-) -> Optional[Dict[str, Optional[str]]]:
+) -> Generator[Dict[str, Optional[str]], None, None]:
     """DuckDuckGo translate
 
     Args:
@@ -553,7 +569,7 @@ def translate(
         from_: translate from (defaults automatically). Defaults to None.
         to: what language to translate. Defaults to "en".
 
-    Returns:
+    Yields:
         dict with translated keywords.
     """
 ```
@@ -563,8 +579,11 @@ from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
     keywords = 'school'
-    r = ddgs.translate(keywords, to="de")
-    print(r)
+    results = [r for r in ddgs.translate(keywords, to="de")]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.translate('sun', to="de")]
 ```
 
 [Go To TOP](#TOP)
@@ -575,7 +594,7 @@ with DDGS() as ddgs:
 def suggestions(
     keywords,
     region: str = "wt-wt",
-) -> Iterator[Dict[str, Optional[str]]]:
+) -> Generator[Dict[str, Optional[str]], None, None]:
     """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
 
     Args:
@@ -591,8 +610,11 @@ def suggestions(
 from duckduckgo_search import DDGS
 
 with DDGS() as ddgs:
-    for r in ddgs.suggestions("fly"):
-        print(r)
+    results = [r for r in ddgs.suggestions("fly")]
+
+# async
+with AsyncDDGS() as addgs:
+    results = [r async for r in addgs.suggestions('sun')]
 ```
 
 [Go To TOP](#TOP)
