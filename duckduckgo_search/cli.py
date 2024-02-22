@@ -398,8 +398,9 @@ def maps(
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def translate(keywords, from_, to, output, proxy):
     """CLI function to perform translate using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).translate(keywords=keywords, from_=from_, to=to)
-    data = [data]
+    data = []
+    for r in DDGS(proxies=proxy).translate(keywords=keywords, from_=from_, to=to):
+        data.append(r)
     filename = f"translate_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         _print_data(data)

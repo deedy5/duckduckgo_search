@@ -67,10 +67,6 @@ class DDGS(AsyncDDGS):
         async_gen = super().maps(*args, **kwargs)
         return self._iter_over_async(async_gen)
 
-    def translate(self, *args, **kwargs) -> Optional[Dict[str, Optional[str]]]:
-        async def _async_translate(self, *args, **kwargs) -> AsyncGenerator[Dict[str, Optional[str]], None]:
-            result = await super().translate(*args, **kwargs)
-            yield result
-            
-        async_coro = _async_translate(self, *args, **kwargs)
-        return self._iter_over_async(async_coro)
+    def translate(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+        async_gen = super().translate(*args, **kwargs)
+        return self._iter_over_async(async_gen)
