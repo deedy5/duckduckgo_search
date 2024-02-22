@@ -2,7 +2,7 @@ import asyncio
 import logging
 import queue
 from threading import Thread
-from typing import Dict, Generator, Optional
+from typing import AsyncGenerator, Dict, Generator, Optional
 
 from .duckduckgo_search_async import AsyncDDGS
 
@@ -68,5 +68,9 @@ class DDGS(AsyncDDGS):
         return self._iter_over_async(async_gen)
 
     def translate(self, *args, **kwargs) -> Optional[Dict[str, Optional[str]]]:
-        async_coro = super().translate(*args, **kwargs)
-        return asyncio.run(async_coro)
+        async def _async_translate(self, *args, **kwargs) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+            result = await super().translate(*args, **kwargs)
+            yield result
+            
+        async_coro = _async_translate(self, *args, **kwargs)
+        return self._iter_over_async(async_coro)
