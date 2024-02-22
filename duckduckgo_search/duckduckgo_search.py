@@ -23,6 +23,7 @@ class DDGS(AsyncDDGS):
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._loop.call_soon_threadsafe(self._loop.stop)
+        self._thread.join()
 
     def _iter_over_async(self, async_gen):
         """Runs an asynchronous generator in a separate thread and yields results from the queue."""
