@@ -46,8 +46,8 @@ version = {attr = "duckduckgo_search.version.__version__"}
 
 [project.optional-dependencies]
 dev = [
-    "ruff>=0.1.6",
-    "pytest>=7.4.2",
+    "ruff>=0.2.2",
+    "pytest>=8.1.0",
 ]
 
 [tool.ruff]
