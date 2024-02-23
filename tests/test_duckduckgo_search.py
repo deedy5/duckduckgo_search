@@ -62,9 +62,11 @@ def test_suggestions():
 
 
 def test_translate():
-    results = DDGS().translate("school", to="de")
-    assert results == {
-        "detected_language": "en",
-        "translated": "Schule",
-        "original": "school",
-    }
+    with DDGS() as ddgs:
+        results = [x for x in ddgs.translate("school", to="de")]
+        assert len(results) == 1
+        assert results[0] == {
+            "detected_language": "en",
+            "translated": "Schule",
+            "original": "school",
+        }

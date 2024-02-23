@@ -822,7 +822,7 @@ class AsyncDDGS:
 
     async def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
-    ) -> Optional[Dict[str, Optional[str]]]:
+    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo translate.
 
         Args:
@@ -830,7 +830,7 @@ class AsyncDDGS:
             from_: translate from (defaults automatically). Defaults to None.
             to: what language to translate. Defaults to "en".
 
-        Returns:
+        Yields:
             dict with translated keywords.
         """
         assert keywords, "keywords is mandatory"
@@ -852,10 +852,10 @@ class AsyncDDGS:
             data=keywords.encode(),
         )
         if resp_content is None:
-            return None
+            return
         try:
             page_data = json.loads(resp_content)
             page_data["original"] = keywords
         except Exception:
             page_data = None
-        return page_data
+        yield page_data
