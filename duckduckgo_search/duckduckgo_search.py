@@ -2,7 +2,7 @@ import asyncio
 import logging
 import queue
 from threading import Thread
-from typing import AsyncGenerator, Dict, Generator, Optional
+from typing import Dict, Generator, Optional
 
 from .duckduckgo_search_async import AsyncDDGS
 
