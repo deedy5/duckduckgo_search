@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1.7",    
-    "curl_cffi>=0.6.0",
+    "curl_cffi==0.6.0b9",
     "lxml>=5.1.0",
 ]
 dynamic = ["version"]
@@ -46,7 +46,7 @@ version = {attr = "duckduckgo_search.version.__version__"}
 [project.optional-dependencies]
 dev = [
     "ruff>=0.2.2",
-    "pytest>=8.1.0",
+    "pytest>=8.0.1",
 ]
 
 [tool.ruff]
