@@ -22,8 +22,11 @@ class DDGS(AsyncDDGS):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        for task in asyncio.all_tasks(self._loop):
+            task.cancel()
         self._loop.call_soon_threadsafe(self._loop.stop)
         self._thread.join()
+        self._loop.close()
 
     def _iter_over_async(self, async_gen):
         """Runs an asynchronous generator in a separate thread and yields results from the queue."""
