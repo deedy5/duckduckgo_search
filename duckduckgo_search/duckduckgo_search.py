@@ -15,7 +15,7 @@ class DDGS(AsyncDDGS):
         self._queue = queue.Queue()
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
-        self._thread = Thread(target=self._loop.run_forever)
+        self._thread = Thread(target=self._loop.run_forever, daemon=True)
         self._thread.start()
 
     def __enter__(self) -> "DDGS":
