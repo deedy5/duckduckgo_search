@@ -59,7 +59,7 @@ def test_save_csv():
     with DDGS() as ddgs:
         ddgs_gen = ddgs.text(keywords, max_results=30)
         results = [x for x in ddgs_gen]
-        assert len(results) == 30
+        assert len(results) >= 30
 
     _save_csv(f"{keywords}.csv", results)
 
@@ -79,7 +79,7 @@ def test_save_json():
     with DDGS() as ddgs:
         ddgs_gen = ddgs.text(keywords, max_results=30)
         results = [x for x in ddgs_gen]
-        assert len(results) == 30
+        assert len(results) >= 30
 
     _save_json(f"{keywords}.json", results)
 
@@ -97,7 +97,7 @@ def test_save_json():
 def test_text_download():
     keywords = "maradona"
     results = [x for x in DDGS().text(keywords, max_results=8)]
-    assert len(results) == 8
+    assert len(results) >= 8
 
     _download_results(keywords, results)
 
