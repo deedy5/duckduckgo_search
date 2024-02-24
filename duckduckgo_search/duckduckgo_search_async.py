@@ -130,12 +130,10 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
             "l": region,
-            "bing_market": region,
             "s": "0",
             "df": timelimit,
             "vqd": vqd,
-            # "o": "json",
-            "sp": "0",
+            "bing_market": region,
         }
         safesearch = safesearch.lower()
         if safesearch == "moderate":
@@ -146,7 +144,10 @@ class AsyncDDGS:
             payload["p"] = "1"
 
         cache = set()
-        for _ in range(11):
+        queue = asyncio.Queue()
+
+        async def _text_api_page(s: int) -> Dict[str, Optional[str]]:
+            payload["s"] = s
             resp_content = await self._aget_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             if resp_content is None:
                 return
@@ -155,26 +156,29 @@ class AsyncDDGS:
             if page_data is None:
                 return
 
-            result_exists, next_page_url = False, None
             for row in page_data:
                 href = row.get("u", None)
                 if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
                     cache.add(href)
                     body = _normalize(row["a"])
                     if body:
-                        result_exists = True
-                        yield {
+                        result = {
                             "title": _normalize(row["t"]),
                             "href": _normalize_url(href),
                             "body": body,
                         }
+                        await queue.put(result)
+
                         if max_results and len(cache) >= max_results:
                             return
-                else:
-                    next_page_url = row.get("n", None)
-            if max_results is None or result_exists is False or next_page_url is None:
-                return
-            payload["s"] = next_page_url.split("s=")[1].split("&")[0]
+
+        tasks = [_text_api_page(0)]
+        if max_results:
+            tasks.extend(_text_api_page(s) for s in range(23, max_results, 50))
+        await asyncio.gather(*tasks)
+
+        while not queue.empty():
+            yield await queue.get()
 
     async def _text_html(
         self,
@@ -207,9 +211,18 @@ class AsyncDDGS:
             "kl": region,
             "p": safesearch_base[safesearch.lower()],
             "df": timelimit,
+            "o": "json",
+            "api": "d.js",
         }
+        if max_results and max_results > 20:
+            vqd = await self._aget_vqd(keywords)
+            payload["vqd"] = vqd
+
         cache: Set[str] = set()
-        for _ in range(11):
+        queue = asyncio.Queue()
+
+        async def _text_html_page(s: int) -> Dict[str, Optional[str]]:
+            payload["s"] = s
             resp_content = await self._aget_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if resp_content is None:
                 return
@@ -218,7 +231,6 @@ class AsyncDDGS:
             if tree.xpath('//div[@class="no-results"]/text()'):
                 return
 
-            result_exists = False
             for e in tree.xpath('//div[contains(@class, "results_links")]'):
                 href = e.xpath('.//a[contains(@class, "result__a")]/@href')
                 href = href[0] if href else None
@@ -231,24 +243,23 @@ class AsyncDDGS:
                     cache.add(href)
                     title = e.xpath('.//a[contains(@class, "result__a")]/text()')
                     body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
-                    result_exists = True
-                    yield {
+                    result = {
                         "title": _normalize(title[0]) if title else None,
                         "href": _normalize_url(href),
                         "body": _normalize("".join(body)) if body else None,
                     }
+                    await queue.put(result)
+
                     if max_results and len(cache) >= max_results:
                         return
-            if max_results is None or result_exists is False:
-                return
-            next_page = tree.xpath('.//div[@class="nav-link"]')
-            next_page = next_page[-1] if next_page else None
-            if next_page is None:
-                return
 
-            names = next_page.xpath('.//input[@type="hidden"]/@name')
-            values = next_page.xpath('.//input[@type="hidden"]/@value')
-            payload = {n: v for n, v in zip(names, values)}
+        tasks = [_text_html_page(0)]
+        if max_results:
+            tasks.extend(_text_html_page(s) for s in range(23, max_results, 50))
+        await asyncio.gather(*tasks)
+
+        while not queue.empty():
+            yield await queue.get()
 
     async def _text_lite(
         self,
@@ -281,7 +292,10 @@ class AsyncDDGS:
             "df": timelimit,
         }
         cache: Set[str] = set()
-        for _ in range(11):
+        queue = asyncio.Queue()
+
+        async def _text_lite_page(s: int) -> Dict[str, Optional[str]]:
+            payload["s"] = s
             resp_content = await self._aget_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if resp_content is None:
                 return
@@ -291,7 +305,6 @@ class AsyncDDGS:
 
             tree = html.fromstring(resp_content)
 
-            result_exists = False
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
             for i, e in data:
                 if i == 1:
@@ -311,21 +324,23 @@ class AsyncDDGS:
                     body = e.xpath(".//td[@class='result-snippet']//text()")
                     body = "".join(body).strip()
                 elif i == 3:
-                    result_exists = True
-                    yield {
+                    result = {
                         "title": _normalize(title),
                         "href": _normalize_url(href),
                         "body": _normalize(body),
                     }
+                    await queue.put(result)
+
                     if max_results and len(cache) >= max_results:
                         return
-            if max_results is None or result_exists is False:
-                return
-            next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
-            if not next_page_s:
-                return
-            payload["s"] = next_page_s[0]
-            payload["vqd"] = _extract_vqd(resp_content, keywords)
+
+        tasks = [_text_lite_page(0)]
+        if max_results:
+            tasks.extend(_text_lite_page(s) for s in range(23, max_results, 50))
+        await asyncio.gather(*tasks)
+
+        while not queue.empty():
+            yield await queue.get()
 
     async def images(
         self,
@@ -384,7 +399,10 @@ class AsyncDDGS:
         }
 
         cache = set()
-        for _ in range(10):
+        queue = asyncio.Queue()
+
+        async def _images_page(s: int) -> Dict[str, Optional[str]]:
+            payload["s"] = s
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/i.js", params=payload)
             if resp_content is None:
                 return
@@ -396,13 +414,11 @@ class AsyncDDGS:
             if page_data is None:
                 return
 
-            result_exists = False
             for row in page_data:
                 image_url = row.get("image", None)
                 if image_url and image_url not in cache:
                     cache.add(image_url)
-                    result_exists = True
-                    yield {
+                    result = {
                         "title": row["title"],
                         "image": _normalize_url(image_url),
                         "thumbnail": _normalize_url(row["thumbnail"]),
@@ -411,14 +427,18 @@ class AsyncDDGS:
                         "width": row["width"],
                         "source": row["source"],
                     }
+                    await queue.put(result)
+
                     if max_results and len(cache) >= max_results:
                         return
-            if max_results is None or result_exists is False:
-                return
-            next = resp_json.get("next", None)
-            if next is None:
-                return
-            payload["s"] = next.split("s=")[-1].split("&")[0]
+
+        tasks = [_images_page(0)]
+        if max_results:
+            tasks.extend(_images_page(s) for s in range(100, max_results, 100))
+        await asyncio.gather(*tasks)
+
+        while not queue.empty():
+            yield await queue.get()
 
     async def videos(
         self,
@@ -467,7 +487,10 @@ class AsyncDDGS:
         }
 
         cache = set()
-        for _ in range(10):
+        queue = asyncio.Queue()
+
+        async def _videos_page(s: int) -> Dict[str, Optional[str]]:
+            payload["s"] = s
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/v.js", params=payload)
             if resp_content is None:
                 return
@@ -479,20 +502,21 @@ class AsyncDDGS:
             if page_data is None:
                 return
 
-            result_exists = False
             for row in page_data:
                 if row["content"] not in cache:
                     cache.add(row["content"])
-                    result_exists = True
-                    yield row
+                    await queue.put(row)
+
                     if max_results and len(cache) >= max_results:
                         return
-            if max_results is None or result_exists is False:
-                return
-            next = resp_json.get("next", None)
-            if next is None:
-                return
-            payload["s"] = next.split("s=")[-1].split("&")[0]
+
+        tasks = [_videos_page(0)]
+        if max_results:
+            tasks.extend(_videos_page(s) for s in range(59, max_results, 59))
+        await asyncio.gather(*tasks)
+
+        while not queue.empty():
+            yield await queue.get()
 
     async def news(
         self,
@@ -532,7 +556,10 @@ class AsyncDDGS:
         }
 
         cache = set()
-        for _ in range(10):
+        queue = asyncio.Queue()
+
+        async def _news_page(s: int) -> Dict[str, Optional[str]]:
+            payload["s"] = s
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/news.js", params=payload)
             if resp_content is None:
                 return
@@ -544,13 +571,11 @@ class AsyncDDGS:
             if page_data is None:
                 return
 
-            result_exists = False
             for row in page_data:
                 if row["url"] not in cache:
                     cache.add(row["url"])
                     image_url = row.get("image", None)
-                    result_exists = True
-                    yield {
+                    result = {
                         "date": datetime.fromtimestamp(row["date"], timezone.utc).isoformat(),
                         "title": row["title"],
                         "body": _normalize(row["excerpt"]),
@@ -558,14 +583,18 @@ class AsyncDDGS:
                         "image": _normalize_url(image_url) if image_url else None,
                         "source": row["source"],
                     }
+                    await queue.put(result)
+
                     if max_results and len(cache) >= max_results:
                         return
-            if max_results is None or result_exists is False:
-                return
-            next = resp_json.get("next", None)
-            if next is None:
-                return
-            payload["s"] = next.split("s=")[-1].split("&")[0]
+
+        tasks = [_news_page(0)]
+        if max_results:
+            tasks.extend(_news_page(s) for s in range(29, max_results, 29))
+        await asyncio.gather(*tasks)
+
+        while not queue.empty():
+            yield await queue.get()
 
     async def answers(self, keywords: str) -> AsyncGenerator[Dict[str, Optional[str]], None]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
