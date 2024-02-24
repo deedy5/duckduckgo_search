@@ -44,7 +44,7 @@ class AsyncDDGS:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         """Closes the session."""
-        return self._asession.close()
+        await self._asession.close()
 
     async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
