@@ -187,44 +187,29 @@ Here is an example of initializing the AsyncDDGS class:
 import asyncio
 import logging
 import sys
-from itertools import chain
-from random import shuffle
 
-import requests
 from duckduckgo_search import AsyncDDGS
 
 # bypass curl-cffi NotImplementedError in windows https://curl-cffi.readthedocs.io/en/latest/faq/
 if sys.platform.lower().startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-def get_words():
-    word_site = "https://www.mit.edu/~ecprice/wordlist.10000"
-    resp = requests.get(word_site)
-    words = resp.text.splitlines()
-    return words
-
 async def aget_results(word):
-    async with AsyncDDGS(proxies=proxies) as ddgs:
-        results = [r async for r in ddgs.text(word, max_results=None)]
+    async with AsyncDDGS(proxies=None) as ddgs:
+        results = [r async for r in ddgs.text(word, max_results=100)]
         return results
 
 async def main():
-    words = get_words()
-    shuffle(words)
-    tasks = []
-    for word in words[:10]:
-        tasks.append(aget_results(word))
+    words = ["sun", "earth", "moon"]
+    tasks = [aget_results(w) for w in words]
     results = await asyncio.gather(*tasks)
-    print(f"Done")
-    for r in chain.from_iterable(results):
-        print(r)
-    
+    print(results)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     asyncio.run(main())
 ```
-***⚠️ Always use DDGS and AsyncDDGS as a context manager (`with DDGS() as ddgs:` or `async with AsyncDDGS as addgs:`).***
+**⚠️ Always use DDGS and AsyncDDGS as a context manager** (`with DDGS() as ddgs:` | `async with AsyncDDGS as addgs:`).
 
 [Go To TOP](#TOP)
 
