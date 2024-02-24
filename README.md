@@ -301,7 +301,7 @@ with DDGS() as ddgs:
     results = [for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
 ```
 
@@ -329,7 +329,7 @@ with DDGS() as ddgs:
     results = [r for r in ddgs.answers("sun")]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.answers("sun")]
 ```
 
@@ -394,7 +394,7 @@ with DDGS() as ddgs:
     results = [r for r in ddgs_images_gen]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.images('sun', region='wt-wt', safesearch='off', max_results=20)]
 ```
 
@@ -448,7 +448,7 @@ with DDGS() as ddgs:
     results = [r for r in ddgs_videos_gen]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
 ```
 
@@ -494,7 +494,7 @@ with DDGS() as ddgs:
     results = [r for r in ddgs_news_gen]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)]
 ```
 
@@ -547,7 +547,7 @@ with DDGS() as ddgs:
     results = [r for r in ddgs.maps("school", place="Uganda", max_results=50)]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.maps('shop', place="Baltimor", max_results=10)]
 ```
 
@@ -582,7 +582,7 @@ with DDGS() as ddgs:
     results = [r for r in ddgs.translate(keywords, to="de")]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.translate('sun', to="de")]
 ```
 
@@ -613,7 +613,7 @@ with DDGS() as ddgs:
     results = [r for r in ddgs.suggestions("fly")]
 
 # async
-with AsyncDDGS() as addgs:
+async with AsyncDDGS() as addgs:
     results = [r async for r in addgs.suggestions('sun')]
 ```
 
