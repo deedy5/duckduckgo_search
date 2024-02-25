@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import queue
 from threading import Thread
 from typing import Dict, Generator, Optional
 
@@ -12,7 +11,7 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 class DDGS(AsyncDDGS):
     def __init__(self, headers=None, proxies=None, timeout=10):
         super().__init__(headers, proxies, timeout)
-        self._queue = queue.Queue()
+        self._queue = asyncio.Queue()
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
         self._thread = Thread(target=self._loop.run_forever, daemon=True)
@@ -33,15 +32,12 @@ class DDGS(AsyncDDGS):
         future = asyncio.run_coroutine_threadsafe(self._async_generator_to_queue(async_gen), self._loop)
         future.result()
         while not self._queue.empty():
-            yield self._queue.get()
+            yield self._queue.get_nowait()
 
     async def _async_generator_to_queue(self, async_gen):
         """Coroutine to convert an asynchronous generator to a queue."""
-        try:
-            async for item in async_gen:
-                self._queue.put(item)
-        except StopAsyncIteration:
-            self._queue.put(None)
+        async for item in async_gen:
+            await self._queue.put(item)
 
     def text(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
         async_gen = super().text(*args, **kwargs)
