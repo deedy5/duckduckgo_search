@@ -32,7 +32,7 @@ class DDGS(AsyncDDGS):
         """Runs an asynchronous generator in a separate thread and yields results from the queue."""
         future = asyncio.run_coroutine_threadsafe(self._async_generator_to_queue(async_gen), self._loop)
         future.result()
-        while self._queue.qsize():
+        while not self._queue.empty():
             yield self._queue.get()
 
     async def _async_generator_to_queue(self, async_gen):
