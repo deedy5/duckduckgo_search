@@ -1,6 +1,8 @@
 import os
 import shutil
+import time
 
+import pytest
 from click.testing import CliRunner
 
 from duckduckgo_search import DDGS, __version__
@@ -8,6 +10,11 @@ from duckduckgo_search.cli import _download_results, _save_csv, _save_json, cli
 
 runner = CliRunner()
 
+
+@pytest.fixture(autouse=True)
+def pause_between_tests():
+    time.sleep(1)
+    
 
 def test_version_command():
     result = runner.invoke(cli, ["version"])

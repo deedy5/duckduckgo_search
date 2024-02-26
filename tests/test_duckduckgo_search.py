@@ -1,4 +1,12 @@
+import time
+import pytest
+
 from duckduckgo_search import DDGS
+
+
+@pytest.fixture(autouse=True)
+def pause_between_tests():
+    time.sleep(1)
 
 
 def test_text():
