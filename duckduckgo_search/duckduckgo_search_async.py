@@ -154,7 +154,7 @@ class AsyncDDGS:
             payload["p"] = "1"
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()
+        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
 
         async def _text_api_page(s: int, page: int) -> None:
             priority = page * 100
@@ -181,9 +181,7 @@ class AsyncDDGS:
                         }
                         await results_queue.put((priority, result))
 
-        tasks = [
-            _text_api_page(0, 0),
-        ]
+        tasks = [_text_api_page(0, 0)]
         if max_results:
             max_results = min(max_results, 500)
             tasks.extend(_text_api_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
@@ -237,7 +235,7 @@ class AsyncDDGS:
             payload["vqd"] = vqd
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()
+        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
 
         async def _text_html_page(s: int, page: int) -> None:
             priority = page * 100
@@ -271,9 +269,7 @@ class AsyncDDGS:
                     }
                     await results_queue.put((priority, result))
 
-        tasks = [
-            _text_html_page(0, 0),
-        ]
+        tasks = [_text_html_page(0, 0)]
         if max_results:
             max_results = min(max_results, 500)
             tasks.extend(_text_html_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
@@ -320,7 +316,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()
+        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
 
         async def _text_lite_page(s: int, page: int) -> None:
             priority = page * 100
@@ -434,7 +430,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()
+        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
 
         async def _images_page(s: int, page: int) -> None:
             priority = page * 100
@@ -528,7 +524,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()
+        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
 
         async def _videos_page(s: int, page: int) -> None:
             priority = page * 100
@@ -603,7 +599,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()
+        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
 
         async def _news_page(s: int, page: int) -> None:
             priority = page * 100
