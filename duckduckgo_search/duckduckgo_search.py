@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from threading import Thread
-from typing import Dict, List, Optional
+from typing import Coroutine, Dict, List, Optional
 
 from .duckduckgo_search_async import AsyncDDGS
 
@@ -19,13 +19,22 @@ class DDGS(AsyncDDGS):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+
+    def __del__(self):
+        # close if DDGS is not used as context manager
+        self.close()
+
+    def close(self):
+        if not self._thread.is_alive():
+            return
         for task in asyncio.all_tasks(self._loop):
             task.cancel()
         self._loop.call_soon_threadsafe(self._loop.stop)
         self._thread.join()
         self._loop.close()
 
-    def _run_async_in_thread(self, coro):
+    def _run_async_in_thread(self, coro: Coroutine) -> Optional[List[Dict[str, Optional[str]]]]:
         """Runs an async coroutine in a separate thread."""
         future = asyncio.run_coroutine_threadsafe(coro, self._loop)
         return future.result()
