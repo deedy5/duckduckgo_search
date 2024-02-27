@@ -2,11 +2,11 @@ import asyncio
 import json
 import logging
 import sys
-from collections import deque
+from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
 from itertools import cycle
-from typing import AsyncGenerator, Deque, Dict, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from curl_cffi import requests
 from lxml import html
@@ -31,6 +31,9 @@ class AsyncDDGS:
             headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
             proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"all": proxies}
         self._asession = requests.AsyncSession(
@@ -73,7 +76,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         backend: str = "api",
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -87,19 +90,16 @@ class AsyncDDGS:
                 lite - collect data from https://lite.duckduckgo.com.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with search results.
-
+        Returns:
+            List of dictionaries with search results.
         """
         if backend == "api":
-            results = self._text_api(keywords, region, safesearch, timelimit, max_results)
+            results = await self._text_api(keywords, region, safesearch, timelimit, max_results)
         elif backend == "html":
-            results = self._text_html(keywords, region, safesearch, timelimit, max_results)
+            results = await self._text_html(keywords, region, safesearch, timelimit, max_results)
         elif backend == "lite":
-            results = self._text_lite(keywords, region, timelimit, max_results)
-
-        async for result in results:
-            yield result
+            results = await self._text_lite(keywords, region, timelimit, max_results)
+        return results
 
     async def _text_api(
         self,
@@ -108,7 +108,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -118,9 +118,8 @@ class AsyncDDGS:
             timelimit: d, w, m, y. Defaults to None.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with search results.
-
+        Returns:
+            List of dictionaries with search results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -130,7 +129,6 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
             "l": region,
-            "s": "0",
             "df": timelimit,
             "vqd": vqd,
             "bing_market": region,
@@ -144,9 +142,10 @@ class AsyncDDGS:
             payload["p"] = "1"
 
         cache = set()
-        queue = asyncio.Queue()
+        results_queue = asyncio.PriorityQueue()
 
-        async def _text_api_page(s: int) -> Dict[str, Optional[str]]:
+        async def _text_api_page(s: int, page: int) -> None:
+            priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             if resp_content is None:
@@ -162,23 +161,29 @@ class AsyncDDGS:
                     cache.add(href)
                     body = _normalize(row["a"])
                     if body:
+                        priority += 1
                         result = {
                             "title": _normalize(row["t"]),
                             "href": _normalize_url(href),
                             "body": body,
                         }
-                        await queue.put(result)
+                        await results_queue.put((priority, result))
 
-                        if max_results and len(cache) >= max_results:
-                            return
-
-        tasks = [_text_api_page(0)]
+        tasks = [
+            _text_api_page(0, 0),
+        ]
         if max_results:
-            tasks.extend(_text_api_page(s) for s in range(23, max_results, 50))
+            max_results = min(max_results, 500)
+            tasks.extend(_text_api_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        while not queue.empty():
-            yield await queue.get()
+        results = []
+        while not results_queue.empty():
+            _, result = await results_queue.get()
+            results.append(result)
+            if max_results and len(results) >= max_results:
+                break
+        return results
 
     async def _text_html(
         self,
@@ -187,7 +192,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -197,9 +202,8 @@ class AsyncDDGS:
             timelimit: d, w, m, y. Defaults to None.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with search results.
-
+        Returns:
+            List of dictionaries with search results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -207,7 +211,6 @@ class AsyncDDGS:
         safesearch_base = {"on": 1, "moderate": -1, "off": -2}
         payload = {
             "q": keywords,
-            "s": "0",
             "kl": region,
             "p": safesearch_base[safesearch.lower()],
             "df": timelimit,
@@ -218,10 +221,11 @@ class AsyncDDGS:
             vqd = await self._aget_vqd(keywords)
             payload["vqd"] = vqd
 
-        cache: Set[str] = set()
-        queue = asyncio.Queue()
+        cache = set()
+        results_queue = asyncio.PriorityQueue()
 
-        async def _text_html_page(s: int) -> Dict[str, Optional[str]]:
+        async def _text_html_page(s: int, page: int) -> None:
+            priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if resp_content is None:
@@ -243,23 +247,30 @@ class AsyncDDGS:
                     cache.add(href)
                     title = e.xpath('.//a[contains(@class, "result__a")]/text()')
                     body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
+
+                    priority += 1
                     result = {
                         "title": _normalize(title[0]) if title else None,
                         "href": _normalize_url(href),
                         "body": _normalize("".join(body)) if body else None,
                     }
-                    await queue.put(result)
+                    await results_queue.put((priority, result))
 
-                    if max_results and len(cache) >= max_results:
-                        return
-
-        tasks = [_text_html_page(0)]
+        tasks = [
+            _text_html_page(0, 0),
+        ]
         if max_results:
-            tasks.extend(_text_html_page(s) for s in range(23, max_results, 50))
+            max_results = min(max_results, 500)
+            tasks.extend(_text_html_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        while not queue.empty():
-            yield await queue.get()
+        results = []
+        while not results_queue.empty():
+            _, result = await results_queue.get()
+            results.append(result)
+            if max_results and len(results) >= max_results:
+                break
+        return results
 
     async def _text_lite(
         self,
@@ -267,7 +278,7 @@ class AsyncDDGS:
         region: str = "wt-wt",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -276,25 +287,25 @@ class AsyncDDGS:
             timelimit: d, w, m, y. Defaults to None.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with search results.
-
+        Returns:
+            List of dictionaries with search results.
         """
         assert keywords, "keywords is mandatory"
 
         self._asession.headers["Referer"] = "https://lite.duckduckgo.com/"
         payload = {
             "q": keywords,
-            "s": "0",
             "o": "json",
             "api": "d.js",
             "kl": region,
             "df": timelimit,
         }
-        cache: Set[str] = set()
-        queue = asyncio.Queue()
 
-        async def _text_lite_page(s: int) -> Dict[str, Optional[str]]:
+        cache = set()
+        results_queue = asyncio.PriorityQueue()
+
+        async def _text_lite_page(s: int, page: int) -> None:
+            priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if resp_content is None:
@@ -324,23 +335,27 @@ class AsyncDDGS:
                     body = e.xpath(".//td[@class='result-snippet']//text()")
                     body = "".join(body).strip()
                 elif i == 3:
+                    priority += 1
                     result = {
                         "title": _normalize(title),
                         "href": _normalize_url(href),
                         "body": _normalize(body),
                     }
-                    await queue.put(result)
+                    await results_queue.put((priority, result))
 
-                    if max_results and len(cache) >= max_results:
-                        return
-
-        tasks = [_text_lite_page(0)]
+        tasks = [_text_lite_page(0, 0)]
         if max_results:
-            tasks.extend(_text_lite_page(s) for s in range(23, max_results, 50))
+            max_results = min(max_results, 500)
+            tasks.extend(_text_lite_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        while not queue.empty():
-            yield await queue.get()
+        results = []
+        while not results_queue.empty():
+            _, result = await results_queue.get()
+            results.append(result)
+            if max_results and len(results) >= max_results:
+                break
+        return results
 
     async def images(
         self,
@@ -354,7 +369,7 @@ class AsyncDDGS:
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -374,9 +389,8 @@ class AsyncDDGS:
                 Use Commercially). Defaults to None.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with image search results.
-
+        Returns:
+            List of dictionaries with images search results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -399,9 +413,10 @@ class AsyncDDGS:
         }
 
         cache = set()
-        queue = asyncio.Queue()
+        results_queue = asyncio.PriorityQueue()
 
-        async def _images_page(s: int) -> Dict[str, Optional[str]]:
+        async def _images_page(s: int, page: int) -> None:
+            priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/i.js", params=payload)
             if resp_content is None:
@@ -418,6 +433,7 @@ class AsyncDDGS:
                 image_url = row.get("image", None)
                 if image_url and image_url not in cache:
                     cache.add(image_url)
+                    priority += 1
                     result = {
                         "title": row["title"],
                         "image": _normalize_url(image_url),
@@ -427,18 +443,21 @@ class AsyncDDGS:
                         "width": row["width"],
                         "source": row["source"],
                     }
-                    await queue.put(result)
+                    await results_queue.put((priority, result))
 
-                    if max_results and len(cache) >= max_results:
-                        return
-
-        tasks = [_images_page(0)]
+        tasks = [_images_page(0, page=0)]
         if max_results:
-            tasks.extend(_images_page(s) for s in range(100, max_results, 100))
+            max_results = min(max_results, 500)
+            tasks.extend(_images_page(s, i) for i, s in enumerate(range(100, max_results, 100), start=1))
         await asyncio.gather(*tasks)
 
-        while not queue.empty():
-            yield await queue.get()
+        results = []
+        while not results_queue.empty():
+            _, result = await results_queue.get()
+            results.append(result)
+            if max_results and len(results) >= max_results:
+                break
+        return results
 
     async def videos(
         self,
@@ -450,7 +469,7 @@ class AsyncDDGS:
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -463,9 +482,8 @@ class AsyncDDGS:
             license_videos: creativeCommon, youtube. Defaults to None.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with videos search results
-
+        Returns:
+            List of dictionaries with videos search results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -479,7 +497,6 @@ class AsyncDDGS:
         payload = {
             "l": region,
             "o": "json",
-            "s": 0,
             "q": keywords,
             "vqd": vqd,
             "f": f"{timelimit},{resolution},{duration},{license_videos}",
@@ -487,9 +504,10 @@ class AsyncDDGS:
         }
 
         cache = set()
-        queue = asyncio.Queue()
+        results_queue = asyncio.PriorityQueue()
 
-        async def _videos_page(s: int) -> Dict[str, Optional[str]]:
+        async def _videos_page(s: int, page: int) -> None:
+            priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/v.js", params=payload)
             if resp_content is None:
@@ -505,18 +523,22 @@ class AsyncDDGS:
             for row in page_data:
                 if row["content"] not in cache:
                     cache.add(row["content"])
-                    await queue.put(row)
+                    priority += 1
+                    await results_queue.put((priority, row))
 
-                    if max_results and len(cache) >= max_results:
-                        return
-
-        tasks = [_videos_page(0)]
+        tasks = [_videos_page(0, 0)]
         if max_results:
-            tasks.extend(_videos_page(s) for s in range(59, max_results, 59))
+            max_results = min(max_results, 400)
+            tasks.extend(_videos_page(s, i) for i, s in enumerate(range(59, max_results, 59), start=1))
         await asyncio.gather(*tasks)
 
-        while not queue.empty():
-            yield await queue.get()
+        results = []
+        while not results_queue.empty():
+            _, result = await results_queue.get()
+            results.append(result)
+            if max_results and len(results) >= max_results:
+                break
+        return results
 
     async def news(
         self,
@@ -525,7 +547,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -535,9 +557,8 @@ class AsyncDDGS:
             timelimit: d, w, m. Defaults to None.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with news search results.
-
+        Returns:
+            List of dictionaries with news search results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -552,13 +573,13 @@ class AsyncDDGS:
             "vqd": vqd,
             "p": safesearch_base[safesearch.lower()],
             "df": timelimit,
-            "s": 0,
         }
 
         cache = set()
-        queue = asyncio.Queue()
+        results_queue = asyncio.PriorityQueue()
 
-        async def _news_page(s: int) -> Dict[str, Optional[str]]:
+        async def _news_page(s: int, page: int) -> None:
+            priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/news.js", params=payload)
             if resp_content is None:
@@ -575,6 +596,7 @@ class AsyncDDGS:
                 if row["url"] not in cache:
                     cache.add(row["url"])
                     image_url = row.get("image", None)
+                    priority += 1
                     result = {
                         "date": datetime.fromtimestamp(row["date"], timezone.utc).isoformat(),
                         "title": row["title"],
@@ -583,28 +605,30 @@ class AsyncDDGS:
                         "image": _normalize_url(image_url) if image_url else None,
                         "source": row["source"],
                     }
-                    await queue.put(result)
+                    await results_queue.put((priority, result))
 
-                    if max_results and len(cache) >= max_results:
-                        return
-
-        tasks = [_news_page(0)]
+        tasks = [_news_page(0, 0)]
         if max_results:
-            tasks.extend(_news_page(s) for s in range(29, max_results, 29))
+            max_results = min(max_results, 200)
+            tasks.extend(_news_page(s, i) for i, s in enumerate(range(29, max_results, 29), start=1))
         await asyncio.gather(*tasks)
 
-        while not queue.empty():
-            yield await queue.get()
+        results = []
+        while not results_queue.empty():
+            _, result = await results_queue.get()
+            results.append(result)
+            if max_results and len(results) >= max_results:
+                break
+        return results
 
-    async def answers(self, keywords: str) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    async def answers(self, keywords: str) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
-            keywords: keywords for query.
+            keywords: keywords for query,
 
-        Yields:
-            dict with instant answers results.
-
+        Returns:
+            List of dictionaries with instant answers results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -614,8 +638,11 @@ class AsyncDDGS:
         }
 
         resp_content = await self._aget_url("GET", "https://api.duckduckgo.com/", params=payload)
-        if resp_content is None:
-            yield None
+        if not resp_content:
+            return
+
+        results = []
+
         try:
             page_data = json.loads(resp_content)
         except Exception:
@@ -625,21 +652,23 @@ class AsyncDDGS:
             answer = page_data.get("AbstractText", None)
             url = page_data.get("AbstractURL", None)
             if answer:
-                yield {
-                    "icon": None,
-                    "text": answer,
-                    "topic": None,
-                    "url": url,
-                }
+                results.append(
+                    {
+                        "icon": None,
+                        "text": answer,
+                        "topic": None,
+                        "url": url,
+                    }
+                )
 
-        # related:
+        # related
         payload = {
             "q": f"{keywords}",
             "format": "json",
         }
         resp_content = await self._aget_url("GET", "https://api.duckduckgo.com/", params=payload)
-        if resp_content is None:
-            yield None
+        if not resp_content:
+            return
         try:
             page_data = json.loads(resp_content).get("RelatedTopics", None)
         except Exception:
@@ -650,31 +679,37 @@ class AsyncDDGS:
                 topic = row.get("Name", None)
                 if not topic:
                     icon = row["Icon"].get("URL", None)
-                    yield {
-                        "icon": f"https://duckduckgo.com{icon}" if icon else None,
-                        "text": row["Text"],
-                        "topic": None,
-                        "url": row["FirstURL"],
-                    }
+                    results.append(
+                        {
+                            "icon": f"https://duckduckgo.com{icon}" if icon else None,
+                            "text": row["Text"],
+                            "topic": None,
+                            "url": row["FirstURL"],
+                        }
+                    )
                 else:
                     for subrow in row["Topics"]:
                         icon = subrow["Icon"].get("URL", None)
-                        yield {
-                            "icon": f"https://duckduckgo.com{icon}" if icon else None,
-                            "text": subrow["Text"],
-                            "topic": topic,
-                            "url": subrow["FirstURL"],
-                        }
+                        results.append(
+                            {
+                                "icon": f"https://duckduckgo.com{icon}" if icon else None,
+                                "text": subrow["Text"],
+                                "topic": topic,
+                                "url": subrow["FirstURL"],
+                            }
+                        )
 
-    async def suggestions(self, keywords: str, region: str = "wt-wt") -> AsyncGenerator[Dict[str, Optional[str]], None]:
+        return results
+
+    async def suggestions(self, keywords: str, region: str = "wt-wt") -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query.
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
 
-        Yields:
-            dict with suggestions results.
+        Returns:
+            List of dictionaries with suggestions results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -682,15 +717,20 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
         }
+
         resp_content = await self._aget_url("GET", "https://duckduckgo.com/ac", params=payload)
-        if resp_content is None:
-            yield None
+        if not resp_content:
+            return
+
+        results = []
         try:
             page_data = json.loads(resp_content)
             for r in page_data:
-                yield r
+                results.append(r)
         except Exception:
             pass
+
+        return results
 
     async def maps(
         self,
@@ -706,7 +746,7 @@ class AsyncDDGS:
         longitude: Optional[str] = None,
         radius: int = 0,
         max_results: Optional[int] = None,
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -724,8 +764,8 @@ class AsyncDDGS:
             radius: expand the search square by the distance in kilometers. Defaults to 0.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
-        Yields:
-            dict with maps search results
+        Returns:
+            List of dictionaries with maps search results.
         """
         assert keywords, "keywords is mandatory"
 
@@ -766,7 +806,7 @@ class AsyncDDGS:
                     params=params,
                 )
                 if resp_content is None:
-                    yield None
+                    return
 
                 coordinates = json.loads(resp_content)[0]["boundingbox"]
                 lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
@@ -782,14 +822,15 @@ class AsyncDDGS:
         lon_r += Decimal(radius) * Decimal(0.008983)
         logger.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
-        # сreate a queue of search squares (bboxes)
-        work_bboxes: Deque[Tuple[Decimal, Decimal, Decimal, Decimal]] = deque()
-        work_bboxes.append((lat_t, lon_l, lat_b, lon_r))
-
-        # bbox iterate
         cache = set()
-        while work_bboxes:
-            lat_t, lon_l, lat_b, lon_r = work_bboxes.pop()
+        results_queue = asyncio.Queue(maxsize=max_results)
+
+        async def _maps_page(bbox: Tuple[Decimal, Decimal, Decimal, Decimal]) -> None:
+            if results_queue.full():
+                return
+            nonlocal results_counter
+
+            lat_t, lon_l, lat_b, lon_r = bbox
             params = {
                 "q": keywords,
                 "vqd": vqd,
@@ -813,54 +854,74 @@ class AsyncDDGS:
                 return
 
             for res in page_data:
-                result = MapsResult()
-                result.title = res["name"]
-                result.address = res["address"]
-                if f"{result.title} {result.address}" in cache:
+                r = MapsResult()
+                r.title = res["name"]
+                r.address = res["address"]
+                if f"{r.title} {r.address}" in cache:
                     continue
                 else:
-                    cache.add(f"{result.title} {result.address}")
-                    result.country_code = res["country_code"]
-                    result.url = _normalize_url(res["website"])
-                    result.phone = res["phone"]
-                    result.latitude = res["coordinates"]["latitude"]
-                    result.longitude = res["coordinates"]["longitude"]
-                    result.source = _normalize_url(res["url"])
+                    cache.add(f"{r.title} {r.address}")
+                    r.country_code = res["country_code"]
+                    r.url = _normalize_url(res["website"])
+                    r.phone = res["phone"]
+                    r.latitude = res["coordinates"]["latitude"]
+                    r.longitude = res["coordinates"]["longitude"]
+                    r.source = _normalize_url(res["url"])
                     if res["embed"]:
-                        result.image = res["embed"].get("image", "")
-                        result.desc = res["embed"].get("description", "")
-                    result.hours = res["hours"]
-                    result.category = res["ddg_category"]
-                    result.facebook = f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None
-                    result.instagram = f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None
-                    result.twitter = f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None
-                    yield result.__dict__
-                    if max_results and len(cache) >= max_results:
+                        r.image = res["embed"].get("image", "")
+                        r.desc = res["embed"].get("description", "")
+                    r.hours = res["hours"]
+                    r.category = res["ddg_category"]
+                    r.facebook = f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None
+                    r.instagram = f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None
+                    r.twitter = f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None
+                    try:
+                        results_queue.put_nowait(r.__dict__)
+                        results_counter += 1
+                    except asyncio.QueueFull:
                         return
-            if max_results is None:
-                return
-            # divide the square into 4 parts and add to the queue
-            if len(page_data) >= 15:
+
+        # search squares (bboxes)
+        start_bbox = (lat_t, lon_l, lat_b, lon_r)
+        work_bboxes = [start_bbox]
+        while work_bboxes:
+            tasks, temp_bboxes = [], []
+            for bbox in work_bboxes:
+                # divide the square into 4 parts
+                lat_t, lon_l, lat_b, lon_r = bbox
                 lat_middle = (lat_t + lat_b) / 2
                 lon_middle = (lon_l + lon_r) / 2
                 bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
                 bbox2 = (lat_t, lon_middle, lat_middle, lon_r)
                 bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
                 bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
-                work_bboxes.extendleft([bbox1, bbox2, bbox3, bbox4])
+                temp_bboxes.extend([bbox1, bbox2, bbox3, bbox4])
+
+            results_counter = 0  # counter of results have been putted into results_queue
+            # create asyncio tasks and gather them in parallel with timeout
+            tasks = [asyncio.create_task(_maps_page(bbox)) for bbox in work_bboxes]
+            with suppress(Exception):
+                await asyncio.gather(*[asyncio.wait_for(task, timeout=10) for task in tasks])
+
+            work_bboxes = temp_bboxes
+
+            if results_queue.qsize() >= max_results or results_counter == 0:
+                break
+
+        return list(results_queue._queue)
 
     async def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
-    ) -> AsyncGenerator[Dict[str, Optional[str]], None]:
+    ) -> List[Dict[str, Optional[str]]]:
         """DuckDuckGo translate.
 
         Args:
-            keywords: string or a list of strings to translate
+            keywords: string or list of strings to translate.
             from_: translate from (defaults automatically). Defaults to None.
             to: what language to translate. Defaults to "en".
 
-        Yields:
-            dict with translated keywords.
+        Returns:
+            List od dictionaries with translated keywords.
         """
         assert keywords, "keywords is mandatory"
 
@@ -874,17 +935,29 @@ class AsyncDDGS:
         if from_:
             payload["from"] = from_
 
-        resp_content = await self._aget_url(
-            "POST",
-            "https://duckduckgo.com/translation.js",
-            params=payload,
-            data=keywords.encode(),
-        )
-        if resp_content is None:
-            return
-        try:
-            page_data = json.loads(resp_content)
-            page_data["original"] = keywords
-        except Exception:
-            page_data = None
-        yield page_data
+        results = []
+
+        async def _translate_keyword(keyword: str) -> None:
+            resp_content = await self._aget_url(
+                "POST",
+                "https://duckduckgo.com/translation.js",
+                params=payload,
+                data=keyword.encode(),
+            )
+            if resp_content is None:
+                return
+
+            try:
+                page_data = json.loads(resp_content)
+                page_data["original"] = keyword
+            except Exception:
+                page_data = None
+
+            if page_data:
+                results.append(page_data)
+
+        keywords = [keywords] if isinstance(keywords, str) else keywords
+        tasks = [_translate_keyword(keyword) for keyword in keywords]
+        await asyncio.gather(*tasks)
+
+        return results

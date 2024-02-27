@@ -9,12 +9,10 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 
 
 class DDGS(AsyncDDGS):
-    def __init__(self, headers=None, proxies=None, timeout=10):
+    def __init__(self, headers=None, proxies=None, timeout=10) -> None:
         super().__init__(headers, proxies, timeout)
-        self._queue = asyncio.Queue()
         self._loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._loop)
-        self._thread = Thread(target=self._loop.run_forever, daemon=True)
+        self._thread = Thread(target=self._loop.run_forever, daemon=True)  # run asyncio loop in a separate thread
         self._thread.start()
 
     def __enter__(self) -> "DDGS":
@@ -27,46 +25,39 @@ class DDGS(AsyncDDGS):
         self._thread.join()
         self._loop.close()
 
-    def _iter_over_async(self, async_gen):
-        """Runs an asynchronous generator in a separate thread and yields results from the queue."""
-        future = asyncio.run_coroutine_threadsafe(self._async_generator_to_queue(async_gen), self._loop)
-        future.result()
-        while not self._queue.empty():
-            yield self._queue.get_nowait()
-
-    async def _async_generator_to_queue(self, async_gen):
-        """Coroutine to convert an asynchronous generator to a queue."""
-        async for item in async_gen:
-            await self._queue.put(item)
+    def _run_async_in_thread(self, coro):
+        """Runs an async coroutine in a separate thread."""
+        future = asyncio.run_coroutine_threadsafe(coro, self._loop)
+        return future.result()
 
     def text(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().text(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().text(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
 
     def images(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().images(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().images(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
 
     def videos(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().videos(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().videos(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
 
     def news(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().news(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().news(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
 
     def answers(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().answers(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().answers(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
 
     def suggestions(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().suggestions(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().suggestions(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
 
     def maps(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().maps(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().maps(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
 
     def translate(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
-        async_gen = super().translate(*args, **kwargs)
-        return self._iter_over_async(async_gen)
+        async_coro = super().translate(*args, **kwargs)
+        return self._run_async_in_thread(async_coro)
