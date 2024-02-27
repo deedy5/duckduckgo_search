@@ -98,6 +98,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         if backend == "api":
             results = await self._text_api(keywords, region, safesearch, timelimit, max_results)
@@ -126,6 +129,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -210,6 +216,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -295,6 +304,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -397,6 +409,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with images search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -490,6 +505,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with videos search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -565,6 +583,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with news search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -635,6 +656,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with instant answers results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -716,6 +740,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with suggestions results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -772,6 +799,9 @@ class AsyncDDGS:
 
         Returns:
             List of dictionaries with maps search results, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
@@ -928,6 +958,9 @@ class AsyncDDGS:
 
         Returns:
             List od dictionaries with translated keywords, or None if there was an error.
+
+        Raises:
+            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         assert keywords, "keywords is mandatory"
 
