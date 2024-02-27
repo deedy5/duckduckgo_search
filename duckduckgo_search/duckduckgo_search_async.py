@@ -854,28 +854,29 @@ class AsyncDDGS:
 
             page_results = []
             for res in page_data:
-                r = {}
-                r["title"] = res["name"]
-                r["address"] = res["address"]
-                r_name = f"{r['title']} {r['address']}"
+                r_name = f'{res["name"]} {res["address"]}'
                 if r_name in cache:
                     continue
                 else:
                     cache.add(r_name)
-                    r["country_code"] = res["country_code"]
-                    r["url"] = _normalize_url(res["website"])
-                    r["phone"] = res["phone"]
-                    r["latitude"] = res["coordinates"]["latitude"]
-                    r["longitude"] = res["coordinates"]["longitude"]
-                    r["source"] = _normalize_url(res["url"])
-                    r["image"] = x.get("image", "") if (x := res["embed"]) else None
-                    r["desc"] = x.get("description", "") if (x := res["embed"]) else None
-                    r["hours"] = res["hours"]
-                    r["category"] = res["ddg_category"]
-                    r["facebook"] = f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None
-                    r["instagram"] = f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None
-                    r["twitter"] = f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None
-                    page_results.append(r)
+                    result = {
+                        "title": res["name"],
+                        "address": res["address"],
+                        "country_code": res["country_code"],
+                        "url": _normalize_url(res["website"]),
+                        "phone": res["phone"],
+                        "latitude": res["coordinates"]["latitude"],
+                        "longitude": res["coordinates"]["longitude"],
+                        "source": _normalize_url(res["url"]),
+                        "image": x.get("image", "") if (x := res["embed"]) else None,
+                        "desc": x.get("description", "") if (x := res["embed"]) else None,
+                        "hours": res["hours"],
+                        "category": res["ddg_category"],
+                        "facebook": f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None,
+                        "instagram": f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None,
+                        "twitter": f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None,
+                    }
+                    page_results.append(result)
 
             return page_results
 
@@ -902,7 +903,7 @@ class AsyncDDGS:
                 work_bboxes_results = await asyncio.gather(*[asyncio.wait_for(task, timeout=10) for task in tasks])
             work_bboxes_results = list(chain.from_iterable(work_bboxes_results))
             results.extend(work_bboxes_results)
-            
+
             work_bboxes = queue_bboxes
             if not max_results or len(results) >= max_results or len(work_bboxes_results) == 0:
                 break
