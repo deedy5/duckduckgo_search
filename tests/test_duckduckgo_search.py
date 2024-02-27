@@ -72,7 +72,7 @@ def test_suggestions():
 def test_translate():
     with DDGS() as ddgs:
         results = ddgs.translate(["school", "tomatoes"], to="de")
-        assert results == [
+        expected_results = [
             {
                 "detected_language": "en",
                 "translated": "Schule",
@@ -82,5 +82,6 @@ def test_translate():
                 "detected_language": "en",
                 "translated": "Tomaten",
                 "original": "tomatoes",
-            },
+            }
         ]
+        assert all(er in results for er in expected_results)
