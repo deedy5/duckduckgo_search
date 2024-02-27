@@ -5,14 +5,13 @@ import sys
 from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
-from itertools import cycle, islice
+from itertools import chain, cycle, islice
 from typing import Dict, List, Optional, Tuple
 
 from curl_cffi import requests
 from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
-from .models import MapsResult
 from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
 
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
@@ -534,7 +533,7 @@ class AsyncDDGS:
 
         results = list(islice(filter(None, results), max_results))
         return results
-    
+
     async def news(
         self,
         keywords: str,
@@ -825,13 +824,11 @@ class AsyncDDGS:
         logger.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         cache = set()
-        results_queue = asyncio.Queue(maxsize=max_results)
+        results = []
 
         async def _maps_page(bbox: Tuple[Decimal, Decimal, Decimal, Decimal]) -> None:
-            if results_queue.full():
+            if max_results and len(results) >= max_results:
                 return
-            nonlocal results_counter
-
             lat_t, lon_l, lat_b, lon_r = bbox
             params = {
                 "q": keywords,
@@ -855,41 +852,40 @@ class AsyncDDGS:
             if page_data is None:
                 return
 
+            page_results = []
             for res in page_data:
-                r = MapsResult()
-                r.title = res["name"]
-                r.address = res["address"]
-                if f"{r.title} {r.address}" in cache:
+                r = {}
+                r["title"] = res["name"]
+                r["address"] = res["address"]
+                r_name = f"{r['title']} {r['address']}"
+                if r_name in cache:
                     continue
                 else:
-                    cache.add(f"{r.title} {r.address}")
-                    r.country_code = res["country_code"]
-                    r.url = _normalize_url(res["website"])
-                    r.phone = res["phone"]
-                    r.latitude = res["coordinates"]["latitude"]
-                    r.longitude = res["coordinates"]["longitude"]
-                    r.source = _normalize_url(res["url"])
-                    if res["embed"]:
-                        r.image = res["embed"].get("image", "")
-                        r.desc = res["embed"].get("description", "")
-                    r.hours = res["hours"]
-                    r.category = res["ddg_category"]
-                    r.facebook = f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None
-                    r.instagram = f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None
-                    r.twitter = f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None
-                    try:
-                        results_queue.put_nowait(r.__dict__)
-                        results_counter += 1
-                    except asyncio.QueueFull:
-                        return
+                    cache.add(r_name)
+                    r["country_code"] = res["country_code"]
+                    r["url"] = _normalize_url(res["website"])
+                    r["phone"] = res["phone"]
+                    r["latitude"] = res["coordinates"]["latitude"]
+                    r["longitude"] = res["coordinates"]["longitude"]
+                    r["source"] = _normalize_url(res["url"])
+                    r["image"] = x.get("image", "") if (x := res["embed"]) else None
+                    r["desc"] = x.get("description", "") if (x := res["embed"]) else None
+                    r["hours"] = res["hours"]
+                    r["category"] = res["ddg_category"]
+                    r["facebook"] = f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None
+                    r["instagram"] = f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None
+                    r["twitter"] = f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None
+                    page_results.append(r)
+
+            return page_results
 
         # search squares (bboxes)
         start_bbox = (lat_t, lon_l, lat_b, lon_r)
         work_bboxes = [start_bbox]
         while work_bboxes:
-            tasks, temp_bboxes = [], []
+            tasks, queue_bboxes = [], []
             for bbox in work_bboxes:
-                # divide the square into 4 parts
+                # divide the square into 4 parts and save them in queue_bboxes
                 lat_t, lon_l, lat_b, lon_r = bbox
                 lat_middle = (lat_t + lat_b) / 2
                 lon_middle = (lon_l + lon_r) / 2
@@ -897,20 +893,21 @@ class AsyncDDGS:
                 bbox2 = (lat_t, lon_middle, lat_middle, lon_r)
                 bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
                 bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
-                temp_bboxes.extend([bbox1, bbox2, bbox3, bbox4])
+                queue_bboxes.extend([bbox1, bbox2, bbox3, bbox4])
+                # create asyncio task and append it to tasks
+                tasks.append(asyncio.create_task(_maps_page(bbox)))
 
-            results_counter = 0  # counter of results have been putted into results_queue
-            # create asyncio tasks and gather them in parallel with timeout
-            tasks = [asyncio.create_task(_maps_page(bbox)) for bbox in work_bboxes]
+            # gather tasks using asyncio.wait_for and timeout
             with suppress(Exception):
-                await asyncio.gather(*[asyncio.wait_for(task, timeout=10) for task in tasks])
-
-            work_bboxes = temp_bboxes
-
-            if results_queue.qsize() >= max_results or results_counter == 0:
+                work_bboxes_results = await asyncio.gather(*[asyncio.wait_for(task, timeout=10) for task in tasks])
+            work_bboxes_results = list(chain.from_iterable(work_bboxes_results))
+            results.extend(work_bboxes_results)
+            
+            work_bboxes = queue_bboxes
+            if not max_results or len(results) >= max_results or len(work_bboxes_results) == 0:
                 break
 
-        return list(results_queue._queue)
+        return list(islice(results, max_results))
 
     async def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
