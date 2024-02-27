@@ -5,7 +5,7 @@ import sys
 from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
-from itertools import cycle
+from itertools import cycle, islice
 from typing import Dict, List, Optional, Tuple
 
 from curl_cffi import requests
@@ -154,7 +154,7 @@ class AsyncDDGS:
             payload["p"] = "1"
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
+        results = [None] * 1100
 
         async def _text_api_page(s: int, page: int) -> None:
             priority = page * 100
@@ -179,7 +179,7 @@ class AsyncDDGS:
                             "href": _normalize_url(href),
                             "body": body,
                         }
-                        await results_queue.put((priority, result))
+                        results[priority] = result
 
         tasks = [_text_api_page(0, 0)]
         if max_results:
@@ -187,12 +187,7 @@ class AsyncDDGS:
             tasks.extend(_text_api_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        results = []
-        while not results_queue.empty():
-            _, result = await results_queue.get()
-            results.append(result)
-            if max_results and len(results) >= max_results:
-                break
+        results = list(islice(filter(None, results), max_results))
         return results
 
     async def _text_html(
@@ -235,7 +230,7 @@ class AsyncDDGS:
             payload["vqd"] = vqd
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
+        results = [None] * 1100
 
         async def _text_html_page(s: int, page: int) -> None:
             priority = page * 100
@@ -267,7 +262,7 @@ class AsyncDDGS:
                         "href": _normalize_url(href),
                         "body": _normalize("".join(body)) if body else None,
                     }
-                    await results_queue.put((priority, result))
+                    results[priority] = result
 
         tasks = [_text_html_page(0, 0)]
         if max_results:
@@ -275,12 +270,7 @@ class AsyncDDGS:
             tasks.extend(_text_html_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        results = []
-        while not results_queue.empty():
-            _, result = await results_queue.get()
-            results.append(result)
-            if max_results and len(results) >= max_results:
-                break
+        results = list(islice(filter(None, results), max_results))
         return results
 
     async def _text_lite(
@@ -316,7 +306,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
+        results = [None] * 1100
 
         async def _text_lite_page(s: int, page: int) -> None:
             priority = page * 100
@@ -355,7 +345,7 @@ class AsyncDDGS:
                         "href": _normalize_url(href),
                         "body": _normalize(body),
                     }
-                    await results_queue.put((priority, result))
+                    results[priority] = result
 
         tasks = [_text_lite_page(0, 0)]
         if max_results:
@@ -363,12 +353,7 @@ class AsyncDDGS:
             tasks.extend(_text_lite_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        results = []
-        while not results_queue.empty():
-            _, result = await results_queue.get()
-            results.append(result)
-            if max_results and len(results) >= max_results:
-                break
+        results = list(islice(filter(None, results), max_results))
         return results
 
     async def images(
@@ -430,7 +415,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
+        results = [None] * 500
 
         async def _images_page(s: int, page: int) -> None:
             priority = page * 100
@@ -460,7 +445,7 @@ class AsyncDDGS:
                         "width": row["width"],
                         "source": row["source"],
                     }
-                    await results_queue.put((priority, result))
+                    results[priority] = result
 
         tasks = [_images_page(0, page=0)]
         if max_results:
@@ -468,12 +453,7 @@ class AsyncDDGS:
             tasks.extend(_images_page(s, i) for i, s in enumerate(range(100, max_results, 100), start=1))
         await asyncio.gather(*tasks)
 
-        results = []
-        while not results_queue.empty():
-            _, result = await results_queue.get()
-            results.append(result)
-            if max_results and len(results) >= max_results:
-                break
+        results = list(islice(filter(None, results), max_results))
         return results
 
     async def videos(
@@ -524,7 +504,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
+        results = [None] * 700
 
         async def _videos_page(s: int, page: int) -> None:
             priority = page * 100
@@ -544,7 +524,7 @@ class AsyncDDGS:
                 if row["content"] not in cache:
                     cache.add(row["content"])
                     priority += 1
-                    await results_queue.put((priority, row))
+                    results[priority] = row
 
         tasks = [_videos_page(0, 0)]
         if max_results:
@@ -552,14 +532,9 @@ class AsyncDDGS:
             tasks.extend(_videos_page(s, i) for i, s in enumerate(range(59, max_results, 59), start=1))
         await asyncio.gather(*tasks)
 
-        results = []
-        while not results_queue.empty():
-            _, result = await results_queue.get()
-            results.append(result)
-            if max_results and len(results) >= max_results:
-                break
+        results = list(islice(filter(None, results), max_results))
         return results
-
+    
     async def news(
         self,
         keywords: str,
@@ -599,7 +574,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results_queue = asyncio.PriorityQueue()  # PriorityQueue because we need to store the results by relevance
+        results = [None] * 700
 
         async def _news_page(s: int, page: int) -> None:
             priority = page * 100
@@ -628,7 +603,7 @@ class AsyncDDGS:
                         "image": _normalize_url(image_url) if image_url else None,
                         "source": row["source"],
                     }
-                    await results_queue.put((priority, result))
+                    results[priority] = result
 
         tasks = [_news_page(0, 0)]
         if max_results:
@@ -636,12 +611,7 @@ class AsyncDDGS:
             tasks.extend(_news_page(s, i) for i, s in enumerate(range(29, max_results, 29), start=1))
         await asyncio.gather(*tasks)
 
-        results = []
-        while not results_queue.empty():
-            _, result = await results_queue.get()
-            results.append(result)
-            if max_results and len(results) >= max_results:
-                break
+        results = list(islice(filter(None, results), max_results))
         return results
 
     async def answers(self, keywords: str) -> Optional[List[Dict[str, Optional[str]]]]:
