@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from threading import Thread
-from typing import Dict, Generator, Optional
+from typing import Dict, List, Optional
 
 from .duckduckgo_search_async import AsyncDDGS
 
@@ -30,34 +30,34 @@ class DDGS(AsyncDDGS):
         future = asyncio.run_coroutine_threadsafe(coro, self._loop)
         return future.result()
 
-    def text(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def text(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().text(*args, **kwargs)
         return self._run_async_in_thread(async_coro)
 
-    def images(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def images(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().images(*args, **kwargs)
         return self._run_async_in_thread(async_coro)
 
-    def videos(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def videos(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().videos(*args, **kwargs)
         return self._run_async_in_thread(async_coro)
 
-    def news(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def news(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().news(*args, **kwargs)
         return self._run_async_in_thread(async_coro)
 
-    def answers(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def answers(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().answers(*args, **kwargs)
         return self._run_async_in_thread(async_coro)
 
-    def suggestions(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def suggestions(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().suggestions(*args, **kwargs)
         return self._run_async_in_thread(async_coro)
 
-    def maps(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def maps(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().maps(*args, **kwargs)
         return self._run_async_in_thread(async_coro)
 
-    def translate(self, *args, **kwargs) -> Generator[Dict[str, Optional[str]], None, None]:
+    def translate(self, *args, **kwargs) -> Optional[List[Dict[str, Optional[str]]]]:
         async_coro = super().translate(*args, **kwargs)
         return self._run_async_in_thread(async_coro)

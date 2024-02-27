@@ -77,7 +77,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         backend: str = "api",
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -92,7 +92,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with search results.
+            List of dictionaries with search results, or None if there was an error.
         """
         if backend == "api":
             results = await self._text_api(keywords, region, safesearch, timelimit, max_results)
@@ -109,7 +109,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -120,7 +120,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with search results.
+            List of dictionaries with search results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -193,7 +193,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -204,7 +204,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with search results.
+            List of dictionaries with search results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -279,7 +279,7 @@ class AsyncDDGS:
         region: str = "wt-wt",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -289,7 +289,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with search results.
+            List of dictionaries with search results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -370,7 +370,7 @@ class AsyncDDGS:
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -391,7 +391,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with images search results.
+            List of dictionaries with images search results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -470,7 +470,7 @@ class AsyncDDGS:
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -484,7 +484,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with videos search results.
+            List of dictionaries with videos search results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -548,7 +548,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -559,7 +559,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with news search results.
+            List of dictionaries with news search results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -622,14 +622,14 @@ class AsyncDDGS:
                 break
         return results
 
-    async def answers(self, keywords: str) -> List[Dict[str, Optional[str]]]:
+    async def answers(self, keywords: str) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query,
 
         Returns:
-            List of dictionaries with instant answers results.
+            List of dictionaries with instant answers results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -702,7 +702,7 @@ class AsyncDDGS:
 
         return results
 
-    async def suggestions(self, keywords: str, region: str = "wt-wt") -> List[Dict[str, Optional[str]]]:
+    async def suggestions(self, keywords: str, region: str = "wt-wt") -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -710,7 +710,7 @@ class AsyncDDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
 
         Returns:
-            List of dictionaries with suggestions results.
+            List of dictionaries with suggestions results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -747,7 +747,7 @@ class AsyncDDGS:
         longitude: Optional[str] = None,
         radius: int = 0,
         max_results: Optional[int] = None,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -766,7 +766,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with maps search results.
+            List of dictionaries with maps search results, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
@@ -913,7 +913,7 @@ class AsyncDDGS:
 
     async def translate(
         self, keywords: str, from_: Optional[str] = None, to: str = "en"
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> Optional[List[Dict[str, Optional[str]]]]:
         """DuckDuckGo translate.
 
         Args:
@@ -922,7 +922,7 @@ class AsyncDDGS:
             to: what language to translate. Defaults to "en".
 
         Returns:
-            List od dictionaries with translated keywords.
+            List od dictionaries with translated keywords, or None if there was an error.
         """
         assert keywords, "keywords is mandatory"
 
