@@ -24,20 +24,21 @@ if sys.platform.lower().startswith("win"):
 class AsyncDDGS:
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
-    def __init__(self, headers=None, proxies=None, timeout=10) -> None:
+    def __init__(self, headers=None, proxies=None, timeout=10, max_clients=10) -> None:
         """Initialize the AsyncDDGS object.
 
         Args:
             headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
             proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+            max_clients (int, optional): Max curl handle to use in the session (concurrency ratio). Defaults to 10.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"all": proxies}
         self._asession = requests.AsyncSession(
-            headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
+            headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome", max_clients=max_clients
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
 
