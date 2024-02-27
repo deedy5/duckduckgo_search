@@ -238,7 +238,7 @@ class AsyncDDGS:
             if resp_content is None:
                 return
 
-            tree = html.fromstring(resp_content)
+            tree = await self._asession.loop.run_in_executor(None, html.fromstring, resp_content)
             if tree.xpath('//div[@class="no-results"]/text()'):
                 return
 
@@ -317,7 +317,7 @@ class AsyncDDGS:
             if b"No more results." in resp_content:
                 return
 
-            tree = html.fromstring(resp_content)
+            tree = await self._asession.loop.run_in_executor(None, html.fromstring, resp_content)
 
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
             for i, e in data:
