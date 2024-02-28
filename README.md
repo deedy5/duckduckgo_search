@@ -397,7 +397,7 @@ results = DDGS().images(
 )
 
 # async
-results = await AsyncDDGS().images('sun', region='wt-wt', safesearch='off', max_results=20)]
+results = await AsyncDDGS().images('sun', region='wt-wt', safesearch='off', max_results=20)
 ```
 
 [Go To TOP](#TOP)
@@ -484,13 +484,7 @@ def news(
 ```python
 from duckduckgo_search import DDGS
 
-results = DDGS().news(
-    keywords="sun",
-    region="wt-wt",
-    safesearch="off",
-    timelimit="m",
-    max_results=20
-)
+results = DDGS().news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
 
 # async
 results = await AsyncDDGS().news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
