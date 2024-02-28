@@ -49,10 +49,12 @@ class AsyncDDGS:
         """Closes the session."""
         await self._asession.close()
 
+    """
     def __del__(self):
         # close if AsyncDDGS is not used as context manager
         # is not required because AsyncSession itself closes the session on exit
         pass
+    """
 
     async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
