@@ -3,7 +3,7 @@
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
-**⚠️ Warning: use AsyncDDGS in asynchronous code**
+**⚠️ Warning: it is better to use AsyncDDGS in asynchronous code**
 
 ## Table of Contents
 * [Install](#install)
@@ -171,15 +171,24 @@ class DDGS:
         headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
         proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+        max_clients (int, optional): Max curl handle to use in the session (concurrency ratio). Defaults to 10.
+
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
+**:white_check_mark: If you encounter an exception with the text "Ratelimit", try decreasing the `max_clients` parameter.**
 
-Here is an example of initializing the DDGS class:
+Here is an example of initializing the DDGS class. 
 ```python3
 from duckduckgo_search import DDGS
 
+results = DDGS().text("python programming", max_results=5)
+print(results)
+
+# You can use DDGS also as context manager
 with DDGS() as ddgs:
-    results = [r for r in ddgs.text("python programming", max_results=5)]
+    results = ddgs.text("python programming", max_results=5)
     print(results)
 ```
 Here is an example of initializing the AsyncDDGS class:
@@ -195,9 +204,20 @@ if sys.platform.lower().startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def aget_results(word):
-    async with AsyncDDGS(proxies=None) as ddgs:
-        results = [r async for r in ddgs.text(word, max_results=100)]
+    addgs = AsyncDDGS(proxies=None)
+    results = await addgs.text(word, max_results=100)
+    return results
+
+# You can use AsyncDDGS also as context manager
+async def aget_results(word):
+    async with AsyncDDGS(proxies=None) as addgs:
+        results = await addgs.text(word, max_results=100)
         return results
+
+# reduce concurrency limit to avoid Ratelimit exceptions
+async def aget_results(word):
+    results = await AsyncDDGS(max_clients=2).text(word, max_results=100)
+    return results
 
 async def main():
     words = ["sun", "earth", "moon"]
@@ -209,7 +229,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     asyncio.run(main())
 ```
-**⚠️ Always use DDGS and AsyncDDGS as a context manager** (`with DDGS() as ddgs:` | `async with AsyncDDGS as addgs:`).
 
 [Go To TOP](#TOP)
 
@@ -224,17 +243,15 @@ proxies = "socks5://localhost:9150"
 ```python3
 from duckduckgo_search import DDGS
 
-with DDGS(proxies="socks5://localhost:9150", timeout=20) as ddgs:
-    for r in ddgs.text("something you need", max_results=50):
-        print(r)
+ddgs = DDGS(proxies="socks5://localhost:9150", timeout=20)
+results = ddgs.text("something you need", max_results=50)
 ```
 *2. Use any proxy server* (*example with [iproyal residential proxies](https://iproyal.com?r=residential_proxies)*)
 ```python3
 from duckduckgo_search import DDGS
 
-with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as ddgs:
-    for r in ddgs.text("something you need", max_results=50):
-        print(r)
+ddgs = DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20)
+results = ddgs.text("something you need", max_results=50)
 ```
 
 [Go To TOP](#TOP)
@@ -243,6 +260,8 @@ with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as
 
 Exceptions:
 - `DuckDuckGoSearchException`: Raised when there is a generic exception during the API request.
+  
+❗ If you encounter an `DuckDuckGoSearchException` with the text `Ratelimit`, try decreasing the `max_clients` parameter.
 
 [Go To TOP](#TOP)
 
@@ -256,8 +275,8 @@ def text(
     timelimit: Optional[str] = None,
     backend: str = "api",
     max_results: Optional[int] = None,
-) -> Generator[Dict[str, Optional[str]], None, None]:
-    """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params
+) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
     Args:
         keywords: keywords for query.
@@ -269,25 +288,25 @@ def text(
             html - collect data from https://html.duckduckgo.com,
             lite - collect data from https://lite.duckduckgo.com.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-    Yields:
-        dict with search results.
 
+    Returns:
+        List of dictionaries with search results, or None if there was an error.
+
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
 ***Example***
 ```python
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    results = [r for r in ddgs.text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
+results = DDGS().text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 
 # Searching for pdf files
-with DDGS() as ddgs:
-    results = [for r in ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
+results = DDGS().text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
+results = await AsyncDDGS.text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -295,27 +314,27 @@ async with AsyncDDGS() as addgs:
 ## 2. answers() - instant answers by duckduckgo.com
 
 ```python
-def answers(keywords: str) -> Generator[Dict[str, Optional[str]], None, None]:
-    """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params
-
+def answers(keywords: str) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
+    
     Args:
-        keywords: keywords for query.
-
-    Yields:
-        dict with instant answers results.
-
-        """
+        keywords: keywords for query,
+    
+    Returns:
+        List of dictionaries with instant answers results, or None if there was an error.
+    
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+    """
 ```
 ***Example***
 ```python
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    results = [r for r in ddgs.answers("sun")]
+results = DDGS().answers("sun")
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.answers("sun")]
+results = await AsyncDDGS.answers("sun")
 ```
 
 [Go To TOP](#TOP)
@@ -334,9 +353,9 @@ def images(
     layout: Optional[str] = None,
     license_image: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Generator[Dict[str, Optional[str]], None, None]:
-    """DuckDuckGo images search. Query params: https://duckduckgo.com/params
-
+) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
+    
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
@@ -353,34 +372,32 @@ def images(
             Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
             Use Commercially). Defaults to None.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-
-    Yields:
-        dict with image search results.
-
+    
+    Returns:
+        List of dictionaries with images search results, or None if there was an error.
+    
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
 ***Example***
 ```python
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    keywords = 'butterfly'
-    ddgs_images_gen = ddgs.images(
-      keywords,
-      region="wt-wt",
-      safesearch="off",
-      size=None,
-      color="Monochrome",
-      type_image=None,
-      layout=None,
-      license_image=None,
-      max_results=100,
-    )
-    results = [r for r in ddgs_images_gen]
+results = DDGS().images(
+    keywords="butterfly",
+    region="wt-wt",
+    safesearch="off",
+    size=None,
+    color="Monochrome",
+    type_image=None,
+    layout=None,
+    license_image=None,
+    max_results=100,
+)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.images('sun', region='wt-wt', safesearch='off', max_results=20)]
+results = await AsyncDDGS().images('sun', region='wt-wt', safesearch='off', max_results=20)
 ```
 
 [Go To TOP](#TOP)
@@ -397,9 +414,9 @@ def videos(
     duration: Optional[str] = None,
     license_videos: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Generator[Dict[str, Optional[str]], None, None]:
-    """DuckDuckGo videos search. Query params: https://duckduckgo.com/params
-
+) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
+    
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
@@ -409,32 +426,30 @@ def videos(
         duration: short, medium, long. Defaults to None.
         license_videos: creativeCommon, youtube. Defaults to None.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-
-    Yields:
-        dict with videos search results
-
+    
+    Returns:
+        List of dictionaries with videos search results, or None if there was an error.
+    
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
 ***Example***
 ```python
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    keywords = 'tesla'
-    ddgs_videos_gen = ddgs.videos(
-      keywords,
-      region="wt-wt",
-      safesearch="off",
-      timelimit="w",
-      resolution="high",
-      duration="medium",
-      max_results=100,
-    )
-    results = [r for r in ddgs_videos_gen]
+results = DDGS().videos(
+    keywords="cars",
+    region="wt-wt",
+    safesearch="off",
+    timelimit="w",
+    resolution="high",
+    duration="medium",
+    max_results=100,
+)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)]
+results = await AsyncDDGS.videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -448,39 +463,31 @@ def news(
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Generator[Dict[str, Optional[str]], None, None]:
-    """DuckDuckGo news search. Query params: https://duckduckgo.com/params
-
+) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
+    
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m. Defaults to None.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-
-    Yields:
-        dict with news search results.
-
+    
+    Returns:
+        List of dictionaries with news search results, or None if there was an error.
+    
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
 ***Example***
 ```python
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    keywords = 'holiday'
-    ddgs_news_gen = ddgs.news(
-      keywords,
-      region="wt-wt",
-      safesearch="off",
-      timelimit="m",
-      max_results=20
-    )
-    results = [r for r in ddgs_news_gen]
+results = DDGS().news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)]
+results = await AsyncDDGS().news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -489,51 +496,51 @@ async with AsyncDDGS() as addgs:
 
 ```python
 def maps(
-        keywords,
-        place: Optional[str] = None,
-        street: Optional[str] = None,
-        city: Optional[str] = None,
-        county: Optional[str] = None,
-        state: Optional[str] = None,
-        country: Optional[str] = None,
-        postalcode: Optional[str] = None,
-        latitude: Optional[str] = None,
-        longitude: Optional[str] = None,
-        radius: int = 0,
-        max_results: Optional[int] = None,
-    ) -> Iterator[Dict[str, Optional[str]]]:
-        """DuckDuckGo maps search. Query params: https://duckduckgo.com/params
-
-        Args:
-            keywords: keywords for query
-            place: if set, the other parameters are not used. Defaults to None.
-            street: house number/street. Defaults to None.
-            city: city of search. Defaults to None.
-            county: county of search. Defaults to None.
-            state: state of search. Defaults to None.
-            country: country of search. Defaults to None.
-            postalcode: postalcode of search. Defaults to None.
-            latitude: geographic coordinate (north–south position). Defaults to None.
-            longitude: geographic coordinate (east–west position); if latitude and
-                longitude are set, the other parameters are not used. Defaults to None.
-            radius: expand the search square by the distance in kilometers. Defaults to 0.
-            max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-
-        Yields:
-            dict with maps search results
-
-        """
+    keywords,
+    place: Optional[str] = None,
+    street: Optional[str] = None,
+    city: Optional[str] = None,
+    county: Optional[str] = None,
+    state: Optional[str] = None,
+    country: Optional[str] = None,
+    postalcode: Optional[str] = None,
+    latitude: Optional[str] = None,
+    longitude: Optional[str] = None,
+    radius: int = 0,
+    max_results: Optional[int] = None,
+) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
+    
+    Args:
+        keywords: keywords for query
+        place: if set, the other parameters are not used. Defaults to None.
+        street: house number/street. Defaults to None.
+        city: city of search. Defaults to None.
+        county: county of search. Defaults to None.
+        state: state of search. Defaults to None.
+        country: country of search. Defaults to None.
+        postalcode: postalcode of search. Defaults to None.
+        latitude: geographic coordinate (north-south position). Defaults to None.
+        longitude: geographic coordinate (east-west position); if latitude and
+            longitude are set, the other parameters are not used. Defaults to None.
+        radius: expand the search square by the distance in kilometers. Defaults to 0.
+        max_results: max number of results. If None, returns results only from the first response. Defaults to None.
+    
+    Returns:
+        List of dictionaries with maps search results, or None if there was an error.
+    
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+    """
 ```
 ***Example***
 ```python
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    results = [r for r in ddgs.maps("school", place="Uganda", max_results=50)]
+results = DDGS().maps("school", place="Uganda", max_results=50)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.maps('shop', place="Baltimor", max_results=10)]
+results = await AsyncDDGS().maps('shop', place="Baltimor", max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -546,29 +553,32 @@ def translate(
     keywords: str,
     from_: Optional[str] = None,
     to: str = "en",
-) -> Generator[Dict[str, Optional[str]], None, None]:
-    """DuckDuckGo translate
-
+) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo translate.
+    
     Args:
-        keywords: string or a list of strings to translate
+        keywords: string or list of strings to translate.
         from_: translate from (defaults automatically). Defaults to None.
         to: what language to translate. Defaults to "en".
-
-    Yields:
-        dict with translated keywords.
+    
+    Returns:
+        List od dictionaries with translated keywords, or None if there was an error.
+    
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
 ***Example***
 ```python
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    keywords = 'school'
-    results = [r for r in ddgs.translate(keywords, to="de")]
+keywords = 'school'
+# also valid
+keywords = ['school', 'cat']
+results = DDGS().translate(keywords, to="de")
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.translate('sun', to="de")]
+results = await AsyncDDGS().translate('sun', to="de")
 ```
 
 [Go To TOP](#TOP)
@@ -579,27 +589,28 @@ async with AsyncDDGS() as addgs:
 def suggestions(
     keywords,
     region: str = "wt-wt",
-) -> Generator[Dict[str, Optional[str]], None, None]:
-    """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params
-
+) -> Optional[List[Dict[str, Optional[str]]]]:
+    """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
+    
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-
-    Yields:
-        dict with suggestions results.
+    
+    Returns:
+        List of dictionaries with suggestions results, or None if there was an error.
+    
+    Raises:
+        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
 ***Example***
 ```python3
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    results = [r for r in ddgs.suggestions("fly")]
+results = DDGS().suggestions("fly")
 
 # async
-async with AsyncDDGS() as addgs:
-    results = [r async for r in addgs.suggestions('sun')]
+results = await AsyncDDGS().suggestions('sun')
 ```
 
 [Go To TOP](#TOP)

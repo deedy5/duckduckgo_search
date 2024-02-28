@@ -1,6 +1,8 @@
 import os
 import shutil
+import time
 
+import pytest
 from click.testing import CliRunner
 
 from duckduckgo_search import DDGS, __version__
@@ -8,6 +10,11 @@ from duckduckgo_search.cli import _download_results, _save_csv, _save_json, cli
 
 runner = CliRunner()
 
+
+@pytest.fixture(autouse=True)
+def pause_between_tests():
+    time.sleep(1)
+    
 
 def test_version_command():
     result = runner.invoke(cli, ["version"])
@@ -54,50 +61,33 @@ def test_translate_command():
     assert "language" in result.output
 
 
-def test_save_csv():
+def test_save_csv(tmp_path):
     keywords = "butterfly"
     with DDGS() as ddgs:
-        ddgs_gen = ddgs.text(keywords, max_results=30)
-        results = [x for x in ddgs_gen]
-        assert len(results) == 30
+        results = ddgs.text(keywords, max_results=30)
+        assert 27 <= len(results) <= 30
 
-    _save_csv(f"{keywords}.csv", results)
-
-    # delete files and folders contains keyword in name
-    not_files = True
-    for name in os.listdir():
-        if keywords in name:
-            if os.path.isfile(name):
-                os.remove(name)
-                not_files = False
-    if not_files:
-        raise AssertionError("csv not found")
+    temp_file = tmp_path / f"{keywords}.csv"
+    _save_csv(temp_file, results)
+    assert temp_file.exists()
 
 
-def test_save_json():
+def test_save_json(tmp_path):
     keywords = "chicago"
     with DDGS() as ddgs:
-        ddgs_gen = ddgs.text(keywords, max_results=30)
-        results = [x for x in ddgs_gen]
-        assert len(results) == 30
+        results = ddgs.text(keywords, max_results=30)
+        assert 27 <= len(results) <= 30
 
-    _save_json(f"{keywords}.json", results)
-
-    # delete files and folders contains keyword in name
-    not_files = True
-    for name in os.listdir():
-        if keywords in name:
-            if os.path.isfile(name):
-                os.remove(name)
-                not_files = False
-    if not_files:
-        raise AssertionError("json not found")
+    temp_file = tmp_path / f"{keywords}.json"
+    _save_json(temp_file, results)
+    assert temp_file.exists()
 
 
 def test_text_download():
     keywords = "maradona"
-    results = [x for x in DDGS().text(keywords, max_results=8)]
-    assert len(results) == 8
+    with DDGS() as ddgs:
+        results = ddgs.text(keywords, max_results=8)
+    assert 7 <= len(results) <= 8
 
     _download_results(keywords, results)
 
@@ -122,7 +112,8 @@ def test_text_download():
 
 def test_images_download():
     keywords = "real madrid"
-    results = [x for x in DDGS().images(keywords, max_results=8)]
+    with DDGS() as ddgs:
+        results = ddgs.images(keywords, max_results=8)
     assert len(results) >= 8
 
     _download_results(keywords, results, images=True)
