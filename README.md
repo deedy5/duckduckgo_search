@@ -1,9 +1,11 @@
 ![Python >= 3.8](https://img.shields.io/badge/python->=3.8-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/personalized-badge/duckduckgo-search?period=total&units=none&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/duckduckgo-search)
-# Duckduckgo_search<a name="TOP"></a>
+# Duckduckgo_search v5.0b<a name="TOP"></a>
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
 **⚠️ Warning: it is better to use AsyncDDGS in asynchronous code**
+
+**:bangbang: v5.0 brings breaking changes.** Try pre-release `pip install -U --pre duckduckgo_search` and test your code.
 
 ## Table of Contents
 * [Install](#install)
