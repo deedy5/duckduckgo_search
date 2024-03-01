@@ -308,7 +308,7 @@ results = DDGS().text('live free or die', region='wt-wt', safesearch='off', time
 results = DDGS().text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 
 # async
-results = await AsyncDDGS.text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+results = await AsyncDDGS().text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -336,7 +336,7 @@ from duckduckgo_search import DDGS
 results = DDGS().answers("sun")
 
 # async
-results = await AsyncDDGS.answers("sun")
+results = await AsyncDDGS().answers("sun")
 ```
 
 [Go To TOP](#TOP)
@@ -451,7 +451,7 @@ results = DDGS().videos(
 )
 
 # async
-results = await AsyncDDGS.videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+results = await AsyncDDGS().videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
