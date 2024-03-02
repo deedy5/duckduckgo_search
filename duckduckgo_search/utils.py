@@ -10,17 +10,21 @@ from .exceptions import DuckDuckGoSearchException
 
 REGEX_500_IN_URL = re.compile(r"(?:\d{3}-\d{2}\.js)")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
-REGEX_VQD = re.compile(rb"""vqd=['"]?([^&"']+)""")
 
 
 def _extract_vqd(html_bytes: bytes, keywords: str) -> Optional[str]:
-    """Extract vqd from html using a regular expression."""
-    try:
-        match = REGEX_VQD.search(html_bytes)
-        if match:
-            return match.group(1).decode()
-    except Exception:
-        pass
+    """Extract vqd from html bytes."""
+    for c1, c1_len, c2 in (
+        (b'vqd="', 5, b'"'),
+        (b"vqd=", 4, b"&"),
+        (b"vqd='", 5, b"'"),
+    ):
+        try:
+            start = html_bytes.index(c1) + c1_len
+            end = html_bytes.index(c2, start)
+            return html_bytes[start:end].decode()
+        except ValueError:
+            pass
     raise DuckDuckGoSearchException(f"_extract_vqd() {keywords=} Could not extract vqd.")
 
 
