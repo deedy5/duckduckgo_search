@@ -828,7 +828,9 @@ class AsyncDDGS:
         cache = set()
         results = []
 
-        async def _maps_page(bbox: Tuple[Decimal, Decimal, Decimal, Decimal]) -> None:
+        async def _maps_page(
+            bbox: Tuple[Decimal, Decimal, Decimal, Decimal],
+        ) -> Optional[List[Dict[str, Optional[str]]]]:
             if max_results and len(results) >= max_results:
                 return
             lat_t, lon_l, lat_b, lon_r = bbox
