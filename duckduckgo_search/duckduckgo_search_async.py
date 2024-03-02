@@ -23,21 +23,22 @@ if sys.platform.lower().startswith("win"):
 class AsyncDDGS:
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
-    def __init__(self, headers=None, proxies=None, timeout=10, max_clients=10) -> None:
+    def __init__(self, headers=None, proxies=None, timeout=10, concurrency=5) -> None:
         """Initialize the AsyncDDGS object.
 
         Args:
             headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
             proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-            max_clients (int, optional): Max curl handle to use in the session (concurrency ratio). Defaults to 10.
+            concurrency (int):  Limit the number of concurrent requests. Defaults to 5.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"all": proxies}
+        self.sem = asyncio.Semaphore(concurrency)
         self._asession = requests.AsyncSession(
-            headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome", max_clients=max_clients
+            headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
 
@@ -57,17 +58,20 @@ class AsyncDDGS:
     """
 
     async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
-        try:
-            resp = await self._asession.request(method, url, stream=True, **kwargs)
-            resp.raise_for_status()
-            resp_content = await resp.acontent()
-            logger.debug(f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}")
-            if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
-                raise DuckDuckGoSearchException("Ratelimit")
-            if resp.status_code == 200:
-                return resp_content
-        except Exception as ex:
-            raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
+        async with self.sem:
+            try:
+                resp = await self._asession.request(method, url, stream=True, **kwargs)
+                resp.raise_for_status()
+                resp_content = await resp.acontent()
+                logger.debug(
+                    f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}"
+                )
+                if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
+                    raise DuckDuckGoSearchException("Ratelimit")
+                if resp.status_code == 200:
+                    return resp_content
+            except Exception as ex:
+                raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
 
     async def _aget_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""

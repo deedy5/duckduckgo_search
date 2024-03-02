@@ -5,7 +5,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 
 **⚠️ Warning: it is better to use AsyncDDGS in asynchronous code**
 
-**:bangbang: v5.0 brings breaking changes.** Try pre-release `pip install -U --pre duckduckgo_search` and test your code.
+:bangbang: v5.0 brings breaking changes. Try pre-release `pip install -U --pre duckduckgo_search` and test your code.
 
 ## Table of Contents
 * [Install](#install)
@@ -173,13 +173,13 @@ class DDGS:
         headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
         proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-        max_clients (int, optional): Max curl handle to use in the session (concurrency ratio). Defaults to 10.
+        concurrency (int):  Limit the number of concurrent requests. Defaults to 5.
 
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
-**:white_check_mark: If you encounter an exception with the text "Ratelimit", try decreasing the `max_clients` parameter.**
+**:white_check_mark: If you encounter an exception with the text "Ratelimit", try decreasing the `concurrency` parameter.**
 
 Here is an example of initializing the DDGS class. 
 ```python3
@@ -218,7 +218,7 @@ async def aget_results(word):
 
 # reduce concurrency limit to avoid Ratelimit exceptions
 async def aget_results(word):
-    results = await AsyncDDGS(max_clients=2).text(word, max_results=100)
+    results = await AsyncDDGS(concurrency=2).text(word, max_results=100)
     return results
 
 async def main():
@@ -263,8 +263,6 @@ results = ddgs.text("something you need", max_results=50)
 Exceptions:
 - `DuckDuckGoSearchException`: Raised when there is a generic exception during the API request.
   
-❗ If you encounter an `DuckDuckGoSearchException` with the text `Ratelimit`, try decreasing the `max_clients` parameter.
-
 [Go To TOP](#TOP)
 
 ## 1. text() - text search by duckduckgo.com

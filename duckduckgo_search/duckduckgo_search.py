@@ -9,8 +9,8 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 
 
 class DDGS(AsyncDDGS):
-    def __init__(self, headers=None, proxies=None, timeout=10, max_clients=10) -> None:
-        super().__init__(headers, proxies, timeout, max_clients)
+    def __init__(self, headers=None, proxies=None, timeout=10, concurrency=5) -> None:
+        super().__init__(headers, proxies, timeout, concurrency)
         self._loop = asyncio.new_event_loop()
         self._thread = Thread(target=self._loop.run_forever, daemon=True)  # run asyncio loop in a separate thread
         self._thread.start()
