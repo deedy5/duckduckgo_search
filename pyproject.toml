@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1.7",    
-    "curl_cffi>=0.6.1",
+    "curl_cffi>=0.6.2",
     "lxml>=5.1.0",
 ]
 dynamic = ["version"]
