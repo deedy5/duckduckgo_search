@@ -1,6 +1,8 @@
 import json
 import re
+from decimal import Decimal
 from html import unescape
+from math import atan2, cos, radians, sin, sqrt
 from typing import Optional
 from urllib.parse import unquote
 
@@ -46,3 +48,13 @@ def _normalize(raw_html: str) -> str:
 def _normalize_url(url: str) -> str:
     """Unquote URL and replace spaces with '+'."""
     return unquote(url.replace(" ", "+")) if url else ""
+
+
+def _calculate_distance(lat1: Decimal, lon1: Decimal, lat2: Decimal, lon2: Decimal) -> float:
+    """Calculate distance between two points in km. Haversine formula."""
+    R = 6371.0087714  # Earth's radius in km
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    dlon, dlat = lon2 - lon1, lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    return R * c

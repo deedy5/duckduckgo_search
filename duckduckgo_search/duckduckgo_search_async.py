@@ -12,7 +12,7 @@ from curl_cffi import requests
 from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
-from .utils import _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
+from .utils import _calculate_distance, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
 
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
 # Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
@@ -892,15 +892,16 @@ class AsyncDDGS:
             tasks = []
             for bbox in work_bboxes:
                 tasks.append(asyncio.create_task(_maps_page(bbox)))
-                # divide the square into 4 parts and save them in queue_bboxes
-                lat_t, lon_l, lat_b, lon_r = bbox
-                lat_middle = (lat_t + lat_b) / 2
-                lon_middle = (lon_l + lon_r) / 2
-                bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
-                bbox2 = (lat_t, lon_middle, lat_middle, lon_r)
-                bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
-                bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
-                queue_bboxes.extend([bbox1, bbox2, bbox3, bbox4])
+                # if distance between coordinates > 1, divide the square into 4 parts and save them in queue_bboxes
+                if _calculate_distance(lat_t, lon_l, lat_b, lon_r) > 1:
+                    lat_t, lon_l, lat_b, lon_r = bbox
+                    lat_middle = (lat_t + lat_b) / 2
+                    lon_middle = (lon_l + lon_r) / 2
+                    bbox1 = (lat_t, lon_l, lat_middle, lon_middle)
+                    bbox2 = (lat_t, lon_middle, lat_middle, lon_r)
+                    bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
+                    bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
+                    queue_bboxes.extend([bbox1, bbox2, bbox3, bbox4])
 
             # gather tasks using asyncio.wait_for and timeout
             with suppress(Exception):
