@@ -5,7 +5,7 @@ import sys
 from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
-from itertools import chain, cycle, islice
+from itertools import cycle, islice
 from typing import Dict, List, Optional, Tuple
 
 from curl_cffi import requests
@@ -888,8 +888,10 @@ class AsyncDDGS:
         start_bbox = (lat_t, lon_l, lat_b, lon_r)
         work_bboxes = [start_bbox]
         while work_bboxes:
-            tasks, queue_bboxes = [], []
+            queue_bboxes = []  # for next iteration, at the end of the iteration work_bboxes = queue_bboxes
+            tasks = []
             for bbox in work_bboxes:
+                tasks.append(asyncio.create_task(_maps_page(bbox)))
                 # divide the square into 4 parts and save them in queue_bboxes
                 lat_t, lon_l, lat_b, lon_r = bbox
                 lat_middle = (lat_t + lat_b) / 2
@@ -899,14 +901,16 @@ class AsyncDDGS:
                 bbox3 = (lat_middle, lon_l, lat_b, lon_middle)
                 bbox4 = (lat_middle, lon_middle, lat_b, lon_r)
                 queue_bboxes.extend([bbox1, bbox2, bbox3, bbox4])
-                # create asyncio task and append it to tasks
-                tasks.append(asyncio.create_task(_maps_page(bbox)))
 
             # gather tasks using asyncio.wait_for and timeout
             with suppress(Exception):
                 work_bboxes_results = await asyncio.gather(*[asyncio.wait_for(task, timeout=10) for task in tasks])
-            work_bboxes_results = list(chain.from_iterable(work_bboxes_results))
-            results.extend(work_bboxes_results)
+
+            for x in work_bboxes_results:
+                if isinstance(x, list):
+                    results.extend(x)
+                elif isinstance(x, dict):
+                    results.append(x)
 
             work_bboxes = queue_bboxes
             if not max_results or len(results) >= max_results or len(work_bboxes_results) == 0:
