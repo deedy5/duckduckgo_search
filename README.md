@@ -173,13 +173,11 @@ class DDGS:
         headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
         proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-        concurrency (int):  Limit the number of concurrent requests. Defaults to 5.
 
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
-**:white_check_mark: If you encounter an exception with the text "Ratelimit", try decreasing the `concurrency` parameter.**
 
 Here is an example of initializing the DDGS class. 
 ```python3
@@ -215,11 +213,6 @@ async def aget_results(word):
     async with AsyncDDGS(proxies=None) as addgs:
         results = await addgs.text(word, max_results=100)
         return results
-
-# reduce concurrency limit to avoid Ratelimit exceptions
-async def aget_results(word):
-    results = await AsyncDDGS(concurrency=2).text(word, max_results=100)
-    return results
 
 async def main():
     words = ["sun", "earth", "moon"]

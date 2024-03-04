@@ -23,20 +23,18 @@ if sys.platform.lower().startswith("win"):
 class AsyncDDGS:
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
-    def __init__(self, headers=None, proxies=None, timeout=10, concurrency=5) -> None:
+    def __init__(self, headers=None, proxies=None, timeout=10) -> None:
         """Initialize the AsyncDDGS object.
 
         Args:
             headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
             proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-            concurrency (int):  Limit the number of concurrent requests. Defaults to 5.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         self.proxies = proxies if proxies and isinstance(proxies, dict) else {"all": proxies}
-        self.sem = asyncio.Semaphore(concurrency)
         self._asession = requests.AsyncSession(
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
         )
@@ -58,20 +56,17 @@ class AsyncDDGS:
     """
 
     async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
-        async with self.sem:
-            try:
-                resp = await self._asession.request(method, url, stream=True, **kwargs)
-                resp.raise_for_status()
-                resp_content = await resp.acontent()
-                logger.debug(
-                    f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}"
-                )
-                if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
-                    raise DuckDuckGoSearchException("Ratelimit")
-                if resp.status_code == 200:
-                    return resp_content
-            except Exception as ex:
-                raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
+        try:
+            resp = await self._asession.request(method, url, stream=True, **kwargs)
+            resp.raise_for_status()
+            resp_content = await resp.acontent()
+            logger.debug(f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}")
+            if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
+                raise DuckDuckGoSearchException("Ratelimit")
+            if resp.status_code == 200:
+                return resp_content
+        except Exception as ex:
+            raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
 
     async def _aget_vqd(self, keywords: str) -> Optional[str]:
         """Get vqd value for a search query."""
@@ -241,25 +236,24 @@ class AsyncDDGS:
             priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("POST", "https://html.duckduckgo.com/html", data=payload)
-            if resp_content is None:
+            if resp_content is None or b"No  results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(None, html.fromstring, resp_content)
-            if tree.xpath('//div[@class="no-results"]/text()'):
-                return
+            tree = await self._asession.loop.run_in_executor(None, html.document_fromstring, resp_content)
 
-            for e in tree.xpath('//div[contains(@class, "results_links")]'):
-                href = e.xpath('.//a[contains(@class, "result__a")]/@href')
+            for e in tree.xpath("//div[h2]"):
+                href = e.xpath("./a/@href")
                 href = href[0] if href else None
                 if (
                     href
                     and href not in cache
-                    and href != f"http://www.google.com/search?q={keywords}"
-                    and not href.startswith("https://duckduckgo.com/y.js?ad_domain")
+                    and not href.startswith(
+                        ("http://www.google.com/search?q=", "https://duckduckgo.com/y.js?ad_domain")
+                    )
                 ):
                     cache.add(href)
-                    title = e.xpath('.//a[contains(@class, "result__a")]/text()')
-                    body = e.xpath('.//a[contains(@class, "result__snippet")]//text()')
+                    title = e.xpath("./h2/a/text()")
+                    body = e.xpath("./a//text()")
 
                     priority += 1
                     result = {
@@ -317,13 +311,10 @@ class AsyncDDGS:
             priority = page * 100
             payload["s"] = s
             resp_content = await self._aget_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
-            if resp_content is None:
+            if resp_content is None or b"No more results." in resp_content:
                 return
 
-            if b"No more results." in resp_content:
-                return
-
-            tree = await self._asession.loop.run_in_executor(None, html.fromstring, resp_content)
+            tree = await self._asession.loop.run_in_executor(None, html.document_fromstring, resp_content)
 
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
             for i, e in data:
@@ -333,8 +324,7 @@ class AsyncDDGS:
                     if (
                         href is None
                         or href in cache
-                        or href == f"http://www.google.com/search?q={keywords}"
-                        or href.startswith("https://duckduckgo.com/y.js?ad_domain")
+                        or href.startswith(("http://www.google.com/search?q=", "https://duckduckgo.com/y.js?ad_domain"))
                     ):
                         [next(data, None) for _ in range(3)]  # skip block(i=1,2,3,4)
                     else:
