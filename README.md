@@ -185,11 +185,6 @@ from duckduckgo_search import DDGS
 
 results = DDGS().text("python programming", max_results=5)
 print(results)
-
-# You can use DDGS also as context manager
-with DDGS() as ddgs:
-    results = ddgs.text("python programming", max_results=5)
-    print(results)
 ```
 Here is an example of initializing the AsyncDDGS class:
 ```python3
@@ -207,12 +202,6 @@ async def aget_results(word):
     addgs = AsyncDDGS(proxies=None)
     results = await addgs.text(word, max_results=100)
     return results
-
-# You can use AsyncDDGS also as context manager
-async def aget_results(word):
-    async with AsyncDDGS(proxies=None) as addgs:
-        results = await addgs.text(word, max_results=100)
-        return results
 
 async def main():
     words = ["sun", "earth", "moon"]
