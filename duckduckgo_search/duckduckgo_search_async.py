@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -18,6 +19,8 @@ logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
 # Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
 if sys.platform.lower().startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+_SHARED_EXECUTOR = ThreadPoolExecutor()
 
 
 class AsyncDDGS:
@@ -47,13 +50,6 @@ class AsyncDDGS:
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         """Closes the session."""
         await self._asession.close()
-
-    """
-    def __del__(self):
-        # close if AsyncDDGS is not used as context manager
-        # is not required because AsyncSession itself closes the session on exit
-        pass
-    """
 
     async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
         try:
@@ -239,7 +235,7 @@ class AsyncDDGS:
             if resp_content is None or b"No  results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(None, html.document_fromstring, resp_content)
+            tree = await self._asession.loop.run_in_executor(_SHARED_EXECUTOR, html.document_fromstring, resp_content)
 
             for e in tree.xpath("//div[h2]"):
                 href = e.xpath("./a/@href")
@@ -314,7 +310,7 @@ class AsyncDDGS:
             if resp_content is None or b"No more results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(None, html.document_fromstring, resp_content)
+            tree = await self._asession.loop.run_in_executor(_SHARED_EXECUTOR, html.document_fromstring, resp_content)
 
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
             for i, e in data:
