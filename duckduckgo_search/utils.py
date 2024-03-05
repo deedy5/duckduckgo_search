@@ -8,8 +8,23 @@ from urllib.parse import unquote
 
 from .exceptions import DuckDuckGoSearchException
 
+try:
+    import orjson
+except ModuleNotFoundError:
+    HAS_ORJSON = False
+else:
+    HAS_ORJSON = True
+
 REGEX_500_IN_URL = re.compile(r"(?:\d{3}-\d{2}\.js)")
 REGEX_STRIP_TAGS = re.compile("<.*?>")
+
+
+def json_dumps(obj):
+    return orjson.dumps(obj).decode("utf-8") if HAS_ORJSON else json.dumps(obj)
+
+
+def json_loads(obj):
+    return orjson.loads(obj) if HAS_ORJSON else json.loads(obj)
 
 
 def _extract_vqd(html_bytes: bytes, keywords: str) -> Optional[str]:
@@ -34,7 +49,7 @@ def _text_extract_json(html_bytes: bytes, keywords: str) -> Optional[str]:
         start = html_bytes.index(b"DDG.pageLayout.load('d',") + 24
         end = html_bytes.index(b");DDG.duckbar.load(", start)
         data = html_bytes[start:end]
-        return json.loads(data)
+        return json_loads(data)
     except Exception as ex:
         raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} {type(ex).__name__}: {ex}") from ex
 

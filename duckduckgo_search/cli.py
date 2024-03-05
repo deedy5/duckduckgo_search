@@ -1,5 +1,4 @@
 import csv
-import json
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -10,6 +9,7 @@ import click
 from curl_cffi import requests
 
 from .duckduckgo_search import DDGS
+from .utils import json_dumps
 from .version import __version__
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ COLORS = {
 
 def _save_json(jsonfile, data):
     with open(jsonfile, "w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
+        file.write(json_dumps(data))
 
 
 def _save_csv(csvfile, data):

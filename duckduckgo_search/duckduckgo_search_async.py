@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -13,7 +12,15 @@ from curl_cffi import requests
 from lxml import html
 
 from .exceptions import DuckDuckGoSearchException
-from .utils import _calculate_distance, _extract_vqd, _is_500_in_url, _normalize, _normalize_url, _text_extract_json
+from .utils import (
+    _calculate_distance,
+    _extract_vqd,
+    _is_500_in_url,
+    _normalize,
+    _normalize_url,
+    _text_extract_json,
+    json_loads,
+)
 
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
 # Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
@@ -415,7 +422,7 @@ class AsyncDDGS:
             if resp_content is None:
                 return
             try:
-                resp_json = json.loads(resp_content)
+                resp_json = json_loads(resp_content)
             except Exception:
                 return
             page_data = resp_json.get("results", None)
@@ -504,7 +511,7 @@ class AsyncDDGS:
             if resp_content is None:
                 return
             try:
-                resp_json = json.loads(resp_content)
+                resp_json = json_loads(resp_content)
             except Exception:
                 return
             page_data = resp_json.get("results", None)
@@ -574,7 +581,7 @@ class AsyncDDGS:
             if resp_content is None:
                 return
             try:
-                resp_json = json.loads(resp_content)
+                resp_json = json_loads(resp_content)
             except Exception:
                 return
             page_data = resp_json.get("results", None)
@@ -631,7 +638,7 @@ class AsyncDDGS:
         results = []
 
         try:
-            page_data = json.loads(resp_content)
+            page_data = json_loads(resp_content)
         except Exception:
             page_data = None
 
@@ -657,7 +664,7 @@ class AsyncDDGS:
         if not resp_content:
             return
         try:
-            page_data = json.loads(resp_content).get("RelatedTopics", None)
+            page_data = json_loads(resp_content).get("RelatedTopics", None)
         except Exception:
             page_data = None
 
@@ -714,7 +721,7 @@ class AsyncDDGS:
 
         results = []
         try:
-            page_data = json.loads(resp_content)
+            page_data = json_loads(resp_content)
             for r in page_data:
                 results.append(r)
         except Exception:
@@ -801,7 +808,7 @@ class AsyncDDGS:
                 if resp_content is None:
                     return
 
-                coordinates = json.loads(resp_content)[0]["boundingbox"]
+                coordinates = json_loads(resp_content)[0]["boundingbox"]
                 lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
                 lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
             except Exception as ex:
@@ -840,7 +847,7 @@ class AsyncDDGS:
             if resp_content is None:
                 return
             try:
-                page_data = json.loads(resp_content).get("results", [])
+                page_data = json_loads(resp_content).get("results", [])
             except Exception:
                 return
             if page_data is None:
@@ -950,7 +957,7 @@ class AsyncDDGS:
                 return
 
             try:
-                page_data = json.loads(resp_content)
+                page_data = json_loads(resp_content)
                 page_data["original"] = keyword
             except Exception:
                 page_data = None
