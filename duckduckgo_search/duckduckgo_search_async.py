@@ -406,7 +406,7 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results = [None] * 500
+        results = [None] * 600
 
         async def _images_page(s: int, page: int) -> None:
             priority = page * 100
