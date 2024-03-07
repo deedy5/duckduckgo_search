@@ -582,7 +582,7 @@ class AsyncDDGS:
                         "title": row["title"],
                         "body": _normalize(row["excerpt"]),
                         "url": _normalize_url(row["url"]),
-                        "image": _normalize_url(image_url) if image_url else None,
+                        "image": _normalize_url(image_url),
                         "source": row["source"],
                     }
                     results[priority] = result
