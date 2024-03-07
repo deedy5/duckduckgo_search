@@ -32,6 +32,10 @@ jobs:
       run: |
         ruff check .
         ruff format . --check --target-version py38
+    - name: Mypy
+      run: |
+        python -m pip install orjson
+        mypy --install-types .
     - name: Pytest
       run: |
         pytest

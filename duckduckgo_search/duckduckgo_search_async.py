@@ -1,12 +1,12 @@
 import asyncio
 import logging
-import sys
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
 from itertools import cycle, islice
-from typing import Dict, List, Optional, Tuple
+from types import TracebackType
+from typing import Dict, List, Optional, Tuple, Union
 
 from curl_cffi import requests
 from lxml import html
@@ -23,17 +23,18 @@ from .utils import (
 )
 
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
-# Not working on Windows, NotImplementedError (https://curl-cffi.readthedocs.io/en/latest/faq/)
-if sys.platform.lower().startswith("win"):
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 _SHARED_EXECUTOR = ThreadPoolExecutor()
 
 
 class AsyncDDGS:
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
-    def __init__(self, headers=None, proxies=None, timeout=10) -> None:
+    def __init__(
+        self,
+        headers: Optional[Dict[str, str]] = None,
+        proxies: Union[Dict[str, str], str, None] = None,
+        timeout: Optional[int] = 10,
+    ) -> None:
         """Initialize the AsyncDDGS object.
 
         Args:
@@ -44,7 +45,7 @@ class AsyncDDGS:
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
-        self.proxies = proxies if proxies and isinstance(proxies, dict) else {"all": proxies}
+        self.proxies = {"all": proxies} if isinstance(proxies, str) else proxies
         self._asession = requests.AsyncSession(
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
         )
@@ -54,15 +55,23 @@ class AsyncDDGS:
         """A context manager method that is called when entering the 'with' statement."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(
+        self, exc_type: Optional[BaseException], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]
+    ) -> None:
         """Closes the session."""
         await self._asession.close()
 
-    async def _aget_url(self, method: str, url: str, **kwargs) -> Optional[requests.Response]:
+    async def _aget_url(
+        self,
+        method: str,
+        url: str,
+        data: Optional[Union[Dict[str, str], bytes]] = None,
+        params: Optional[Dict[str, str]] = None,
+    ) -> bytes:
         try:
-            resp = await self._asession.request(method, url, stream=True, **kwargs)
+            resp = await self._asession.request(method, url, data=data, params=params, stream=True)
             resp.raise_for_status()
-            resp_content = await resp.acontent()
+            resp_content: bytes = await resp.acontent()
             logger.debug(f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}")
             if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
                 raise DuckDuckGoSearchException("Ratelimit")
@@ -70,12 +79,12 @@ class AsyncDDGS:
                 return resp_content
         except Exception as ex:
             raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
+        raise DuckDuckGoSearchException(f"_aget_url() {url} return None. {params=} {data=}")
 
-    async def _aget_vqd(self, keywords: str) -> Optional[str]:
+    async def _aget_vqd(self, keywords: str) -> str:
         """Get vqd value for a search query."""
         resp_content = await self._aget_url("POST", "https://duckduckgo.com", data={"q": keywords})
-        if resp_content:
-            return _extract_vqd(resp_content, keywords)
+        return _extract_vqd(resp_content, keywords)
 
     async def text(
         self,
@@ -85,7 +94,7 @@ class AsyncDDGS:
         timelimit: Optional[str] = None,
         backend: str = "api",
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -120,7 +129,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -131,7 +140,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with search results, or None if there was an error.
+            List of dictionaries with search results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -144,7 +153,6 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
             "l": region,
-            "df": timelimit,
             "vqd": vqd,
             "bing_market": region,
         }
@@ -155,20 +163,17 @@ class AsyncDDGS:
             payload["ex"] = "-2"
         elif safesearch == "on":  # strict
             payload["p"] = "1"
+        if timelimit:
+            payload["df"] = timelimit
 
         cache = set()
-        results = [None] * 1100
+        results: List[Optional[Dict[str, str]]] = [None] * 1100
 
         async def _text_api_page(s: int, page: int) -> None:
             priority = page * 100
-            payload["s"] = s
+            payload["s"] = f"{s}"
             resp_content = await self._aget_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
-            if resp_content is None:
-                return
-
             page_data = _text_extract_json(resp_content, keywords)
-            if page_data is None:
-                return
 
             for row in page_data:
                 href = row.get("u", None)
@@ -190,8 +195,7 @@ class AsyncDDGS:
             tasks.extend(_text_api_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        results = list(islice(filter(None, results), max_results))
-        return results
+        return list(islice(filter(None, results), max_results))
 
     async def _text_html(
         self,
@@ -200,7 +204,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -211,7 +215,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with search results, or None if there was an error.
+            List of dictionaries with search results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -219,27 +223,28 @@ class AsyncDDGS:
         assert keywords, "keywords is mandatory"
 
         self._asession.headers["Referer"] = "https://html.duckduckgo.com/"
-        safesearch_base = {"on": 1, "moderate": -1, "off": -2}
+        safesearch_base = {"on": "1", "moderate": "-1", "off": "-2"}
         payload = {
             "q": keywords,
             "kl": region,
             "p": safesearch_base[safesearch.lower()],
-            "df": timelimit,
             "o": "json",
             "api": "d.js",
         }
+        if timelimit:
+            payload["df"] = timelimit
         if max_results and max_results > 20:
             vqd = await self._aget_vqd(keywords)
             payload["vqd"] = vqd
 
         cache = set()
-        results = [None] * 1100
+        results: List[Optional[Dict[str, str]]] = [None] * 1100
 
         async def _text_html_page(s: int, page: int) -> None:
             priority = page * 100
-            payload["s"] = s
+            payload["s"] = f"{s}"
             resp_content = await self._aget_url("POST", "https://html.duckduckgo.com/html", data=payload)
-            if resp_content is None or b"No  results." in resp_content:
+            if b"No  results." in resp_content:
                 return
 
             tree = await self._asession.loop.run_in_executor(_SHARED_EXECUTOR, html.document_fromstring, resp_content)
@@ -260,9 +265,9 @@ class AsyncDDGS:
 
                     priority += 1
                     result = {
-                        "title": _normalize(title[0]) if title else None,
+                        "title": _normalize(title[0]),
                         "href": _normalize_url(href),
-                        "body": _normalize("".join(body)) if body else None,
+                        "body": _normalize("".join(body)),
                     }
                     results[priority] = result
 
@@ -272,8 +277,7 @@ class AsyncDDGS:
             tasks.extend(_text_html_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        results = list(islice(filter(None, results), max_results))
-        return results
+        return list(islice(filter(None, results), max_results))
 
     async def _text_lite(
         self,
@@ -281,7 +285,7 @@ class AsyncDDGS:
         region: str = "wt-wt",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -291,7 +295,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with search results, or None if there was an error.
+            List of dictionaries with search results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -304,17 +308,18 @@ class AsyncDDGS:
             "o": "json",
             "api": "d.js",
             "kl": region,
-            "df": timelimit,
         }
+        if timelimit:
+            payload["df"] = timelimit
 
         cache = set()
-        results = [None] * 1100
+        results: List[Optional[Dict[str, str]]] = [None] * 1100
 
         async def _text_lite_page(s: int, page: int) -> None:
             priority = page * 100
-            payload["s"] = s
+            payload["s"] = f"{s}"
             resp_content = await self._aget_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
-            if resp_content is None or b"No more results." in resp_content:
+            if b"No more results." in resp_content:
                 return
 
             tree = await self._asession.loop.run_in_executor(_SHARED_EXECUTOR, html.document_fromstring, resp_content)
@@ -351,8 +356,7 @@ class AsyncDDGS:
             tasks.extend(_text_lite_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
         await asyncio.gather(*tasks)
 
-        results = list(islice(filter(None, results), max_results))
-        return results
+        return list(islice(filter(None, results), max_results))
 
     async def images(
         self,
@@ -366,7 +370,7 @@ class AsyncDDGS:
         layout: Optional[str] = None,
         license_image: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -387,7 +391,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with images search results, or None if there was an error.
+            List of dictionaries with images search results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -396,7 +400,7 @@ class AsyncDDGS:
 
         vqd = await self._aget_vqd(keywords)
 
-        safesearch_base = {"on": 1, "moderate": 1, "off": -1}
+        safesearch_base = {"on": "1", "moderate": "1", "off": "-1"}
         timelimit = f"time:{timelimit}" if timelimit else ""
         size = f"size:{size}" if size else ""
         color = f"color:{color}" if color else ""
@@ -413,24 +417,18 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results = [None] * 600
+        results: List[Optional[Dict[str, str]]] = [None] * 600
 
         async def _images_page(s: int, page: int) -> None:
             priority = page * 100
-            payload["s"] = s
+            payload["s"] = f"{s}"
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/i.js", params=payload)
-            if resp_content is None:
-                return
-            try:
-                resp_json = json_loads(resp_content)
-            except Exception:
-                return
-            page_data = resp_json.get("results", None)
-            if page_data is None:
-                return
+            resp_json = json_loads(resp_content)
+
+            page_data = resp_json.get("results", [])
 
             for row in page_data:
-                image_url = row.get("image", None)
+                image_url = row.get("image")
                 if image_url and image_url not in cache:
                     cache.add(image_url)
                     priority += 1
@@ -451,8 +449,7 @@ class AsyncDDGS:
             tasks.extend(_images_page(s, i) for i, s in enumerate(range(100, max_results, 100), start=1))
         await asyncio.gather(*tasks)
 
-        results = list(islice(filter(None, results), max_results))
-        return results
+        return list(islice(filter(None, results), max_results))
 
     async def videos(
         self,
@@ -464,7 +461,7 @@ class AsyncDDGS:
         duration: Optional[str] = None,
         license_videos: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -478,7 +475,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with videos search results, or None if there was an error.
+            List of dictionaries with videos search results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -487,7 +484,7 @@ class AsyncDDGS:
 
         vqd = await self._aget_vqd(keywords)
 
-        safesearch_base = {"on": 1, "moderate": -1, "off": -2}
+        safesearch_base = {"on": "1", "moderate": "-1", "off": "-2"}
         timelimit = f"publishedAfter:{timelimit}" if timelimit else ""
         resolution = f"videoDefinition:{resolution}" if resolution else ""
         duration = f"videoDuration:{duration}" if duration else ""
@@ -502,21 +499,15 @@ class AsyncDDGS:
         }
 
         cache = set()
-        results = [None] * 700
+        results: List[Optional[Dict[str, str]]] = [None] * 700
 
         async def _videos_page(s: int, page: int) -> None:
             priority = page * 100
-            payload["s"] = s
+            payload["s"] = f"{s}"
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/v.js", params=payload)
-            if resp_content is None:
-                return
-            try:
-                resp_json = json_loads(resp_content)
-            except Exception:
-                return
-            page_data = resp_json.get("results", None)
-            if page_data is None:
-                return
+            resp_json = json_loads(resp_content)
+
+            page_data = resp_json.get("results", [])
 
             for row in page_data:
                 if row["content"] not in cache:
@@ -530,8 +521,7 @@ class AsyncDDGS:
             tasks.extend(_videos_page(s, i) for i, s in enumerate(range(59, max_results, 59), start=1))
         await asyncio.gather(*tasks)
 
-        results = list(islice(filter(None, results), max_results))
-        return results
+        return list(islice(filter(None, results), max_results))
 
     async def news(
         self,
@@ -540,7 +530,7 @@ class AsyncDDGS:
         safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -551,7 +541,7 @@ class AsyncDDGS:
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
-            List of dictionaries with news search results, or None if there was an error.
+            List of dictionaries with news search results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -560,7 +550,7 @@ class AsyncDDGS:
 
         vqd = await self._aget_vqd(keywords)
 
-        safesearch_base = {"on": 1, "moderate": -1, "off": -2}
+        safesearch_base = {"on": "1", "moderate": "-1", "off": "-2"}
         payload = {
             "l": region,
             "o": "json",
@@ -568,25 +558,19 @@ class AsyncDDGS:
             "q": keywords,
             "vqd": vqd,
             "p": safesearch_base[safesearch.lower()],
-            "df": timelimit,
         }
+        if timelimit:
+            payload["df"] = timelimit
 
         cache = set()
-        results = [None] * 700
+        results: List[Optional[Dict[str, str]]] = [None] * 700
 
         async def _news_page(s: int, page: int) -> None:
             priority = page * 100
-            payload["s"] = s
+            payload["s"] = f"{s}"
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/news.js", params=payload)
-            if resp_content is None:
-                return
-            try:
-                resp_json = json_loads(resp_content)
-            except Exception:
-                return
-            page_data = resp_json.get("results", None)
-            if page_data is None:
-                return
+            resp_json = json_loads(resp_content)
+            page_data = resp_json.get("results", [])
 
             for row in page_data:
                 if row["url"] not in cache:
@@ -609,17 +593,16 @@ class AsyncDDGS:
             tasks.extend(_news_page(s, i) for i, s in enumerate(range(29, max_results, 29), start=1))
         await asyncio.gather(*tasks)
 
-        results = list(islice(filter(None, results), max_results))
-        return results
+        return list(islice(filter(None, results), max_results))
 
-    async def answers(self, keywords: str) -> Optional[List[Dict[str, Optional[str]]]]:
+    async def answers(self, keywords: str) -> List[Dict[str, str]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
             keywords: keywords for query,
 
         Returns:
-            List of dictionaries with instant answers results, or None if there was an error.
+            List of dictionaries with instant answers results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -630,30 +613,21 @@ class AsyncDDGS:
             "q": f"what is {keywords}",
             "format": "json",
         }
-
         resp_content = await self._aget_url("GET", "https://api.duckduckgo.com/", params=payload)
-        if not resp_content:
-            return
+        page_data = json_loads(resp_content)
 
         results = []
-
-        try:
-            page_data = json_loads(resp_content)
-        except Exception:
-            page_data = None
-
-        if page_data:
-            answer = page_data.get("AbstractText", None)
-            url = page_data.get("AbstractURL", None)
-            if answer:
-                results.append(
-                    {
-                        "icon": None,
-                        "text": answer,
-                        "topic": None,
-                        "url": url,
-                    }
-                )
+        answer = page_data.get("AbstractText")
+        url = page_data.get("AbstractURL")
+        if answer:
+            results.append(
+                {
+                    "icon": None,
+                    "text": answer,
+                    "topic": None,
+                    "url": url,
+                }
+            )
 
         # related
         payload = {
@@ -661,41 +635,36 @@ class AsyncDDGS:
             "format": "json",
         }
         resp_content = await self._aget_url("GET", "https://api.duckduckgo.com/", params=payload)
-        if not resp_content:
-            return
-        try:
-            page_data = json_loads(resp_content).get("RelatedTopics", None)
-        except Exception:
-            page_data = None
+        resp_json = json_loads(resp_content)
+        page_data = resp_json.get("RelatedTopics", [])
 
-        if page_data:
-            for row in page_data:
-                topic = row.get("Name", None)
-                if not topic:
-                    icon = row["Icon"].get("URL", None)
+        for row in page_data:
+            topic = row.get("Name")
+            if not topic:
+                icon = row["Icon"].get("URL")
+                results.append(
+                    {
+                        "icon": f"https://duckduckgo.com{icon}" if icon else "",
+                        "text": row["Text"],
+                        "topic": None,
+                        "url": row["FirstURL"],
+                    }
+                )
+            else:
+                for subrow in row["Topics"]:
+                    icon = subrow["Icon"].get("URL")
                     results.append(
                         {
-                            "icon": f"https://duckduckgo.com{icon}" if icon else None,
-                            "text": row["Text"],
-                            "topic": None,
-                            "url": row["FirstURL"],
+                            "icon": f"https://duckduckgo.com{icon}" if icon else "",
+                            "text": subrow["Text"],
+                            "topic": topic,
+                            "url": subrow["FirstURL"],
                         }
                     )
-                else:
-                    for subrow in row["Topics"]:
-                        icon = subrow["Icon"].get("URL", None)
-                        results.append(
-                            {
-                                "icon": f"https://duckduckgo.com{icon}" if icon else None,
-                                "text": subrow["Text"],
-                                "topic": topic,
-                                "url": subrow["FirstURL"],
-                            }
-                        )
 
         return results
 
-    async def suggestions(self, keywords: str, region: str = "wt-wt") -> Optional[List[Dict[str, Optional[str]]]]:
+    async def suggestions(self, keywords: str, region: str = "wt-wt") -> List[Dict[str, str]]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -703,7 +672,7 @@ class AsyncDDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
 
         Returns:
-            List of dictionaries with suggestions results, or None if there was an error.
+            List of dictionaries with suggestions results.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -714,20 +683,9 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
         }
-
         resp_content = await self._aget_url("GET", "https://duckduckgo.com/ac", params=payload)
-        if not resp_content:
-            return
-
-        results = []
-        try:
-            page_data = json_loads(resp_content)
-            for r in page_data:
-                results.append(r)
-        except Exception:
-            pass
-
-        return results
+        page_data = json_loads(resp_content)
+        return [r for r in page_data]
 
     async def maps(
         self,
@@ -743,7 +701,7 @@ class AsyncDDGS:
         longitude: Optional[str] = None,
         radius: int = 0,
         max_results: Optional[int] = None,
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -782,38 +740,38 @@ class AsyncDDGS:
         # otherwise request about bbox to nominatim api
         else:
             if place:
-                params: Dict[str, Optional[str]] = {
+                params = {
                     "q": place,
                     "polygon_geojson": "0",
                     "format": "jsonv2",
                 }
             else:
                 params = {
-                    "street": street,
-                    "city": city,
-                    "county": county,
-                    "state": state,
-                    "country": country,
-                    "postalcode": postalcode,
                     "polygon_geojson": "0",
                     "format": "jsonv2",
                 }
-                params = {k: v for k, v in params.items() if v is not None}
-            try:
-                resp_content = await self._aget_url(
-                    "GET",
-                    "https://nominatim.openstreetmap.org/search.php",
-                    params=params,
-                )
-                if resp_content is None:
-                    return
-
-                coordinates = json_loads(resp_content)[0]["boundingbox"]
-                lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
-                lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
-            except Exception as ex:
-                logger.debug(f"ddg_maps() keywords={keywords} {type(ex).__name__} {ex}")
-                return
+                if street:
+                    params["street"] = street
+                if city:
+                    params["city"] = city
+                if county:
+                    params["county"] = county
+                if state:
+                    params["state"] = state
+                if country:
+                    params["country"] = country
+                if postalcode:
+                    params["postalcode"] = postalcode
+            # request nominatim api to get coordinates box
+            resp_content = await self._aget_url(
+                "GET",
+                "https://nominatim.openstreetmap.org/search.php",
+                params=params,
+            )
+            resp_json = json_loads(resp_content)
+            coordinates = resp_json[0]["boundingbox"]
+            lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
+            lat_b, lon_r = Decimal(coordinates[0]), Decimal(coordinates[3])
 
         # if a radius is specified, expand the search square
         lat_t += Decimal(radius) * Decimal(0.008983)
@@ -823,13 +781,13 @@ class AsyncDDGS:
         logger.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         cache = set()
-        results = []
+        results: List[Dict[str, str]] = []
 
         async def _maps_page(
             bbox: Tuple[Decimal, Decimal, Decimal, Decimal],
-        ) -> Optional[List[Dict[str, Optional[str]]]]:
+        ) -> Optional[List[Dict[str, str]]]:
             if max_results and len(results) >= max_results:
-                return
+                return None
             lat_t, lon_l, lat_b, lon_r = bbox
             params = {
                 "q": keywords,
@@ -844,14 +802,8 @@ class AsyncDDGS:
                 "strict_bbox": "1",
             }
             resp_content = await self._aget_url("GET", "https://duckduckgo.com/local.js", params=params)
-            if resp_content is None:
-                return
-            try:
-                page_data = json_loads(resp_content).get("results", [])
-            except Exception:
-                return
-            if page_data is None:
-                return
+            resp_json = json_loads(resp_content)
+            page_data = resp_json.get("results", [])
 
             page_results = []
             for res in page_data:
@@ -865,17 +817,17 @@ class AsyncDDGS:
                         "address": res["address"],
                         "country_code": res["country_code"],
                         "url": _normalize_url(res["website"]),
-                        "phone": res["phone"],
+                        "phone": res["phone"] or "",
                         "latitude": res["coordinates"]["latitude"],
                         "longitude": res["coordinates"]["longitude"],
                         "source": _normalize_url(res["url"]),
-                        "image": x.get("image", "") if (x := res["embed"]) else None,
-                        "desc": x.get("description", "") if (x := res["embed"]) else None,
-                        "hours": res["hours"],
-                        "category": res["ddg_category"],
-                        "facebook": f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else None,
-                        "instagram": f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else None,
-                        "twitter": f"https://twitter.com/{x}" if (x := res["twitter_id"]) else None,
+                        "image": x.get("image", "") if (x := res["embed"]) else "",
+                        "desc": x.get("description", "") if (x := res["embed"]) else "",
+                        "hours": res["hours"] or "",
+                        "category": res["ddg_category"] or "",
+                        "facebook": f"www.facebook.com/profile.php?id={x}" if (x := res["facebook_id"]) else "",
+                        "instagram": f"https://www.instagram.com/{x}" if (x := res["instagram_id"]) else "",
+                        "twitter": f"https://twitter.com/{x}" if (x := res["twitter_id"]) else "",
                     }
                     page_results.append(result)
 
@@ -917,8 +869,8 @@ class AsyncDDGS:
         return list(islice(results, max_results))
 
     async def translate(
-        self, keywords: str, from_: Optional[str] = None, to: str = "en"
-    ) -> Optional[List[Dict[str, Optional[str]]]]:
+        self, keywords: Union[List[str], str], from_: Optional[str] = None, to: str = "en"
+    ) -> List[Dict[str, str]]:
         """DuckDuckGo translate.
 
         Args:
@@ -927,7 +879,7 @@ class AsyncDDGS:
             to: what language to translate. Defaults to "en".
 
         Returns:
-            List od dictionaries with translated keywords, or None if there was an error.
+            List od dictionaries with translated keywords.
 
         Raises:
             DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -953,19 +905,12 @@ class AsyncDDGS:
                 params=payload,
                 data=keyword.encode(),
             )
-            if resp_content is None:
-                return
+            page_data = json_loads(resp_content)
+            page_data["original"] = keyword
+            results.append(page_data)
 
-            try:
-                page_data = json_loads(resp_content)
-                page_data["original"] = keyword
-            except Exception:
-                page_data = None
-
-            if page_data:
-                results.append(page_data)
-
-        keywords = [keywords] if isinstance(keywords, str) else keywords
+        if isinstance(keywords, str):
+            keywords = [keywords]
         tasks = [_translate_keyword(keyword) for keyword in keywords]
         await asyncio.gather(*tasks)
 
