@@ -768,6 +768,8 @@ class AsyncDDGS:
                 "https://nominatim.openstreetmap.org/search.php",
                 params=params,
             )
+            if resp_content == b"[]":
+                raise DuckDuckGoSearchException("maps() Сoordinates are not found, check function parameters.")
             resp_json = json_loads(resp_content)
             coordinates = resp_json[0]["boundingbox"]
             lat_t, lon_l = Decimal(coordinates[1]), Decimal(coordinates[2])
