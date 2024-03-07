@@ -190,17 +190,11 @@ Here is an example of initializing the AsyncDDGS class:
 ```python3
 import asyncio
 import logging
-import sys
 
 from duckduckgo_search import AsyncDDGS
 
-# bypass curl-cffi NotImplementedError in windows https://curl-cffi.readthedocs.io/en/latest/faq/
-if sys.platform.lower().startswith("win"):
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 async def aget_results(word):
-    addgs = AsyncDDGS(proxies=None)
-    results = await addgs.text(word, max_results=100)
+    results = await AsyncDDGS(proxies=None).text(word, max_results=100)
     return results
 
 async def main():
@@ -257,7 +251,7 @@ def text(
     timelimit: Optional[str] = None,
     backend: str = "api",
     max_results: Optional[int] = None,
-) -> Optional[List[Dict[str, Optional[str]]]]:
+) -> List[Dict[str, str]]:
     """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
     Args:
@@ -272,7 +266,7 @@ def text(
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
     Returns:
-        List of dictionaries with search results, or None if there was an error.
+        List of dictionaries with search results.
 
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -296,14 +290,14 @@ results = await AsyncDDGS().text('sun', region='wt-wt', safesearch='off', timeli
 ## 2. answers() - instant answers by duckduckgo.com
 
 ```python
-def answers(keywords: str) -> Optional[List[Dict[str, Optional[str]]]]:
+def answers(keywords: str) -> List[Dict[str, str]]:
     """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
     
     Args:
         keywords: keywords for query,
     
     Returns:
-        List of dictionaries with instant answers results, or None if there was an error.
+        List of dictionaries with instant answers results.
     
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -335,7 +329,7 @@ def images(
     layout: Optional[str] = None,
     license_image: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Optional[List[Dict[str, Optional[str]]]]:
+) -> List[Dict[str, str]]:
     """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -356,7 +350,7 @@ def images(
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
     
     Returns:
-        List of dictionaries with images search results, or None if there was an error.
+        List of dictionaries with images search results.
     
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -396,7 +390,7 @@ def videos(
     duration: Optional[str] = None,
     license_videos: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Optional[List[Dict[str, Optional[str]]]]:
+) -> List[Dict[str, str]]:
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -410,7 +404,7 @@ def videos(
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
     
     Returns:
-        List of dictionaries with videos search results, or None if there was an error.
+        List of dictionaries with videos search results.
     
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -445,7 +439,7 @@ def news(
     safesearch: str = "moderate",
     timelimit: Optional[str] = None,
     max_results: Optional[int] = None,
-) -> Optional[List[Dict[str, Optional[str]]]]:
+) -> List[Dict[str, str]]:
     """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -456,7 +450,7 @@ def news(
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
     
     Returns:
-        List of dictionaries with news search results, or None if there was an error.
+        List of dictionaries with news search results.
     
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -490,7 +484,7 @@ def maps(
     longitude: Optional[str] = None,
     radius: int = 0,
     max_results: Optional[int] = None,
-) -> Optional[List[Dict[str, Optional[str]]]]:
+) -> List[Dict[str, str]]:
     """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -509,7 +503,7 @@ def maps(
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
     
     Returns:
-        List of dictionaries with maps search results, or None if there was an error.
+        List of dictionaries with maps search results.
     
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -535,7 +529,7 @@ def translate(
     keywords: str,
     from_: Optional[str] = None,
     to: str = "en",
-) -> Optional[List[Dict[str, Optional[str]]]]:
+) -> List[Dict[str, str]]:
     """DuckDuckGo translate.
     
     Args:
@@ -544,7 +538,7 @@ def translate(
         to: what language to translate. Defaults to "en".
     
     Returns:
-        List od dictionaries with translated keywords, or None if there was an error.
+        List od dictionaries with translated keywords.
     
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
@@ -571,7 +565,7 @@ results = await AsyncDDGS().translate('sun', to="de")
 def suggestions(
     keywords,
     region: str = "wt-wt",
-) -> Optional[List[Dict[str, Optional[str]]]]:
+) -> List[Dict[str, str]]:
     """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -579,7 +573,7 @@ def suggestions(
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
     
     Returns:
-        List of dictionaries with suggestions results, or None if there was an error.
+        List of dictionaries with suggestions results.
     
     Raises:
         DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
