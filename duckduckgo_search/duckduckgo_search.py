@@ -6,13 +6,11 @@ from typing import Any, Awaitable, Dict, Optional, Type, Union
 
 from .duckduckgo_search_async import AsyncDDGS
 
-# Create an event loop and run it in a separate thread.
-_SHARED_LOOP: asyncio.AbstractEventLoop = asyncio.new_event_loop()
-_SHARED_THREAD: Thread = Thread(target=_SHARED_LOOP.run_forever, daemon=True)
-_SHARED_THREAD.start()
-
 
 class DDGS(AsyncDDGS):
+    _loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
+    Thread(target=_loop.run_forever, daemon=True).start()  # Start the event loop run in a separate thread.
+
     def __init__(
         self,
         headers: Optional[Dict[str, str]] = None,
@@ -20,7 +18,6 @@ class DDGS(AsyncDDGS):
         timeout: Optional[int] = 10,
     ) -> None:
         super().__init__(headers=headers, proxies=proxies, timeout=timeout)
-        self._loop = _SHARED_LOOP
 
     def __enter__(self) -> "DDGS":
         return self
