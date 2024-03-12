@@ -1,6 +1,7 @@
 import json
 import re
 from decimal import Decimal
+from functools import lru_cache
 from html import unescape
 from math import atan2, cos, radians, sin, sqrt
 from typing import Any, Dict, List, Union
@@ -62,6 +63,7 @@ def _text_extract_json(html_bytes: bytes, keywords: str) -> List[Dict[str, str]]
     raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} return None")
 
 
+@lru_cache
 def _is_500_in_url(url: str) -> bool:
     """Something like '506-00.js' inside the url."""
     return bool(REGEX_500_IN_URL.search(url))
