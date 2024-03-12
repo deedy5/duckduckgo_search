@@ -23,11 +23,12 @@ from .utils import (
 )
 
 logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
-_SHARED_EXECUTOR = ThreadPoolExecutor()
 
 
 class AsyncDDGS:
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
+
+    _executor = ThreadPoolExecutor()
 
     def __init__(
         self,
@@ -247,7 +248,7 @@ class AsyncDDGS:
             if b"No  results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(_SHARED_EXECUTOR, html.document_fromstring, resp_content)
+            tree = await self._asession.loop.run_in_executor(self._executor, html.document_fromstring, resp_content)
 
             for e in tree.xpath("//div[h2]"):
                 href = e.xpath("./a/@href")
@@ -322,7 +323,7 @@ class AsyncDDGS:
             if b"No more results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(_SHARED_EXECUTOR, html.document_fromstring, resp_content)
+            tree = await self._asession.loop.run_in_executor(self._executor, html.document_fromstring, resp_content)
 
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
             for i, e in data:
