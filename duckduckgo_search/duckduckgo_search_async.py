@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
+from functools import partial
 from itertools import cycle, islice
 from types import TracebackType
 from typing import Dict, List, Optional, Tuple, Union
@@ -28,7 +29,7 @@ logger = logging.getLogger("duckduckgo_search.AsyncDDGS")
 class AsyncDDGS:
     """DuckDuckgo_search async class to get search results from duckduckgo.com."""
 
-    _executor = ThreadPoolExecutor()
+    _executor: Optional[ThreadPoolExecutor] = None
 
     def __init__(
         self,
@@ -51,6 +52,7 @@ class AsyncDDGS:
             headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
+        self._parser: Optional[html.HTMLParser] = None
 
     async def __aenter__(self) -> "AsyncDDGS":
         """A context manager method that is called when entering the 'with' statement."""
@@ -61,6 +63,20 @@ class AsyncDDGS:
     ) -> None:
         """Closes the session."""
         await self._asession.close()
+
+    def _get_parser(self) -> html.HTMLParser:
+        """Get HTML parser."""
+        if self._parser is None:
+            self._parser = html.HTMLParser(
+                remove_blank_text=True, remove_comments=True, remove_pis=True, collect_ids=False
+            )
+        return self._parser
+
+    def _get_executor(self, workers: int = 10) -> ThreadPoolExecutor:
+        """Get ThreadPoolExecutor."""
+        if self._executor is None:
+            self._executor = ThreadPoolExecutor(max_workers=workers)
+        return self._executor
 
     async def _aget_url(
         self,
@@ -248,7 +264,9 @@ class AsyncDDGS:
             if b"No  results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(self._executor, html.document_fromstring, resp_content)
+            tree = await self._asession.loop.run_in_executor(
+                self._get_executor(), partial(html.document_fromstring, resp_content, self._get_parser())
+            )
 
             for e in tree.xpath("//div[h2]"):
                 href = e.xpath("./a/@href")
@@ -323,7 +341,9 @@ class AsyncDDGS:
             if b"No more results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(self._executor, html.document_fromstring, resp_content)
+            tree = await self._asession.loop.run_in_executor(
+                self._get_executor(), partial(html.document_fromstring, resp_content, self._get_parser())
+            )
 
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
             for i, e in data:
