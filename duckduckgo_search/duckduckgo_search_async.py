@@ -90,7 +90,7 @@ class AsyncDDGS:
             resp.raise_for_status()
             resp_content: bytes = await resp.acontent()
             logger.debug(f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}")
-            if _is_500_in_url(str(resp.url)) or resp.status_code == 202:
+            if _is_500_in_url(resp.url) or resp.status_code == 202:
                 raise DuckDuckGoSearchException("Ratelimit")
             if resp.status_code == 200:
                 return resp_content
@@ -172,6 +172,7 @@ class AsyncDDGS:
             "l": region,
             "vqd": vqd,
             "bing_market": region,
+            "a": "ftsa",  # something
         }
         safesearch = safesearch.lower()
         if safesearch == "moderate":
