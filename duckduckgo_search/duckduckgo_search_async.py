@@ -74,9 +74,9 @@ class AsyncDDGS:
 
     def _get_executor(self, max_workers: int = 1) -> ThreadPoolExecutor:
         """Get ThreadPoolExecutor. Default max_workers=1, because >=2 leads to a big overhead"""
-        if self._executor is None:
-            self._executor = ThreadPoolExecutor(max_workers=max_workers)
-        return self._executor
+        if AsyncDDGS._executor is None:
+            AsyncDDGS._executor = ThreadPoolExecutor(max_workers=max_workers)
+        return AsyncDDGS._executor
 
     async def _aget_url(
         self,
