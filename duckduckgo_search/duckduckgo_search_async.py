@@ -89,7 +89,7 @@ class AsyncDDGS:
             resp = await self._asession.request(method, url, data=data, params=params, stream=True)
             resp.raise_for_status()
             resp_content: bytes = await resp.acontent()
-            logger.debug(f"_aget_url() {url} {resp.status_code} {resp.http_version} {resp.elapsed} {len(resp_content)}")
+            logger.debug(f"_aget_url() {resp.url} {resp.status_code} {resp.elapsed:.2f} {len(resp_content)}")
             if _is_500_in_url(resp.url) or resp.status_code == 202:
                 raise DuckDuckGoSearchException("Ratelimit")
             if resp.status_code == 200:
