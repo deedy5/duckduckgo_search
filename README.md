@@ -1,5 +1,5 @@
 ![Python >= 3.8](https://img.shields.io/badge/python->=3.8-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/badge/duckduckgo-search)](https://pepy.tech/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/badge/duckduckgo-search/week)](https://pepy.tech/project/duckduckgo-search)
-# Duckduckgo_search v5.0<a name="TOP"></a>
+# Duckduckgo_search v5.1.0<a name="TOP"></a>
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
@@ -44,7 +44,7 @@ CLI examples:
 # text search
 ddgs text -k "ayrton senna"
 # text search via proxy (example: Tor Browser)
-ddgs text -k "china is a global threat" -p socks5://localhost:9150
+ddgs text -k "han zhongli kills a tiger" -p socks5://localhost:9150
 # find and download pdf files
 ddgs text -k "russia filetype:pdf" -m 50 -d
 # find in es-es region and download pdf files via proxy (example: Tor browser)
@@ -173,9 +173,6 @@ class DDGS:
         headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
         proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-
-    Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
     """
 ```
 
@@ -183,8 +180,9 @@ Here is an example of initializing the DDGS class.
 ```python3
 from duckduckgo_search import DDGS
 
-results = DDGS().text("python programming", max_results=5)
-print(results)
+with DDGS() as ddgs:
+    results = ddgs.text("python programming", max_results=5)
+    print(results)
 ```
 Here is an example of initializing the AsyncDDGS class:
 ```python3
@@ -194,8 +192,9 @@ import logging
 from duckduckgo_search import AsyncDDGS
 
 async def aget_results(word):
-    results = await AsyncDDGS(proxies=None).text(word, max_results=100)
-    return results
+    async with AsyncDDGS(proxies=None) as addgs:
+        results = await addgs.text(word, max_results=100)
+        return results
 
 async def main():
     words = ["sun", "earth", "moon"]
@@ -219,17 +218,13 @@ proxies = "socks5://localhost:9150"
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
-from duckduckgo_search import DDGS
-
-ddgs = DDGS(proxies="socks5://localhost:9150", timeout=20)
-results = ddgs.text("something you need", max_results=50)
+with DDGS(proxies="socks5://localhost:9150", timeout=20) as ddgs:
+    results = ddgs.text("something you need", max_results=50)
 ```
 *2. Use any proxy server* (*example with [iproyal residential proxies](https://iproyal.com?r=residential_proxies)*)
 ```python3
-from duckduckgo_search import DDGS
-
-ddgs = DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20)
-results = ddgs.text("something you need", max_results=50)
+with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as ddgs:
+    results = ddgs.text("something you need", max_results=50)s
 ```
 
 [Go To TOP](#TOP)
@@ -274,15 +269,14 @@ def text(
 ```
 ***Example***
 ```python
-from duckduckgo_search import DDGS
-
-results = DDGS().text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
-
-# Searching for pdf files
-results = DDGS().text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+with DDGS() as ddgs:
+    results = ddgs.text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+    # Searching for pdf files
+    results = ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 
 # async
-results = await AsyncDDGS().text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+async with AsyncDDGS() as addgs:
+    results = await addgs.text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -305,12 +299,12 @@ def answers(keywords: str) -> List[Dict[str, str]]:
 ```
 ***Example***
 ```python
-from duckduckgo_search import DDGS
-
-results = DDGS().answers("sun")
+with DDGS() as ddgs:
+    results = ddgs.answers("sun")
 
 # async
-results = await AsyncDDGS().answers("sun")
+async with AsyncDDGS() as addgs:
+    results = await addgs.answers("sun")
 ```
 
 [Go To TOP](#TOP)
@@ -358,22 +352,22 @@ def images(
 ```
 ***Example***
 ```python
-from duckduckgo_search import DDGS
-
-results = DDGS().images(
-    keywords="butterfly",
-    region="wt-wt",
-    safesearch="off",
-    size=None,
-    color="Monochrome",
-    type_image=None,
-    layout=None,
-    license_image=None,
-    max_results=100,
-)
+with DDGS() as ddgs:
+    results = ddgs.images(
+        keywords="butterfly",
+        region="wt-wt",
+        safesearch="off",
+        size=None,
+        color="Monochrome",
+        type_image=None,
+        layout=None,
+        license_image=None,
+        max_results=100,
+    )
 
 # async
-results = await AsyncDDGS().images('sun', region='wt-wt', safesearch='off', max_results=20)
+async with AsyncDDGS() as addgs:
+    results = await addgs.images('sun', region='wt-wt', safesearch='off', max_results=20)
 ```
 
 [Go To TOP](#TOP)
@@ -412,20 +406,20 @@ def videos(
 ```
 ***Example***
 ```python
-from duckduckgo_search import DDGS
-
-results = DDGS().videos(
-    keywords="cars",
-    region="wt-wt",
-    safesearch="off",
-    timelimit="w",
-    resolution="high",
-    duration="medium",
-    max_results=100,
-)
+with DDGS() as ddgs:
+    results = ddgs.videos(
+        keywords="cars",
+        region="wt-wt",
+        safesearch="off",
+        timelimit="w",
+        resolution="high",
+        duration="medium",
+        max_results=100,
+    )
 
 # async
-results = await AsyncDDGS().videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+async with AsyncDDGS() as addgs:
+    results = await addgs.videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -458,12 +452,12 @@ def news(
 ```
 ***Example***
 ```python
-from duckduckgo_search import DDGS
-
-results = DDGS().news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
+with DDGS() as ddgs:
+    results = ddgs.news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
 
 # async
-results = await AsyncDDGS().news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
+async with AsyncDDGS() as addgs:
+    results = await addgs.news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -511,12 +505,12 @@ def maps(
 ```
 ***Example***
 ```python
-from duckduckgo_search import DDGS
-
-results = DDGS().maps("school", place="Uganda", max_results=50)
+with DDGS() as ddgs:
+    results = ddgs.maps("school", place="Uganda", max_results=50)
 
 # async
-results = await AsyncDDGS().maps('shop', place="Baltimor", max_results=10)
+async with AsyncDDGS() as addgs:
+    results = await addgs.maps('shop', place="Baltimor", max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -546,15 +540,15 @@ def translate(
 ```
 ***Example***
 ```python
-from duckduckgo_search import DDGS
-
 keywords = 'school'
 # also valid
 keywords = ['school', 'cat']
-results = DDGS().translate(keywords, to="de")
+with DDGS() as ddgs:
+    results = ddgs.translate(keywords, to="de")
 
 # async
-results = await AsyncDDGS().translate('sun', to="de")
+async with AsyncDDGS() as addgs:
+    results = await addgs.translate('sun', to="de")
 ```
 
 [Go To TOP](#TOP)
@@ -581,12 +575,12 @@ def suggestions(
 ```
 ***Example***
 ```python3
-from duckduckgo_search import DDGS
-
-results = DDGS().suggestions("fly")
+with DDGS() as ddgs:
+    results = ddgs.suggestions("fly")
 
 # async
-results = await AsyncDDGS().suggestions('sun')
+async with AsyncDDGS() as addgs:
+    results = await addgs.suggestions('sun')
 ```
 
 [Go To TOP](#TOP)
