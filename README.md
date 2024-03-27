@@ -232,7 +232,10 @@ with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as
 ## Exceptions
 
 Exceptions:
-- `DuckDuckGoSearchException`: Raised when there is a generic exception during the API request.
+- `DuckDuckGoSearchException`: Base exception for duckduckgo_search errors.
+- `RatelimitException`: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+- `TimeoutException`: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
+
   
 [Go To TOP](#TOP)
 
@@ -264,7 +267,9 @@ def text(
         List of dictionaries with search results.
 
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -294,7 +299,9 @@ def answers(keywords: str) -> List[Dict[str, str]]:
         List of dictionaries with instant answers results.
     
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -347,7 +354,9 @@ def images(
         List of dictionaries with images search results.
     
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -401,7 +410,9 @@ def videos(
         List of dictionaries with videos search results.
     
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -447,7 +458,9 @@ def news(
         List of dictionaries with news search results.
     
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -500,7 +513,9 @@ def maps(
         List of dictionaries with maps search results.
     
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -535,7 +550,9 @@ def translate(
         List od dictionaries with translated keywords.
     
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -570,7 +587,9 @@ def suggestions(
         List of dictionaries with suggestions results.
     
     Raises:
-        DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***

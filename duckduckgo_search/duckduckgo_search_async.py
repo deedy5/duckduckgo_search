@@ -12,11 +12,10 @@ from typing import Dict, List, Optional, Tuple, Union
 from curl_cffi import requests
 from lxml import html
 
-from .exceptions import DuckDuckGoSearchException
+from .exceptions import DuckDuckGoSearchException, RatelimitException, TimeoutException
 from .utils import (
     _calculate_distance,
     _extract_vqd,
-    _is_500_in_url,
     _normalize,
     _normalize_url,
     _text_extract_json,
@@ -43,16 +42,18 @@ class AsyncDDGS:
             headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
             proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
-
-        Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
         """
         self.proxies = {"all": proxies} if isinstance(proxies, str) else proxies
         self._asession = requests.AsyncSession(
-            headers=headers, proxies=self.proxies, timeout=timeout, impersonate="chrome"
+            headers=headers,
+            proxies=self.proxies,
+            timeout=timeout,
+            impersonate="chrome",
+            allow_redirects=False,
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
         self._parser: Optional[html.HTMLParser] = None
+        self._exception_event = asyncio.Event()
 
     async def __aenter__(self) -> "AsyncDDGS":
         """A context manager method that is called when entering the 'with' statement."""
@@ -85,18 +86,23 @@ class AsyncDDGS:
         data: Optional[Union[Dict[str, str], bytes]] = None,
         params: Optional[Dict[str, str]] = None,
     ) -> bytes:
+        if self._exception_event.is_set():
+            raise DuckDuckGoSearchException("Exception occurred in previous call.")
         try:
             resp = await self._asession.request(method, url, data=data, params=params, stream=True)
-            resp.raise_for_status()
             resp_content: bytes = await resp.acontent()
-            logger.debug(f"_aget_url() {resp.url} {resp.status_code} {resp.elapsed:.2f} {len(resp_content)}")
-            if _is_500_in_url(resp.url) or resp.status_code == 202:
-                raise DuckDuckGoSearchException("Ratelimit")
-            if resp.status_code == 200:
-                return resp_content
         except Exception as ex:
-            raise DuckDuckGoSearchException(f"_aget_url() {url} {type(ex).__name__}: {ex}") from ex
-        raise DuckDuckGoSearchException(f"_aget_url() {url} return None. {params=} {data=}")
+            self._exception_event.set()
+            if "time" in f"{ex}":
+                raise TimeoutException(f"{url} {type(ex).__name__}: {ex}") from ex
+            raise DuckDuckGoSearchException(f"{url} {type(ex).__name__}: {ex}") from ex
+        logger.debug(f"_aget_url() {resp.url} {resp.status_code} {resp.elapsed:.2f} {len(resp_content)}")
+        if resp.status_code == 200:
+            return resp_content
+        self._exception_event.set()
+        if resp.status_code in (202, 301, 403):
+            raise RatelimitException(f"{resp.url} {resp.status_code}")
+        raise DuckDuckGoSearchException(f"{resp.url} return None. {params=} {data=}")
 
     async def _aget_vqd(self, keywords: str) -> str:
         """Get vqd value for a search query."""
@@ -129,7 +135,9 @@ class AsyncDDGS:
             List of dictionaries with search results, or None if there was an error.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         if backend == "api":
             results = await self._text_api(keywords, region, safesearch, timelimit, max_results)
@@ -160,7 +168,9 @@ class AsyncDDGS:
             List of dictionaries with search results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -236,7 +246,9 @@ class AsyncDDGS:
             List of dictionaries with search results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -318,7 +330,9 @@ class AsyncDDGS:
             List of dictionaries with search results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -416,7 +430,9 @@ class AsyncDDGS:
             List of dictionaries with images search results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -500,7 +516,9 @@ class AsyncDDGS:
             List of dictionaries with videos search results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -566,7 +584,9 @@ class AsyncDDGS:
             List of dictionaries with news search results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -627,7 +647,9 @@ class AsyncDDGS:
             List of dictionaries with instant answers results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -697,7 +719,9 @@ class AsyncDDGS:
             List of dictionaries with suggestions results.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -705,7 +729,7 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
         }
-        resp_content = await self._aget_url("GET", "https://duckduckgo.com/ac", params=payload)
+        resp_content = await self._aget_url("GET", "https://duckduckgo.com/ac/", params=payload)
         page_data = json_loads(resp_content)
         return [r for r in page_data]
 
@@ -745,7 +769,9 @@ class AsyncDDGS:
             List of dictionaries with maps search results, or None if there was an error.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
@@ -906,7 +932,9 @@ class AsyncDDGS:
             List od dictionaries with translated keywords.
 
         Raises:
-            DuckDuckGoSearchException: Raised when there is a generic exception during the API request.
+            DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
+            RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
+            TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
         assert keywords, "keywords is mandatory"
 
