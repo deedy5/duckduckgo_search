@@ -99,7 +99,7 @@ class AsyncDDGS:
             resp_content: bytes = await resp.acontent()
         except Exception as ex:
             self._exception_event.set()
-            if "time" in f"{ex}":
+            if "time" in str(ex).lower():
                 raise TimeoutException(f"{url} {type(ex).__name__}: {ex}") from ex
             raise DuckDuckGoSearchException(f"{url} {type(ex).__name__}: {ex}") from ex
         logger.debug(f"_aget_url() {resp.url} {resp.status_code} {resp.elapsed:.2f} {len(resp_content)}")
