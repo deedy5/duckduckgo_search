@@ -114,18 +114,12 @@ def _download_results(keywords, results, images=False, proxy=None, threads=None)
 
 @click.group(chain=True)
 def cli():
-    """A decorator that creates a command group.
-
-    This decorator is used to create a group of commands.
-    The `chain=True` parameter allows the commands in the group to be chained together,
-    meaning the output of one command can be used as the input for the next command.
-    """
+    """dukduckgo_search CLI tool"""
     pass
 
 
 @cli.command()
 def version():
-    """A command-line interface command that prints and returns the current version of the program."""
     print(__version__)
     return __version__
 
