@@ -1,4 +1,3 @@
-import json
 import re
 from decimal import Decimal
 from html import unescape
@@ -6,28 +5,23 @@ from math import atan2, cos, radians, sin, sqrt
 from typing import Any, Dict, List, Union
 from urllib.parse import unquote
 
-from .exceptions import DuckDuckGoSearchException
+import orjson
 
-try:
-    import orjson
-except ModuleNotFoundError:
-    HAS_ORJSON = False
-else:
-    HAS_ORJSON = True
+from .exceptions import DuckDuckGoSearchException
 
 REGEX_STRIP_TAGS = re.compile("<.*?>")
 
 
 def json_dumps(obj: Any) -> str:
     try:
-        return orjson.dumps(obj).decode("utf-8") if HAS_ORJSON else json.dumps(obj)
+        return orjson.dumps(obj).decode("utf-8")
     except Exception as ex:
         raise DuckDuckGoSearchException(f"{type(ex).__name__}: {ex}") from ex
 
 
 def json_loads(obj: Union[str, bytes]) -> Any:
     try:
-        return orjson.loads(obj) if HAS_ORJSON else json.loads(obj)
+        return orjson.loads(obj)
     except Exception as ex:
         raise DuckDuckGoSearchException(f"{type(ex).__name__}: {ex}") from ex
 

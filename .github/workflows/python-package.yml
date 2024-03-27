@@ -34,7 +34,8 @@ jobs:
         ruff format . --check --target-version py38
     - name: Mypy
       run: |
-        python -m pip install orjson
+        python -m pip install .
+        python -m pip install .[lxml]
         mypy --install-types .
     - name: Pytest
       run: |

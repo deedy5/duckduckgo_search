@@ -27,7 +27,10 @@ Search for words, documents, images, videos, news, maps and text translation usi
 ```python
 pip install -U duckduckgo_search
 ```
-> :point_up: `duckduckgo_search` also uses `orjson` if it is installed.
+**[Optional]** To use the `text` function with `backend='html'` or `backend='lite'`:
+```python
+pip install -U duckduckgo_search[lxml]
+```
 
 ## CLI version
 

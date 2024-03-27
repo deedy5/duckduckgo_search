@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import warnings
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 from datetime import datetime, timezone
@@ -10,7 +11,14 @@ from types import TracebackType
 from typing import Dict, List, Optional, Tuple, Union
 
 from curl_cffi import requests
-from lxml import html
+
+try:
+    from lxml.html import HTMLParser as LHTMLParser
+    from lxml.html import document_fromstring
+
+    LXML_AVAILABLE = True
+except ImportError:
+    LXML_AVAILABLE = False
 
 from .exceptions import DuckDuckGoSearchException, RatelimitException, TimeoutException
 from .utils import (
@@ -52,7 +60,7 @@ class AsyncDDGS:
             allow_redirects=False,
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
-        self._parser: Optional[html.HTMLParser] = None
+        self._parser: Optional[LHTMLParser] = None
         self._exception_event = asyncio.Event()
 
     async def __aenter__(self) -> "AsyncDDGS":
@@ -65,12 +73,10 @@ class AsyncDDGS:
         """Closes the session."""
         await self._asession.close()
 
-    def _get_parser(self) -> html.HTMLParser:
+    def _get_parser(self) -> "LHTMLParser":
         """Get HTML parser."""
         if self._parser is None:
-            self._parser = html.HTMLParser(
-                remove_blank_text=True, remove_comments=True, remove_pis=True, collect_ids=False
-            )
+            self._parser = LHTMLParser(remove_blank_text=True, remove_comments=True, remove_pis=True, collect_ids=False)
         return self._parser
 
     def _get_executor(self, max_workers: int = 1) -> ThreadPoolExecutor:
@@ -139,6 +145,10 @@ class AsyncDDGS:
             RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
             TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
+        if LXML_AVAILABLE is False and backend != "api":
+            backend = "api"
+            warnings.warn("lxml is not installed. Using backend='api'.", stacklevel=2)
+
         if backend == "api":
             results = await self._text_api(keywords, region, safesearch, timelimit, max_results)
         elif backend == "html":
@@ -278,7 +288,7 @@ class AsyncDDGS:
                 return
 
             tree = await self._asession.loop.run_in_executor(
-                self._get_executor(), partial(html.document_fromstring, resp_content, self._get_parser())
+                self._get_executor(), partial(document_fromstring, resp_content, self._get_parser())
             )
 
             for e in tree.xpath("//div[h2]"):
@@ -357,7 +367,7 @@ class AsyncDDGS:
                 return
 
             tree = await self._asession.loop.run_in_executor(
-                self._get_executor(), partial(html.document_fromstring, resp_content, self._get_parser())
+                self._get_executor(), partial(document_fromstring, resp_content, self._get_parser())
             )
 
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
