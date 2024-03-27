@@ -62,16 +62,28 @@ class AsyncDDGS:
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
         self._parser: Optional[LHTMLParser] = None
         self._exception_event = asyncio.Event()
+        self._exit_done = False
 
     async def __aenter__(self) -> "AsyncDDGS":
-        """A context manager method that is called when entering the 'with' statement."""
         return self
 
     async def __aexit__(
-        self, exc_type: Optional[BaseException], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]
+        self,
+        exc_type: Optional[BaseException] = None,
+        exc_val: Optional[BaseException] = None,
+        exc_tb: Optional[TracebackType] = None,
     ) -> None:
-        """Closes the session."""
-        await self._asession.close()
+        await self._session_close()
+
+    def __del__(self) -> None:
+        if self._exit_done is False:
+            asyncio.create_task(self._session_close())
+
+    async def _session_close(self) -> None:
+        """Close the curl-cffi async session."""
+        if self._exit_done is False:
+            await self._asession.close()
+            self._exit_done = True
 
     def _get_parser(self) -> "LHTMLParser":
         """Get HTML parser."""

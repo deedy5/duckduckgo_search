@@ -183,9 +183,8 @@ Here is an example of initializing the DDGS class.
 ```python3
 from duckduckgo_search import DDGS
 
-with DDGS() as ddgs:
-    results = ddgs.text("python programming", max_results=5)
-    print(results)
+results = DDGS().text("python programming", max_results=5)
+print(results)
 ```
 Here is an example of initializing the AsyncDDGS class:
 ```python3
@@ -195,9 +194,8 @@ import logging
 from duckduckgo_search import AsyncDDGS
 
 async def aget_results(word):
-    async with AsyncDDGS(proxies=None) as addgs:
-        results = await addgs.text(word, max_results=100)
-        return results
+    results = await AsyncDDGS(proxies=None).text(word, max_results=100)
+    return results
 
 async def main():
     words = ["sun", "earth", "moon"]
@@ -221,13 +219,13 @@ proxies = "socks5://localhost:9150"
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
-with DDGS(proxies="socks5://localhost:9150", timeout=20) as ddgs:
-    results = ddgs.text("something you need", max_results=50)
+ddgs = DDGS(proxies="socks5://localhost:9150", timeout=20)
+results = ddgs.text("something you need", max_results=50)
 ```
 *2. Use any proxy server* (*example with [iproyal residential proxies](https://iproyal.com?r=residential_proxies)*)
 ```python3
-with DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20) as ddgs:
-    results = ddgs.text("something you need", max_results=50)s
+ddgs = DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20)
+results = ddgs.text("something you need", max_results=50)
 ```
 
 [Go To TOP](#TOP)
@@ -277,14 +275,12 @@ def text(
 ```
 ***Example***
 ```python
-with DDGS() as ddgs:
-    results = ddgs.text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
-    # Searching for pdf files
-    results = ddgs.text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+results = DDGS().text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+# Searching for pdf files
+results = DDGS().text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+results = await AsyncDDGS().text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -309,12 +305,10 @@ def answers(keywords: str) -> List[Dict[str, str]]:
 ```
 ***Example***
 ```python
-with DDGS() as ddgs:
-    results = ddgs.answers("sun")
+results = DDGS().answers("sun")
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.answers("sun")
+results = await AsyncDDGS().answers("sun")
 ```
 
 [Go To TOP](#TOP)
@@ -364,22 +358,20 @@ def images(
 ```
 ***Example***
 ```python
-with DDGS() as ddgs:
-    results = ddgs.images(
-        keywords="butterfly",
-        region="wt-wt",
-        safesearch="off",
-        size=None,
-        color="Monochrome",
-        type_image=None,
-        layout=None,
-        license_image=None,
-        max_results=100,
-    )
+results = DDGS().images(
+    keywords="butterfly",
+    region="wt-wt",
+    safesearch="off",
+    size=None,
+    color="Monochrome",
+    type_image=None,
+    layout=None,
+    license_image=None,
+    max_results=100,
+)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.images('sun', region='wt-wt', safesearch='off', max_results=20)
+results = await AsyncDDGS().images('sun', region='wt-wt', safesearch='off', max_results=20)
 ```
 
 [Go To TOP](#TOP)
@@ -420,20 +412,18 @@ def videos(
 ```
 ***Example***
 ```python
-with DDGS() as ddgs:
-    results = ddgs.videos(
-        keywords="cars",
-        region="wt-wt",
-        safesearch="off",
-        timelimit="w",
-        resolution="high",
-        duration="medium",
-        max_results=100,
-    )
+results = DDGS().videos(
+    keywords="cars",
+    region="wt-wt",
+    safesearch="off",
+    timelimit="w",
+    resolution="high",
+    duration="medium",
+    max_results=100,
+)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+results = await AsyncDDGS().videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -468,12 +458,10 @@ def news(
 ```
 ***Example***
 ```python
-with DDGS() as ddgs:
-    results = ddgs.news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
+results = DDGS().news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
+results = await AsyncDDGS().news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -523,12 +511,10 @@ def maps(
 ```
 ***Example***
 ```python
-with DDGS() as ddgs:
-    results = ddgs.maps("school", place="Uganda", max_results=50)
+results = DDGS().maps("school", place="Uganda", max_results=50)
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.maps('shop', place="Baltimor", max_results=10)
+results = await AsyncDDGS().maps('shop', place="Baltimor", max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -563,12 +549,10 @@ def translate(
 keywords = 'school'
 # also valid
 keywords = ['school', 'cat']
-with DDGS() as ddgs:
-    results = ddgs.translate(keywords, to="de")
+results = DDGS().translate(keywords, to="de")
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.translate('sun', to="de")
+results = await AsyncDDGS().translate('sun', to="de")
 ```
 
 [Go To TOP](#TOP)
@@ -597,12 +581,10 @@ def suggestions(
 ```
 ***Example***
 ```python3
-with DDGS() as ddgs:
-    results = ddgs.suggestions("fly")
+results = DDGS().suggestions("fly")
 
 # async
-async with AsyncDDGS() as addgs:
-    results = await addgs.suggestions('sun')
+results = await AsyncDDGS().suggestions('sun')
 ```
 
 [Go To TOP](#TOP)
