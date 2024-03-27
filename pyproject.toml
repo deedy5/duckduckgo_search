@@ -30,7 +30,7 @@ classifiers = [
 dependencies = [
     "click>=8.1.7",    
     "curl_cffi>=0.6.2",
-    "lxml>=5.1.0",
+    "orjson>=3.9.15",
 ]
 dynamic = ["version"]
 
@@ -44,6 +44,9 @@ ddgs = "duckduckgo_search.cli:cli"
 version = {attr = "duckduckgo_search.version.__version__"}
 
 [project.optional-dependencies]
+lxml = [
+    "lxml>=5.1.0",
+]
 dev = [
     "mypy>=1.8.0",
     "pytest>=8.0.1",
