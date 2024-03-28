@@ -202,9 +202,11 @@ class AsyncDDGS:
             "q": keywords,
             "kl": region,
             "l": region,
+            "p": "",
+            "s": "0",
+            "df": "",
             "vqd": vqd,
-            "bing_market": region,
-            "a": "ftsa",  # something
+            "ex": "",
         }
         safesearch = safesearch.lower()
         if safesearch == "moderate":
