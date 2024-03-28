@@ -50,8 +50,8 @@ ddgs text -k "axon regeneration"
 ddgs text -k "neuroscience filetype:pdf" -r wt-wt -m 50 -d -p socks5://localhost:9150
 # find and download images
 ddgs images -k "gaz 14 chaika" -r ru-ru -type photo -m 500 -d
-# get latest news
-ddgs news -k "hubble telescope" -m 50
+# get latest news and save to csv
+ddgs news -k "hubble telescope" -m 50 -o csv
 ```
 [Go To TOP](#TOP)
 
@@ -202,13 +202,14 @@ Proxy can be specified as a dictionary or just a string
 proxies = {"http": "socks5://localhost:9150", "https": "socks5://localhost:9150"}
 proxies = "socks5://localhost:9150"
 ```
+Use a proxy that changes ip on each request. Otherwise, use a new proxy with each DDGS or AsyncDDGS initialization.
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
 ddgs = DDGS(proxies="socks5://localhost:9150", timeout=20)
 results = ddgs.text("something you need", max_results=50)
 ```
-*2. Use any proxy server* (*example with [iproyal residential proxies](https://iproyal.com?r=residential_proxies)*)
+*2. Use any proxy server* (*example with [iproyal rotating residential proxies](https://iproyal.com?r=residential_proxies)*)
 ```python3
 ddgs = DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20)
 results = ddgs.text("something you need", max_results=50)
