@@ -38,7 +38,7 @@ dynamic = ["version"]
 "Homepage" = "https://github.com/deedy5/duckduckgo_search"
 
 [project.scripts]
-ddgs = "duckduckgo_search.cli:cli"
+ddgs = "duckduckgo_search.cli:safe_entry_point"
 
 [tool.setuptools.dynamic]
 version = {attr = "duckduckgo_search.version.__version__"}

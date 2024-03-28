@@ -118,6 +118,13 @@ def cli():
     pass
 
 
+def safe_entry_point():
+    try:
+        cli()
+    except Exception as ex:
+        click.echo(f"{type(ex).__name__}: {ex}")
+
+
 @cli.command()
 def version():
     print(__version__)
