@@ -13,7 +13,7 @@ runner = CliRunner()
 
 @pytest.fixture(autouse=True)
 def pause_between_tests():
-    time.sleep(1)
+    time.sleep(0.5)
     
 
 def test_version_command():
