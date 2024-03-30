@@ -18,7 +18,6 @@ class DDGS(AsyncDDGS):
         timeout: Optional[int] = 10,
     ) -> None:
         super().__init__(headers=headers, proxies=proxies, timeout=timeout)
-        self._exit_done = False
 
     def __enter__(self) -> "DDGS":
         return self
@@ -32,13 +31,12 @@ class DDGS(AsyncDDGS):
         self._close_session()
 
     def __del__(self) -> None:
-        self._close_session()
+        if self._asession._closed is False:
+            self._close_session()
 
     def _close_session(self) -> None:
         """Close the curl-cffi async session."""
-        if self._exit_done is False:
-            self._run_async_in_thread(self._asession.close())
-            self._exit_done = True
+        self._run_async_in_thread(self._asession.close())
 
     def _run_async_in_thread(self, coro: Awaitable[Any]) -> Any:
         """Runs an async coroutine in a separate thread."""

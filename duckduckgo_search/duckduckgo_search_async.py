@@ -8,7 +8,7 @@ from decimal import Decimal
 from functools import partial
 from itertools import cycle, islice
 from types import TracebackType
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, cast
 
 from curl_cffi import requests
 
@@ -62,7 +62,6 @@ class AsyncDDGS:
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
         self._parser: Optional[LHTMLParser] = None
         self._exception_event = asyncio.Event()
-        self._exit_done = False
 
     async def __aenter__(self) -> "AsyncDDGS":
         return self
@@ -73,17 +72,12 @@ class AsyncDDGS:
         exc_val: Optional[BaseException] = None,
         exc_tb: Optional[TracebackType] = None,
     ) -> None:
-        await self._session_close()
+        await self._asession.close()
 
     def __del__(self) -> None:
-        if self._exit_done is False:
-            asyncio.create_task(self._session_close())
-
-    async def _session_close(self) -> None:
-        """Close the curl-cffi async session."""
-        if self._exit_done is False:
-            await self._asession.close()
-            self._exit_done = True
+        if self._asession._closed is False:
+            with suppress(RuntimeError):
+                asyncio.create_task(self._asession.close())
 
     def _get_parser(self) -> "LHTMLParser":
         """Get HTML parser."""
@@ -107,16 +101,15 @@ class AsyncDDGS:
         if self._exception_event.is_set():
             raise DuckDuckGoSearchException("Exception occurred in previous call.")
         try:
-            resp = await self._asession.request(method, url, data=data, params=params, stream=True)
-            resp_content: bytes = await resp.acontent()
+            resp = await self._asession.request(method, url, data=data, params=params)
         except Exception as ex:
             self._exception_event.set()
             if "time" in str(ex).lower():
                 raise TimeoutException(f"{url} {type(ex).__name__}: {ex}") from ex
             raise DuckDuckGoSearchException(f"{url} {type(ex).__name__}: {ex}") from ex
-        logger.debug(f"_aget_url() {resp.url} {resp.status_code} {resp.elapsed:.2f} {len(resp_content)}")
+        logger.debug(f"_aget_url() {resp.url} {resp.status_code} {resp.elapsed:.2f} {len(resp.content)}")
         if resp.status_code == 200:
-            return resp_content
+            return cast(bytes, resp.content)
         self._exception_event.set()
         if resp.status_code in (202, 301, 403):
             raise RatelimitException(f"{resp.url} {resp.status_code}")
