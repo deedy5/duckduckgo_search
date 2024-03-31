@@ -27,16 +27,14 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install .[dev]
+        python -m pip install .[lxml,dev]
     - name: Ruff
       run: |
         ruff check .
-        ruff format . --check --target-version py38
+        ruff format . --check
     - name: Mypy
       run: |
-        python -m pip install .
-        python -m pip install .[lxml]
-        mypy --install-types .
+        mypy --install-types --non-interactive .
     - name: Pytest
       run: |
         pytest

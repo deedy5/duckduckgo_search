@@ -55,7 +55,6 @@ dev = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py38"
 exclude = ["tests"]
 
 [tool.ruff.lint]
@@ -71,6 +70,9 @@ ignore = ["D100"]
 
 [tool.mypy]
 python_version = "3.8"
-ignore_missing_imports = true
 strict = true
 exclude = ['cli\.py$', '__main__\.py$', "tests/", "build/"]
+
+[[tool.mypy.overrides]]
+module = "curl_cffi"
+ignore_missing_imports = true
