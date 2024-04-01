@@ -1,3 +1,11 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
+---
 **Before you open an issue:**
 - [ ] I have the latest version. (Check: `ddgs version`. Update: `pip install -U duckduckgo_search`)</br>
 - [ ] I tried reinstalling the library. (`pip install -I duckduckgo_search`)
@@ -8,13 +16,8 @@
 
 What the bug is.
 
-**Debug log**
-
-Add `logging.basicConfig(level=logging.DEBUG)` to the beginning of your script and attach log to the issue.
-
-**Screenshots**
-
-If applicable, add screenshots to help explain your problem.
+**Steps to reproduce the problem:**
+Please provide the steps to reproduce this problem.
 
 **Specify this information**
 
