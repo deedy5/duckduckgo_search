@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 from datetime import datetime, timezone
 from decimal import Decimal
-from functools import partial
+from functools import cached_property, partial
 from itertools import cycle, islice
 from types import TracebackType
 from typing import Dict, List, Optional, Tuple, Type, Union, cast
@@ -66,7 +66,6 @@ class AsyncDDGS:
             allow_redirects=False,
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
-        self._parser: Optional[LHTMLParser] = None
         self._exception_event = asyncio.Event()
 
     async def __aenter__(self) -> "AsyncDDGS":
@@ -85,17 +84,21 @@ class AsyncDDGS:
             with suppress(RuntimeError):
                 asyncio.create_task(self._asession.close())
 
-    def _get_parser(self) -> "LHTMLParser":
+    @cached_property
+    def parser(self) -> Optional["LHTMLParser"]:
         """Get HTML parser."""
-        if self._parser is None:
-            self._parser = LHTMLParser(remove_blank_text=True, remove_comments=True, remove_pis=True, collect_ids=False)
-        return self._parser
+        return LHTMLParser(remove_blank_text=True, remove_comments=True, remove_pis=True, collect_ids=False)
 
-    def _get_executor(self, max_workers: int = 1) -> ThreadPoolExecutor:
+    @classmethod
+    def _get_executor(cls, max_workers: int = 1) -> ThreadPoolExecutor:
         """Get ThreadPoolExecutor. Default max_workers=1, because >=2 leads to a big overhead"""
-        if AsyncDDGS._executor is None:
-            AsyncDDGS._executor = ThreadPoolExecutor(max_workers=max_workers)
-        return AsyncDDGS._executor
+        if cls._executor is None:
+            cls._executor = ThreadPoolExecutor(max_workers=max_workers)
+        return cls._executor
+
+    @property
+    def executor(cls) -> Optional[ThreadPoolExecutor]:
+        return cls._get_executor()
 
     async def _aget_url(
         self,
@@ -301,7 +304,7 @@ class AsyncDDGS:
                 return
 
             tree = await self._asession.loop.run_in_executor(
-                self._get_executor(), partial(document_fromstring, resp_content, self._get_parser())
+                self.executor, partial(document_fromstring, resp_content, self.parser)
             )
 
             for e in tree.xpath("//div[h2]"):
@@ -380,7 +383,7 @@ class AsyncDDGS:
                 return
 
             tree = await self._asession.loop.run_in_executor(
-                self._get_executor(), partial(document_fromstring, resp_content, self._get_parser())
+                self.executor, partial(document_fromstring, resp_content, self.parser)
             )
 
             data = zip(cycle(range(1, 5)), tree.xpath("//table[last()]//tr"))
