@@ -121,7 +121,7 @@ class AsyncDDGS:
             return cast(bytes, resp.content)
         self._exception_event.set()
         if resp.status_code in (202, 301, 403):
-            raise RatelimitException(f"{resp.url} {resp.status_code}")
+            raise RatelimitException(f"{resp.url} {resp.status_code} Ratelimit")
         raise DuckDuckGoSearchException(f"{resp.url} return None. {params=} {data=}")
 
     async def _aget_vqd(self, keywords: str) -> str:
