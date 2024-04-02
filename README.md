@@ -12,7 +12,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Duckduckgo search operators](#duckduckgo-search-operators)
 * [Regions](#regions)
 * [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
-* [Proxies](#proxies)
+* [Proxy](#proxy)
 * [Exceptions](#exceptions)
 * [1. text() - text search](#1-text---text-search-by-duckduckgocom)
 * [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
@@ -27,10 +27,9 @@ Search for words, documents, images, videos, news, maps and text translation usi
 ```python
 pip install -U duckduckgo_search
 ```
-**[Optional]** To use the `text` function with `backend='html'` or `backend='lite'`:
-```python
-pip install -U duckduckgo_search[lxml]
-```
+> [!NOTE]
+> you can install lxml to use the `text` function with `backend='html'` or `backend='lite'` (size ≈ 12Mb)</br>
+> `pip install -U duckduckgo_search[lxml]`
 
 ## CLI version
 
@@ -160,7 +159,8 @@ class DDGS:
 
     Args:
         headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
-        proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
+        proxy (str, optional): proxy for the HTTP client, supports http/https/socks5 protocols.
+            example: "http://user:pass@example.com:3128". Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
     """
 ```
@@ -180,7 +180,7 @@ import logging
 from duckduckgo_search import AsyncDDGS
 
 async def aget_results(word):
-    results = await AsyncDDGS(proxies=None).text(word, max_results=100)
+    results = await AsyncDDGS(proxy=None).text(word, max_results=100)
     return results
 
 async def main():
@@ -196,22 +196,19 @@ if __name__ == "__main__":
 
 [Go To TOP](#TOP)
 
-## Proxies
-Proxy can be specified as a dictionary or just a string
-```python
-proxies = {"http": "socks5://localhost:9150", "https": "socks5://localhost:9150"}
-proxies = "socks5://localhost:9150"
-```
-Use a proxy that changes ip on each request. Otherwise, use a new proxy with each DDGS or AsyncDDGS initialization.
+## Proxy
+
+Package supports http/https/socks proxies. Example: `http://user:pass@example.com:3128`.
+Use a rotating proxy. Otherwise, use a new proxy with each DDGS or AsyncDDGS initialization.
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
-ddgs = DDGS(proxies="socks5://localhost:9150", timeout=20)
+ddgs = DDGS(proxy="socks5://localhost:9150", timeout=20)
 results = ddgs.text("something you need", max_results=50)
 ```
 *2. Use any proxy server* (*example with [iproyal rotating residential proxies](https://iproyal.com?r=residential_proxies)*)
 ```python3
-ddgs = DDGS(proxies="socks5://user:password@geo.iproyal.com:32325", timeout=20)
+ddgs = DDGS(proxy="socks5://user:password@geo.iproyal.com:32325", timeout=20)
 results = ddgs.text("something you need", max_results=50)
 ```
 
@@ -253,11 +250,6 @@ def text(
 
     Returns:
         List of dictionaries with search results.
-
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -283,11 +275,6 @@ def answers(keywords: str) -> List[Dict[str, str]]:
     
     Returns:
         List of dictionaries with instant answers results.
-    
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -336,11 +323,6 @@ def images(
     
     Returns:
         List of dictionaries with images search results.
-    
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -390,11 +372,6 @@ def videos(
     
     Returns:
         List of dictionaries with videos search results.
-    
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -436,11 +413,6 @@ def news(
     
     Returns:
         List of dictionaries with news search results.
-    
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -489,11 +461,6 @@ def maps(
     
     Returns:
         List of dictionaries with maps search results.
-    
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -524,11 +491,6 @@ def translate(
     
     Returns:
         List od dictionaries with translated keywords.
-    
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***
@@ -559,11 +521,6 @@ def suggestions(
     
     Returns:
         List of dictionaries with suggestions results.
-    
-    Raises:
-        DuckDuckGoSearchException: Base exception for duckduckgo_search errors.
-        RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
-        TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
     """
 ```
 ***Example***

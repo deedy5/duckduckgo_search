@@ -14,10 +14,19 @@ class DDGS(AsyncDDGS):
     def __init__(
         self,
         headers: Optional[Dict[str, str]] = None,
-        proxies: Union[Dict[str, str], str, None] = None,
+        proxy: Optional[str] = None,
+        proxies: Union[Dict[str, str], str, None] = None,  # deprecated
         timeout: Optional[int] = 10,
     ) -> None:
-        super().__init__(headers=headers, proxies=proxies, timeout=timeout)
+        """Initialize the DDGS object.
+
+        Args:
+            headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
+            proxy (str, optional): proxy for the HTTP client, supports http/https/socks5 protocols.
+                example: "http://user:pass@example.com:3128". Defaults to None.
+            timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+        """
+        super().__init__(headers=headers, proxy=proxy, proxies=proxies, timeout=timeout)
 
     def __enter__(self) -> "DDGS":
         return self

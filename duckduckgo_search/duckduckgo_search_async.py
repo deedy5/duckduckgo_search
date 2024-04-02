@@ -8,7 +8,7 @@ from decimal import Decimal
 from functools import partial
 from itertools import cycle, islice
 from types import TracebackType
-from typing import Dict, List, Optional, Tuple, Union, cast
+from typing import Dict, List, Optional, Tuple, Type, Union, cast
 
 from curl_cffi import requests
 
@@ -41,20 +41,26 @@ class AsyncDDGS:
     def __init__(
         self,
         headers: Optional[Dict[str, str]] = None,
-        proxies: Union[Dict[str, str], str, None] = None,
+        proxy: Optional[str] = None,
+        proxies: Union[Dict[str, str], str, None] = None,  # deprecated
         timeout: Optional[int] = 10,
     ) -> None:
         """Initialize the AsyncDDGS object.
 
         Args:
             headers (dict, optional): Dictionary of headers for the HTTP client. Defaults to None.
-            proxies (Union[dict, str], optional): Proxies for the HTTP client (can be dict or str). Defaults to None.
+            proxy (str, optional): proxy for the HTTP client, supports http/https/socks5 protocols.
+                example: "http://user:pass@example.com:3128". Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
         """
-        self.proxies = {"all": proxies} if isinstance(proxies, str) else proxies
+        self.proxy: Optional[str] = proxy
+        assert self.proxy is None or isinstance(self.proxy, str), "proxy must be a str"
+        if not proxy and proxies:
+            warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
+            self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
         self._asession = requests.AsyncSession(
             headers=headers,
-            proxies=self.proxies,
+            proxy=self.proxy,
             timeout=timeout,
             impersonate="chrome",
             allow_redirects=False,
@@ -68,7 +74,7 @@ class AsyncDDGS:
 
     async def __aexit__(
         self,
-        exc_type: Optional[BaseException] = None,
+        exc_type: Optional[Type[BaseException]] = None,
         exc_val: Optional[BaseException] = None,
         exc_tb: Optional[TracebackType] = None,
     ) -> None:

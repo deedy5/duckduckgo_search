@@ -81,7 +81,7 @@ def _sanitize_keywords(keywords):
 
 def _download_file(url, dir_path, filename, proxy):
     try:
-        resp = requests.get(url, proxies=proxy, impersonate="chrome", timeout=10)
+        resp = requests.get(url, proxy=proxy, impersonate="chrome", timeout=10)
         resp.raise_for_status()
         with open(os.path.join(dir_path, filename[:200]), "wb") as file:
             file.write(resp.content)
@@ -93,7 +93,6 @@ def _download_results(keywords, results, images=False, proxy=None, threads=None)
     path_type = "images" if images else "text"
     path = f"{path_type}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     os.makedirs(path, exist_ok=True)
-    proxy = {"http": proxy, "https": proxy}
 
     threads = 10 if threads is None else threads
     with ThreadPoolExecutor(max_workers=threads) as executor:
@@ -144,7 +143,7 @@ def version():
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def text(keywords, region, safesearch, timelimit, backend, output, download, threads, max_results, proxy):
     """CLI function to perform a text search using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).text(
+    data = DDGS(proxy=proxy).text(
         keywords=keywords,
         region=region,
         safesearch=safesearch,
@@ -170,7 +169,7 @@ def text(keywords, region, safesearch, timelimit, backend, output, download, thr
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def answers(keywords, output, proxy):
     """CLI function to perform a answers search using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).answers(keywords=keywords)
+    data = DDGS(proxy=proxy).answers(keywords=keywords)
     filename = f"answers_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         _print_data(data)
@@ -241,7 +240,7 @@ def images(
     proxy,
 ):
     """CLI function to perform a images search using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).images(
+    data = DDGS(proxy=proxy).images(
         keywords=keywords,
         region=region,
         safesearch=safesearch,
@@ -278,7 +277,7 @@ def images(
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def videos(keywords, region, safesearch, timelimit, resolution, duration, license_videos, max_results, output, proxy):
     """CLI function to perform a videos search using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).videos(
+    data = DDGS(proxy=proxy).videos(
         keywords=keywords,
         region=region,
         safesearch=safesearch,
@@ -307,7 +306,7 @@ def videos(keywords, region, safesearch, timelimit, resolution, duration, licens
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def news(keywords, region, safesearch, timelimit, max_results, output, proxy):
     """CLI function to perform a news search using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).news(
+    data = DDGS(proxy=proxy).news(
         keywords=keywords, region=region, safesearch=safesearch, timelimit=timelimit, max_results=max_results
     )
     filename = f"news_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
@@ -351,7 +350,7 @@ def maps(
     proxy,
 ):
     """CLI function to perform a maps search using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).maps(
+    data = DDGS(proxy=proxy).maps(
         keywords=keywords,
         place=place,
         street=street,
@@ -382,7 +381,7 @@ def maps(
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def translate(keywords, from_, to, output, proxy):
     """CLI function to perform translate using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).translate(keywords=keywords, from_=from_, to=to)
+    data = DDGS(proxy=proxy).translate(keywords=keywords, from_=from_, to=to)
     filename = f"translate_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         _print_data(data)
@@ -399,7 +398,7 @@ def translate(keywords, from_, to, output, proxy):
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 def suggestions(keywords, region, output, proxy):
     """CLI function to perform a suggestions search using DuckDuckGo API."""
-    data = DDGS(proxies=proxy).suggestions(keywords=keywords, region=region)
+    data = DDGS(proxy=proxy).suggestions(keywords=keywords, region=region)
     filename = f"suggestions_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
         _print_data(data)
