@@ -9,7 +9,7 @@ from .duckduckgo_search_async import AsyncDDGS
 
 class DDGS(AsyncDDGS):
     _loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
-    Thread(target=_loop.run_forever, daemon=True).start()  # Start the event loop run in a separate thread.
+    Thread(target=_loop.run_forever, daemon=True).start()  # Start the event loop in a separate thread.
 
     def __init__(
         self,
@@ -40,12 +40,12 @@ class DDGS(AsyncDDGS):
         self._close_session()
 
     def __del__(self) -> None:
-        if self._asession._closed is False:
+        if self._asession.is_closed is False:
             self._close_session()
 
     def _close_session(self) -> None:
         """Close the curl-cffi async session."""
-        self._run_async_in_thread(self._asession.close())
+        self._run_async_in_thread(self._asession.aclose())
 
     def _run_async_in_thread(self, coro: Awaitable[Any]) -> Any:
         """Runs an async coroutine in a separate thread."""

@@ -6,10 +6,10 @@ from datetime import datetime
 from urllib.parse import unquote
 
 import click
-from curl_cffi import requests
+import httpx
 
 from .duckduckgo_search import DDGS
-from .utils import json_dumps
+from .utils import _get_ssl_context, json_dumps
 from .version import __version__
 
 logger = logging.getLogger(__name__)
@@ -81,12 +81,12 @@ def _sanitize_keywords(keywords):
 
 def _download_file(url, dir_path, filename, proxy):
     try:
-        resp = requests.get(url, proxy=proxy, impersonate="chrome", timeout=10)
+        resp = httpx.get(url, proxy=proxy, timeout=10, follow_redirects=True, verify=_get_ssl_context())
         resp.raise_for_status()
         with open(os.path.join(dir_path, filename[:200]), "wb") as file:
             file.write(resp.content)
     except Exception as ex:
-        logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
+        logger.info(f"download_file url={url} {type(ex).__name__} {ex}")
 
 
 def _download_results(keywords, results, images=False, proxy=None, threads=None):

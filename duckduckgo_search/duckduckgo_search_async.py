@@ -8,13 +8,13 @@ from decimal import Decimal
 from functools import cached_property, partial
 from itertools import cycle, islice
 from types import TracebackType
-from typing import Dict, List, Optional, Tuple, Type, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from curl_cffi import requests
+import httpx
 
 try:
+    from lxml.html import Element, document_fromstring
     from lxml.html import HTMLParser as LHTMLParser
-    from lxml.html import document_fromstring
 
     LXML_AVAILABLE = True
 except ImportError:
@@ -24,6 +24,8 @@ from .exceptions import DuckDuckGoSearchException, RatelimitException, TimeoutEx
 from .utils import (
     _calculate_distance,
     _extract_vqd,
+    _get_headers,
+    _get_ssl_context,
     _normalize,
     _normalize_url,
     _text_extract_json,
@@ -58,12 +60,13 @@ class AsyncDDGS:
         if not proxy and proxies:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
             self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
-        self._asession = requests.AsyncSession(
-            headers=headers,
+        self._asession = httpx.AsyncClient(
+            headers=_get_headers() if headers is None else headers,
             proxy=self.proxy,
             timeout=timeout,
-            impersonate="chrome",
-            allow_redirects=False,
+            follow_redirects=False,
+            http2=True,
+            verify=_get_ssl_context(),
         )
         self._asession.headers["Referer"] = "https://duckduckgo.com/"
         self._exception_event = asyncio.Event()
@@ -77,15 +80,15 @@ class AsyncDDGS:
         exc_val: Optional[BaseException] = None,
         exc_tb: Optional[TracebackType] = None,
     ) -> None:
-        await self._asession.close()
+        await self._asession.aclose()
 
     def __del__(self) -> None:
-        if self._asession._closed is False:
+        if self._asession.is_closed is False:
             with suppress(RuntimeError):
-                asyncio.create_task(self._asession.close())
+                asyncio.create_task(self._asession.aclose())
 
     @cached_property
-    def parser(self) -> Optional["LHTMLParser"]:
+    def parser(self) -> "LHTMLParser":
         """Get HTML parser."""
         return LHTMLParser(remove_blank_text=True, remove_comments=True, remove_pis=True, collect_ids=False)
 
@@ -97,28 +100,29 @@ class AsyncDDGS:
         return cls._executor
 
     @property
-    def executor(cls) -> Optional[ThreadPoolExecutor]:
+    def executor(cls) -> ThreadPoolExecutor:
         return cls._get_executor()
 
     async def _aget_url(
         self,
         method: str,
         url: str,
-        data: Optional[Union[Dict[str, str], bytes]] = None,
+        content: Optional[Union[str, bytes]] = None,
+        data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, str]] = None,
     ) -> bytes:
         if self._exception_event.is_set():
             raise DuckDuckGoSearchException("Exception occurred in previous call.")
         try:
-            resp = await self._asession.request(method, url, data=data, params=params)
+            resp = await self._asession.request(method, url, content=content, data=data, params=params)
+        except httpx.TimeoutException as ex:
+            self._exception_event.set()
+            raise TimeoutException(f"{url} {type(ex).__name__}: {ex}") from ex
         except Exception as ex:
             self._exception_event.set()
-            if "time" in str(ex).lower():
-                raise TimeoutException(f"{url} {type(ex).__name__}: {ex}") from ex
             raise DuckDuckGoSearchException(f"{url} {type(ex).__name__}: {ex}") from ex
-        logger.debug(f"_aget_url() {resp.url} {resp.status_code} {resp.elapsed:.2f} {len(resp.content)}")
         if resp.status_code == 200:
-            return cast(bytes, resp.content)
+            return resp.content
         self._exception_event.set()
         if resp.status_code in (202, 301, 403):
             raise RatelimitException(f"{resp.url} {resp.status_code} Ratelimit")
@@ -303,7 +307,7 @@ class AsyncDDGS:
             if b"No  results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(
+            tree: Element = await asyncio.get_running_loop().run_in_executor(
                 self.executor, partial(document_fromstring, resp_content, self.parser)
             )
 
@@ -382,7 +386,7 @@ class AsyncDDGS:
             if b"No more results." in resp_content:
                 return
 
-            tree = await self._asession.loop.run_in_executor(
+            tree: Element = await asyncio.get_running_loop().run_in_executor(
                 self.executor, partial(document_fromstring, resp_content, self.parser)
             )
 
@@ -854,7 +858,7 @@ class AsyncDDGS:
         lat_b -= Decimal(radius) * Decimal(0.008983)
         lon_l -= Decimal(radius) * Decimal(0.008983)
         lon_r += Decimal(radius) * Decimal(0.008983)
-        logger.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
+        logger.info(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         cache = set()
         results: List[Dict[str, str]] = []
@@ -981,7 +985,7 @@ class AsyncDDGS:
                 "POST",
                 "https://duckduckgo.com/translation.js",
                 params=payload,
-                data=keyword.encode(),
+                content=keyword,
             )
             page_data = json_loads(resp_content)
             page_data["original"] = keyword

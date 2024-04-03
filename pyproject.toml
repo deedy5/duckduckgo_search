@@ -28,8 +28,8 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "click>=8.1.7",    
-    "curl_cffi>=0.6.2",
+    "click>=8.1.7",  
+    "httpx[brotli, http2, socks]>=0.27.0",
     "orjson>=3.10.0",
 ]
 dynamic = ["version"]
@@ -50,7 +50,7 @@ lxml = [
 dev = [
     "mypy>=1.9.0",
     "pytest>=8.1.1",
-    "ruff>=0.3.4",
+    "ruff>=0.3.5",
 ]
 
 [tool.ruff]
@@ -68,11 +68,11 @@ select = [
 ]
 ignore = ["D100"]
 
+[tool.ruff.per-file-ignores]
+"utils.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.8"
 strict = true
 exclude = ['cli\.py$', '__main__\.py$', "tests/", "build/"]
 
-[[tool.mypy.overrides]]
-module = "curl_cffi"
-ignore_missing_imports = true
