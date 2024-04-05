@@ -27,7 +27,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install .[lxml,dev]
+        python -m pip install .[lxml,orjson,dev]
     - name: Ruff
       run: |
         ruff check .

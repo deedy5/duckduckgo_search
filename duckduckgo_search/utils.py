@@ -8,7 +8,16 @@ from typing import Any, Dict, List, Union
 from urllib.parse import unquote
 
 import certifi
-import orjson
+
+try:
+    import orjson
+
+    ORJSON_AVAILABLE = True
+except ImportError:
+    import json
+
+    ORJSON_AVAILABLE = False
+
 
 from .exceptions import DuckDuckGoSearchException
 
@@ -291,14 +300,14 @@ def _get_ssl_context() -> ssl.SSLContext:
 
 def json_dumps(obj: Any) -> str:
     try:
-        return orjson.dumps(obj).decode("utf-8")
+        return orjson.dumps(obj).decode("utf-8") if ORJSON_AVAILABLE else json.dumps(obj)
     except Exception as ex:
         raise DuckDuckGoSearchException(f"{type(ex).__name__}: {ex}") from ex
 
 
 def json_loads(obj: Union[str, bytes]) -> Any:
     try:
-        return orjson.loads(obj)
+        return orjson.loads(obj) if ORJSON_AVAILABLE else json.loads(obj)
     except Exception as ex:
         raise DuckDuckGoSearchException(f"{type(ex).__name__}: {ex}") from ex
 

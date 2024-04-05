@@ -30,7 +30,6 @@ classifiers = [
 dependencies = [
     "click>=8.1.7",  
     "httpx[brotli, http2, socks]>=0.27.0",
-    "orjson>=3.10.0",
 ]
 dynamic = ["version"]
 
@@ -46,6 +45,9 @@ version = {attr = "duckduckgo_search.version.__version__"}
 [project.optional-dependencies]
 lxml = [
     "lxml>=5.1.1",
+]
+orjson = [
+    "orjson>=3.10.0",
 ]
 dev = [
     "mypy>=1.9.0",
