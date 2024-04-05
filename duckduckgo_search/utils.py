@@ -284,8 +284,8 @@ def _get_headers() -> Dict[str, str]:
 
 def _get_ssl_context() -> ssl.SSLContext:
     """Get SSL context with shuffled ciphers."""
-    CRYPTORAND.shuffle(DEFAULT_CIPHERS[:6])
-    SSL_CONTEXT.set_ciphers(":".join(DEFAULT_CIPHERS))
+    shuffled_ciphers = CRYPTORAND.sample(DEFAULT_CIPHERS[6:], len(DEFAULT_CIPHERS) - 6)
+    SSL_CONTEXT.set_ciphers(":".join(DEFAULT_CIPHERS[:6] + shuffled_ciphers))
     return SSL_CONTEXT
 
 
