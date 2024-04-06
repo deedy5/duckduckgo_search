@@ -60,7 +60,7 @@ class AsyncDDGS:
         if not proxy and proxies:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
             self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
-        self._asession = httpx.AsyncClient(
+        self._aclient = httpx.AsyncClient(
             headers=_get_headers() if headers is None else headers,
             proxy=self.proxy,
             timeout=timeout,
@@ -68,7 +68,7 @@ class AsyncDDGS:
             http2=True,
             verify=_get_ssl_context(),
         )
-        self._asession.headers["Referer"] = "https://duckduckgo.com/"
+        self._aclient.headers["Referer"] = "https://duckduckgo.com/"
         self._exception_event = asyncio.Event()
 
     async def __aenter__(self) -> "AsyncDDGS":
@@ -80,12 +80,12 @@ class AsyncDDGS:
         exc_val: Optional[BaseException] = None,
         exc_tb: Optional[TracebackType] = None,
     ) -> None:
-        await self._asession.aclose()
+        await self._aclient.aclose()
 
     def __del__(self) -> None:
-        if self._asession.is_closed is False:
+        if self._aclient.is_closed is False:
             with suppress(RuntimeError):
-                asyncio.create_task(self._asession.aclose())
+                asyncio.create_task(self._aclient.aclose())
 
     @cached_property
     def parser(self) -> "LHTMLParser":
@@ -114,7 +114,7 @@ class AsyncDDGS:
         if self._exception_event.is_set():
             raise DuckDuckGoSearchException("Exception occurred in previous call.")
         try:
-            resp = await self._asession.request(method, url, content=content, data=data, params=params)
+            resp = await self._aclient.request(method, url, content=content, data=data, params=params)
         except httpx.TimeoutException as ex:
             self._exception_event.set()
             raise TimeoutException(f"{url} {type(ex).__name__}: {ex}") from ex
@@ -282,7 +282,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        self._asession.headers["Referer"] = "https://html.duckduckgo.com/"
+        self._aclient.headers["Referer"] = "https://html.duckduckgo.com/"
         safesearch_base = {"on": "1", "moderate": "-1", "off": "-2"}
         payload = {
             "q": keywords,
@@ -366,7 +366,7 @@ class AsyncDDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        self._asession.headers["Referer"] = "https://lite.duckduckgo.com/"
+        self._aclient.headers["Referer"] = "https://lite.duckduckgo.com/"
         payload = {
             "q": keywords,
             "o": "json",
