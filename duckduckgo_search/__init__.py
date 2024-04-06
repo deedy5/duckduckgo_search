@@ -14,7 +14,8 @@ from .version import __version__
 
 __all__ = ["DDGS", "AsyncDDGS", "__version__", "cli"]
 
-# bypass curl_cffi warning on windows: https://github.com/yifeikong/curl_cffi/blob/418e452c99dee5da176f0b0a768337cd5509c4c5/curl_cffi/aio.py#L14
+
+# bypass Windows error "RuntimeError: Event Loop is closed" on exit. https://github.com/encode/httpx/issues/914
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
