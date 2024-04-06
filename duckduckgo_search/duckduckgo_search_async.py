@@ -80,10 +80,10 @@ class AsyncDDGS:
         exc_val: Optional[BaseException] = None,
         exc_tb: Optional[TracebackType] = None,
     ) -> None:
-        await self._aclient.aclose()
+        await self._aclient.__aexit__(exc_type, exc_val, exc_tb)
 
     def __del__(self) -> None:
-        if self._aclient.is_closed is False:
+        if hasattr(self, "_aclient") and self._aclient.is_closed is False:
             with suppress(RuntimeError):
                 asyncio.create_task(self._aclient.aclose())
 
