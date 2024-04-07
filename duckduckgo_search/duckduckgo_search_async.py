@@ -81,7 +81,7 @@ class AsyncDDGS:
 
     def __del__(self) -> None:
         if self._asession._closed is False:
-            with suppress(RuntimeError):
+            with suppress(RuntimeError, RuntimeWarning):
                 asyncio.create_task(self._asession.close())
 
     @cached_property
