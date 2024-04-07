@@ -243,11 +243,19 @@ class AsyncDDGS:
                         }
                         results[priority] = result
 
-        tasks = [_text_api_page(0, 0)]
+        tasks = [asyncio.create_task(_text_api_page(0, 0))]
         if max_results:
             max_results = min(max_results, 500)
-            tasks.extend(_text_api_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
-        await asyncio.gather(*tasks)
+            tasks.extend(
+                asyncio.create_task(_text_api_page(s, i)) for i, s in enumerate(range(23, max_results, 50), start=1)
+            )
+        try:
+            await asyncio.gather(*tasks)
+        except Exception as e:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise e
 
         return list(islice(filter(None, results), max_results))
 
@@ -329,11 +337,19 @@ class AsyncDDGS:
                     }
                     results[priority] = result
 
-        tasks = [_text_html_page(0, 0)]
+        tasks = [asyncio.create_task(_text_html_page(0, 0))]
         if max_results:
             max_results = min(max_results, 500)
-            tasks.extend(_text_html_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
-        await asyncio.gather(*tasks)
+            tasks.extend(
+                asyncio.create_task(_text_html_page(s, i)) for i, s in enumerate(range(23, max_results, 50), start=1)
+            )
+        try:
+            await asyncio.gather(*tasks)
+        except Exception as e:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise e
 
         return list(islice(filter(None, results), max_results))
 
@@ -412,11 +428,19 @@ class AsyncDDGS:
                     }
                     results[priority] = result
 
-        tasks = [_text_lite_page(0, 0)]
+        tasks = [asyncio.create_task(_text_lite_page(0, 0))]
         if max_results:
             max_results = min(max_results, 500)
-            tasks.extend(_text_lite_page(s, i) for i, s in enumerate(range(23, max_results, 50), start=1))
-        await asyncio.gather(*tasks)
+            tasks.extend(
+                asyncio.create_task(_text_lite_page(s, i)) for i, s in enumerate(range(23, max_results, 50), start=1)
+            )
+        try:
+            await asyncio.gather(*tasks)
+        except Exception as e:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise e
 
         return list(islice(filter(None, results), max_results))
 
@@ -507,11 +531,19 @@ class AsyncDDGS:
                     }
                     results[priority] = result
 
-        tasks = [_images_page(0, page=0)]
+        tasks = [asyncio.create_task(_images_page(0, page=0))]
         if max_results:
             max_results = min(max_results, 500)
-            tasks.extend(_images_page(s, i) for i, s in enumerate(range(100, max_results, 100), start=1))
-        await asyncio.gather(*tasks)
+            tasks.extend(
+                asyncio.create_task(_images_page(s, i)) for i, s in enumerate(range(100, max_results, 100), start=1)
+            )
+        try:
+            await asyncio.gather(*tasks)
+        except Exception as e:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise e
 
         return list(islice(filter(None, results), max_results))
 
@@ -581,11 +613,19 @@ class AsyncDDGS:
                     priority += 1
                     results[priority] = row
 
-        tasks = [_videos_page(0, 0)]
+        tasks = [asyncio.create_task(_videos_page(0, 0))]
         if max_results:
             max_results = min(max_results, 400)
-            tasks.extend(_videos_page(s, i) for i, s in enumerate(range(59, max_results, 59), start=1))
-        await asyncio.gather(*tasks)
+            tasks.extend(
+                asyncio.create_task(_videos_page(s, i)) for i, s in enumerate(range(59, max_results, 59), start=1)
+            )
+        try:
+            await asyncio.gather(*tasks)
+        except Exception as e:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise e
 
         return list(islice(filter(None, results), max_results))
 
@@ -655,11 +695,19 @@ class AsyncDDGS:
                     }
                     results[priority] = result
 
-        tasks = [_news_page(0, 0)]
+        tasks = [asyncio.create_task(_news_page(0, 0))]
         if max_results:
             max_results = min(max_results, 200)
-            tasks.extend(_news_page(s, i) for i, s in enumerate(range(29, max_results, 29), start=1))
-        await asyncio.gather(*tasks)
+            tasks.extend(
+                asyncio.create_task(_news_page(s, i)) for i, s in enumerate(range(29, max_results, 29), start=1)
+            )
+        try:
+            await asyncio.gather(*tasks)
+        except Exception as e:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise e
 
         return list(islice(filter(None, results), max_results))
 
@@ -989,7 +1037,13 @@ class AsyncDDGS:
 
         if isinstance(keywords, str):
             keywords = [keywords]
-        tasks = [_translate_keyword(keyword) for keyword in keywords]
-        await asyncio.gather(*tasks)
+        tasks = [asyncio.create_task(_translate_keyword(keyword)) for keyword in keywords]
+        try:
+            await asyncio.gather(*tasks)
+        except Exception as e:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise e
 
         return results
