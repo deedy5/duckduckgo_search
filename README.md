@@ -27,6 +27,10 @@ Search for words, documents, images, videos, news, maps and text translation usi
 ```python
 pip install -U duckduckgo_search
 ```
+There is also a beta release that uses the `httpx` library:
+```python
+pip install -U duckduckgo_search==5.3.0b4
+```
 > [!NOTE]
 > you can install lxml to use the `text` function with `backend='html'` or `backend='lite'` (size ≈ 12Mb)</br>
 > `pip install -U duckduckgo_search[lxml]`
