@@ -44,15 +44,15 @@ version = {attr = "duckduckgo_search.version.__version__"}
 
 [project.optional-dependencies]
 lxml = [
-    "lxml>=5.1.1",
+    "lxml>=5.2.1",
 ]
 orjson = [
-    "orjson>=3.10.0",
+    "orjson>=3.10.3",
 ]
 dev = [
-    "mypy>=1.9.0",
-    "pytest>=8.1.1",
-    "ruff>=0.3.5",
+    "mypy>=1.10.0",
+    "pytest>=8.2.0",
+    "ruff>=0.4.3",
 ]
 
 [tool.ruff]
