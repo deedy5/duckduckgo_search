@@ -45,7 +45,7 @@ class DDGS(AsyncDDGS):
     def _close_session(self) -> None:
         """Close the curl-cffi async session."""
         if hasattr(self, "_asession") and self._asession._closed is False:
-            self._run_async_in_thread(self._asession.close())
+            self._run_async_in_thread(self._asession.close())  # type: ignore
 
     def _run_async_in_thread(self, coro: Awaitable[Any]) -> Any:
         """Runs an async coroutine in a separate thread."""
