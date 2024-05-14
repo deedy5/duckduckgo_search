@@ -16,11 +16,6 @@ def test_context_manager():
 
 
 def test_text():
-    results = DDGS().text("cat", max_results=30)
-    assert 27 <= len(results) <= 30
-
-
-def test_text_params():
     results = DDGS().text("cat", safesearch="off", timelimit="m", max_results=30)
     assert 27 <= len(results) <= 30
 
