@@ -3,9 +3,6 @@
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
-⚠️ Warning: it is better to use AsyncDDGS in asynchronous code</br>
-:bangbang: v5.0 brings breaking changes: all functions are now not generators, but return a list of dictionaries.
-
 ## Table of Contents
 * [Install](#install)
 * [CLI version](#cli-version)
@@ -179,12 +176,11 @@ print(results)
 Here is an example of initializing the AsyncDDGS class:
 ```python3
 import asyncio
-import logging
 
 from duckduckgo_search import AsyncDDGS
 
 async def aget_results(word):
-    results = await AsyncDDGS(proxy=None).text(word, max_results=100)
+    results = await AsyncDDGS(proxy=None).atext(word, max_results=100)
     return results
 
 async def main():
@@ -194,7 +190,6 @@ async def main():
     print(results)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
     asyncio.run(main())
 ```
 
@@ -263,7 +258,7 @@ results = DDGS().text('live free or die', region='wt-wt', safesearch='off', time
 results = DDGS().text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 
 # async
-results = await AsyncDDGS().text('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+results = await AsyncDDGS().atext('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -286,7 +281,7 @@ def answers(keywords: str) -> List[Dict[str, str]]:
 results = DDGS().answers("sun")
 
 # async
-results = await AsyncDDGS().answers("sun")
+results = await AsyncDDGS().aanswers("sun")
 ```
 
 [Go To TOP](#TOP)
@@ -344,7 +339,7 @@ results = DDGS().images(
 )
 
 # async
-results = await AsyncDDGS().images('sun', region='wt-wt', safesearch='off', max_results=20)
+results = await AsyncDDGS().aimages('sun', region='wt-wt', safesearch='off', max_results=20)
 ```
 
 [Go To TOP](#TOP)
@@ -391,7 +386,7 @@ results = DDGS().videos(
 )
 
 # async
-results = await AsyncDDGS().videos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+results = await AsyncDDGS().avideos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -424,7 +419,7 @@ def news(
 results = DDGS().news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
 
 # async
-results = await AsyncDDGS().news('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
+results = await AsyncDDGS().anews('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -472,7 +467,7 @@ def maps(
 results = DDGS().maps("school", place="Uganda", max_results=50)
 
 # async
-results = await AsyncDDGS().maps('shop', place="Baltimor", max_results=10)
+results = await AsyncDDGS().amaps('shop', place="Baltimor", max_results=10)
 ```
 
 [Go To TOP](#TOP)
@@ -505,7 +500,7 @@ keywords = ['school', 'cat']
 results = DDGS().translate(keywords, to="de")
 
 # async
-results = await AsyncDDGS().translate('sun', to="de")
+results = await AsyncDDGS().atranslate('sun', to="de")
 ```
 
 [Go To TOP](#TOP)
@@ -532,7 +527,7 @@ def suggestions(
 results = DDGS().suggestions("fly")
 
 # async
-results = await AsyncDDGS().suggestions('sun')
+results = await AsyncDDGS().asuggestions('sun')
 ```
 
 [Go To TOP](#TOP)
