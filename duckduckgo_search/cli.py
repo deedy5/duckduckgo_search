@@ -6,7 +6,7 @@ from datetime import datetime
 from urllib.parse import unquote
 
 import click
-from curl_cffi import requests
+import pyreqwest_impersonate as pri
 
 from .duckduckgo_search import DDGS
 from .utils import json_dumps
@@ -81,10 +81,10 @@ def _sanitize_keywords(keywords):
 
 def _download_file(url, dir_path, filename, proxy):
     try:
-        resp = requests.get(url, proxy=proxy, impersonate="chrome", timeout=10)
-        resp.raise_for_status()
-        with open(os.path.join(dir_path, filename[:200]), "wb") as file:
-            file.write(resp.content)
+        resp = pri.Client(proxy=proxy, impersonate="chrome_124", timeout=10, verify=False).get(url)
+        if resp.status_code == 200:
+            with open(os.path.join(dir_path, filename[:200]), "wb") as file:
+                file.write(resp.content)
     except Exception as ex:
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 

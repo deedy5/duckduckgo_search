@@ -28,8 +28,8 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "click>=8.1.7",    
-    "curl_cffi>=0.7.0b4",
+    "click>=8.1.7",
+    "pyreqwest_impersonate>=0.4.5",
     "orjson>=3.10.3",
 ]
 dynamic = ["version"]
@@ -45,12 +45,13 @@ version = {attr = "duckduckgo_search.version.__version__"}
 
 [project.optional-dependencies]
 lxml = [
-    "lxml>=5.2.1",
+    "lxml>=5.2.2",
 ]
 dev = [
     "mypy>=1.10.0",
     "pytest>=8.2.0",
-    "ruff>=0.4.3",
+    "pytest-asyncio>=0.23.6",
+    "ruff>=0.4.4",
 ]
 
 [tool.ruff]
