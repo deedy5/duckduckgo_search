@@ -14,11 +14,16 @@ runner = CliRunner()
 @pytest.fixture(autouse=True)
 def pause_between_tests():
     time.sleep(0.5)
-    
+
 
 def test_version_command():
     result = runner.invoke(cli, ["version"])
     assert result.output.strip() == __version__
+
+
+def test_chat_command():
+    result = runner.invoke(cli, ["chat"])
+    assert "chat" in result.output
 
 
 def test_text_command():

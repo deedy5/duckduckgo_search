@@ -71,6 +71,8 @@ class DDGS:
             verify=False,
         )
         self._exception_event = Event()
+        self._chat_messages: List[Dict[str, str]] = []
+        self._chat_vqd: str = ""
 
     def __enter__(self) -> "DDGS":
         return self
@@ -117,6 +119,44 @@ class DDGS:
         """Get vqd value for a search query."""
         resp_content = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         return _extract_vqd(resp_content, keywords)
+
+    def chat(self, keywords: str, model: str = "gpt-3.5") -> str:
+        """Initiates a chat session with DuckDuckGo AI.
+
+        Args:
+            keywords (str): The initial message or question to send to the AI.
+            model (str): The model to use: "gpt-3.5", "claude-3-haiku". Defaults to "gpt-3.5".
+
+        Returns:
+            str: The response from the AI.
+        """
+        models = {"claude-3-haiku": "claude-3-haiku-20240307", "gpt-3.5": "gpt-3.5-turbo-0125"}
+        # vqd
+        if not self._chat_vqd:
+            resp = self.client.get("https://duckduckgo.com/duckchat/v1/status", headers={"x-vqd-accept": "1"})
+            self._chat_vqd = resp.headers.get("x-vqd-4", "")
+
+        self._chat_messages.append({"role": "user", "content": keywords})
+
+        json_data = {
+            "model": models[model],
+            "messages": self._chat_messages,
+        }
+        resp = self.client.post(
+            "https://duckduckgo.com/duckchat/v1/chat", headers={"x-vqd-4": self._chat_vqd}, json=json_data
+        )
+        self._chat_vqd = resp.headers.get("x-vqd-4", "")
+
+        messages = []
+        for line in resp.text.replace("data: ", "").replace("[DONE]", "").split("\n\n"):
+            x = line.strip()
+            if x:
+                j = json_loads(x)
+                message = j.get("message", "")
+                messages.append(message)
+        result = "".join(messages)
+        self._chat_messages.append({"role": "assistant", "content": result})
+        return result
 
     def text(
         self,

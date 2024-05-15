@@ -36,6 +36,19 @@ class AsyncDDGS(DDGS):
     ) -> None:
         pass
 
+    async def achat(self, keywords: str, model: str = "gpt-3.5") -> str:
+        """Initiates async chat session with DuckDuckGo AI.
+
+        Args:
+            keywords (str): The initial message or question to send to the AI.
+            model (str): The model to use: "gpt-3.5", "claude-3-haiku". Defaults to "gpt-3.5".
+
+        Returns:
+            str: The response from the AI.
+        """
+        result = await self._loop.run_in_executor(self._executor, super().chat, keywords, model)
+        return result
+
     async def atext(
         self,
         keywords: str,

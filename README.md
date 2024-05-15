@@ -11,14 +11,15 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
 * [Proxy](#proxy)
 * [Exceptions](#exceptions)
-* [1. text() - text search](#1-text---text-search-by-duckduckgocom)
-* [2. answers() - instant answers](#2-answers---instant-answers-by-duckduckgocom)
-* [3. images() - image search](#3-images---image-search-by-duckduckgocom)
-* [4. videos() - video search](#4-videos---video-search-by-duckduckgocom)
-* [5. news() - news search](#5-news---news-search-by-duckduckgocom)
-* [6. maps() - map search](#6-maps---map-search-by-duckduckgocom)
-* [7. translate() - translation](#7-translate---translation-by-duckduckgocom)
-* [8. suggestions() - suggestions](#8-suggestions---suggestions-by-duckduckgocom)
+* [1. chat() - AI chat](#1-chat---ai-chat)
+* [2. text() - text search](#2-text---text-search-by-duckduckgocom)
+* [3. answers() - instant answers](#3-answers---instant-answers-by-duckduckgocom)
+* [4. images() - image search](#4-images---image-search-by-duckduckgocom)
+* [5. videos() - video search](#5-videos---video-search-by-duckduckgocom)
+* [6. news() - news search](#6-news---news-search-by-duckduckgocom)
+* [7. maps() - map search](#7-maps---map-search-by-duckduckgocom)
+* [8. translate() - translation](#8-translate---translation-by-duckduckgocom)
+* [9. suggestions() - suggestions](#9-suggestions---suggestions-by-duckduckgocom)
 
 ## Install
 ```python
@@ -44,6 +45,8 @@ python -m duckduckgo_search --help
 
 CLI examples:
 ```python3
+# AI chat
+ddgs chat
 # text search
 ddgs text -k "axon regeneration"
 # find and download pdf files via proxy (example: Tor browser)
@@ -223,7 +226,31 @@ Exceptions:
   
 [Go To TOP](#TOP)
 
-## 1. text() - text search by duckduckgo.com
+## 1. chat() - AI chat
+
+```python
+def chat(self, keywords: str, model: str = "gpt-3.5") -> str:
+    """Initiates a chat session with DuckDuckGo AI.
+
+    Args:
+        keywords (str): The initial message or question to send to the AI.
+        model (str): The model to use: "gpt-3.5", "claude-3-haiku". Defaults to "gpt-3.5".
+
+    Returns:
+        str: The response from the AI.
+    """
+```
+***Example***
+```python
+results = DDGS().chat("summarize Daniel Defoe's The Consolidator", model='claude-3-haiku')
+
+# async
+results = await AsyncDDGS().achat('describe the characteristic habits and behaviors of humans as a species')
+```
+
+[Go To TOP](#TOP)
+
+## 2. text() - text search by duckduckgo.com
 
 ```python
 def text(
@@ -263,7 +290,7 @@ results = await AsyncDDGS().atext('sun', region='wt-wt', safesearch='off', timel
 
 [Go To TOP](#TOP)
 
-## 2. answers() - instant answers by duckduckgo.com
+## 3. answers() - instant answers by duckduckgo.com
 
 ```python
 def answers(keywords: str) -> List[Dict[str, str]]:
@@ -286,7 +313,7 @@ results = await AsyncDDGS().aanswers("sun")
 
 [Go To TOP](#TOP)
 
-## 3. images() - image search by duckduckgo.com
+## 4. images() - image search by duckduckgo.com
 
 ```python
 def images(
@@ -344,7 +371,7 @@ results = await AsyncDDGS().aimages('sun', region='wt-wt', safesearch='off', max
 
 [Go To TOP](#TOP)
 
-## 4. videos() - video search by duckduckgo.com
+## 5. videos() - video search by duckduckgo.com
 
 ```python
 def videos(
@@ -391,7 +418,7 @@ results = await AsyncDDGS().avideos('sun', region='wt-wt', safesearch='off', tim
 
 [Go To TOP](#TOP)
 
-## 5. news() - news search by duckduckgo.com
+## 6. news() - news search by duckduckgo.com
 
 ```python
 def news(
@@ -424,7 +451,7 @@ results = await AsyncDDGS().anews('sun', region='wt-wt', safesearch='off', timel
 
 [Go To TOP](#TOP)
 
-## 6. maps() - map search by duckduckgo.com
+## 7. maps() - map search by duckduckgo.com
 
 ```python
 def maps(
@@ -472,7 +499,7 @@ results = await AsyncDDGS().amaps('shop', place="Baltimor", max_results=10)
 
 [Go To TOP](#TOP)
 
-## 7. translate() - translation by duckduckgo.com
+## 8. translate() - translation by duckduckgo.com
 
 ```python
 def translate(
@@ -505,7 +532,7 @@ results = await AsyncDDGS().atranslate('sun', to="de")
 
 [Go To TOP](#TOP)
 
-## 8. suggestions() - suggestions by duckduckgo.com
+## 9. suggestions() - suggestions by duckduckgo.com
 
 ```python
 def suggestions(

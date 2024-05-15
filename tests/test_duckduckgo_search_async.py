@@ -7,6 +7,11 @@ from duckduckgo_search import AsyncDDGS
 def pause_between_tests():
     time.sleep(0.5)
 
+@pytest.fixture(autouse=True)
+async def test_chat():
+    results = await AsyncDDGS().chat("cat")
+    assert  len(results) >= 1
+
 @pytest.mark.asyncio
 async def test_text():
     results = await AsyncDDGS().atext("sky", safesearch="off", timelimit="m", max_results=30)

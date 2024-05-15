@@ -14,6 +14,9 @@ def test_context_manager():
         results = ddgs.news("cars", max_results=30)
         assert 27 <= len(results) <= 30
 
+def test_chat():
+    results = DDGS().chat("cat")
+    assert  len(results) >= 1
 
 def test_text():
     results = DDGS().text("cat", safesearch="off", timelimit="m", max_results=30)
