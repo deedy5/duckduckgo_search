@@ -195,7 +195,7 @@ class DDGS:
         if backend == "api":
             results = self._text_api(keywords, region, safesearch, timelimit, max_results)
         elif backend == "html":
-            results = self._text_html(keywords, region, safesearch, timelimit, max_results)
+            results = self._text_html(keywords, region, timelimit, max_results)
         elif backend == "lite":
             results = self._text_lite(keywords, region, timelimit, max_results)
         return results
@@ -237,6 +237,7 @@ class DDGS:
             "s": "0",
             "df": "",
             "vqd": vqd,
+            "bing_market": region,
             "ex": "",
         }
         safesearch = safesearch.lower()
@@ -287,7 +288,6 @@ class DDGS:
         self,
         keywords: str,
         region: str = "wt-wt",
-        safesearch: str = "moderate",
         timelimit: Optional[str] = None,
         max_results: Optional[int] = None,
     ) -> List[Dict[str, str]]:
@@ -296,7 +296,6 @@ class DDGS:
         Args:
             keywords: keywords for query.
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-            safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m, y. Defaults to None.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
@@ -310,13 +309,14 @@ class DDGS:
         """
         assert keywords, "keywords is mandatory"
 
-        safesearch_base = {"on": "1", "moderate": "-1", "off": "-2"}
         payload = {
             "q": keywords,
-            "kl": region,
-            "p": safesearch_base[safesearch.lower()],
+            "s": "0",
             "o": "json",
             "api": "d.js",
+            "vqd": "",
+            "kl": region,
+            "bing_market": region,
         }
         if timelimit:
             payload["df"] = timelimit
@@ -401,9 +401,12 @@ class DDGS:
 
         payload = {
             "q": keywords,
+            "s": "0",
             "o": "json",
             "api": "d.js",
+            "vqd": "",
             "kl": region,
+            "bing_market": region,
         }
         if timelimit:
             payload["df"] = timelimit
