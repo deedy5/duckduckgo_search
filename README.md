@@ -48,13 +48,15 @@ CLI examples:
 # AI chat
 ddgs chat
 # text search
-ddgs text -k "axon regeneration"
+ddgs text -k "'how to tame a fox' site:wikihow.com"
 # find and download pdf files via proxy (example: Tor browser)
-ddgs text -k "neuroscience filetype:pdf" -r wt-wt -m 50 -d -p socks5://localhost:9150
+ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p socks5://127.0.0.1:9150
+# find and save to csv
+ddgs text -k "neuroscience exploring the brain fourth edition filetype:pdf" -m 70 -o csv
 # find and download images
-ddgs images -k "gaz 14 chaika" -r ru-ru -type photo -m 500 -d
-# get latest news and save to csv
-ddgs news -k "hubble telescope" -m 50 -o csv
+ddgs images -k "you can run but you can't hide" -r wt-wt -type photo -m 500 -d
+# get news for the last day and save to json
+ddgs news -k "ukraine war" -m 50 -t d -o json
 ```
 [Go To TOP](#TOP)
 
@@ -205,7 +207,7 @@ Use a rotating proxy. Otherwise, use a new proxy with each DDGS or AsyncDDGS ini
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
-ddgs = DDGS(proxy="socks5://localhost:9150", timeout=20)
+ddgs = DDGS(proxy="socks5://127.0.0.1:9150", timeout=20)
 results = ddgs.text("something you need", max_results=50)
 ```
 *2. Use any proxy server* (*example with [iproyal rotating residential proxies](https://iproyal.com?r=residential_proxies)*)
