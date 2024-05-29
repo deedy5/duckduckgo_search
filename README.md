@@ -52,9 +52,9 @@ ddgs text -k "'how to tame a fox' site:wikihow.com"
 # find and download pdf files via proxy (example: Tor browser)
 ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p socks5://127.0.0.1:9150
 # find and save to csv
-ddgs text -k "neuroscience exploring the brain fourth edition filetype:pdf" -m 70 -o csv
+ddgs text -k "neuroscience exploring the brain filetype:pdf" -m 70 -o csv
 # find and download images
-ddgs images -k "you can run but you can't hide" -r wt-wt -type photo -m 500 -d
+ddgs images -k "beware of false prophets" -r wt-wt -type photo -m 500 -d
 # get news for the last day and save to json
 ddgs news -k "ukraine war" -m 50 -t d -o json
 ```
