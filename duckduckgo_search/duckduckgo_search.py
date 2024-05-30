@@ -634,7 +634,7 @@ class DDGS:
         slist = [0]
         if max_results:
             max_results = min(max_results, 400)
-            slist.extend(range(59, max_results, 59))
+            slist.extend(range(60, max_results, 60))
         try:
             for r in self._executor.map(_videos_page, slist):
                 results.extend(r)
