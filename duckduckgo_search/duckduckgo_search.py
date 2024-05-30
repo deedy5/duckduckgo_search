@@ -274,7 +274,7 @@ class DDGS:
 
         slist = [0]
         if max_results:
-            max_results = min(max_results, 500)
+            max_results = min(max_results, 2023)
             slist.extend(range(23, max_results, 50))
         try:
             for r in self._executor.map(_text_api_page, slist):
@@ -364,7 +364,7 @@ class DDGS:
 
         slist = [0]
         if max_results:
-            max_results = min(max_results, 500)
+            max_results = min(max_results, 2023)
             slist.extend(range(23, max_results, 50))
         try:
             for r in self._executor.map(_text_html_page, slist):
@@ -458,7 +458,7 @@ class DDGS:
 
         slist = [0]
         if max_results:
-            max_results = min(max_results, 500)
+            max_results = min(max_results, 2023)
             slist.extend(range(23, max_results, 50))
         try:
             for r in self._executor.map(_text_lite_page, slist):
