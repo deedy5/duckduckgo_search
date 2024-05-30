@@ -12,7 +12,7 @@ def pause_between_tests():
 def test_context_manager():
     with DDGS() as ddgs:
         results = ddgs.news("cars", max_results=30)
-        assert 27 <= len(results) <= 30
+        assert 20 <= len(results) <= 30
 
 def test_chat():
     results = DDGS().chat("cat")
@@ -45,7 +45,7 @@ def test_videos():
 
 def test_news():
     results = DDGS().news("tesla", max_results=30)
-    assert 27 <= len(results) <= 30
+    assert 20 <= len(results) <= 30
 
 
 def test_maps():

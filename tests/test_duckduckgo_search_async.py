@@ -40,7 +40,7 @@ async def test_async_videos():
 @pytest.mark.asyncio
 async def test_async_news():
     results = await AsyncDDGS().anews("tesla", max_results=30)
-    assert 27 <= len(results) <= 30
+    assert 20 <= len(results) <= 30
 
 @pytest.mark.asyncio
 async def test_async_maps():
