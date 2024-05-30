@@ -710,8 +710,8 @@ class DDGS:
 
         slist = [0]
         if max_results:
-            max_results = min(max_results, 200)
-            slist.extend(range(29, max_results, 29))
+            max_results = min(max_results, 120)
+            slist.extend(range(30, max_results, 30))
         try:
             for r in self._executor.map(_news_page, slist):
                 results.extend(r)
