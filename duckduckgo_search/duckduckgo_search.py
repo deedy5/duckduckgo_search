@@ -237,7 +237,7 @@ class DDGS:
             "s": "0",
             "df": "",
             "vqd": vqd,
-            "bing_market": region,
+            "bing_market": f"{region[3:]}-{region[:2].upper()}",
             "ex": "",
         }
         safesearch = safesearch.lower()
