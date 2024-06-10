@@ -130,7 +130,12 @@ class DDGS:
         Returns:
             str: The response from the AI.
         """
-        models = {"claude-3-haiku": "claude-3-haiku-20240307", "gpt-3.5": "gpt-3.5-turbo-0125"}
+        models = {
+            "claude-3-haiku": "claude-3-haiku-20240307", 
+            "gpt-3.5": "gpt-3.5-turbo-0125",
+            "llama-3": "meta-llama/Llama-3-70b-chat-hf", 
+            "mixtral": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        }
         # vqd
         if not self._chat_vqd:
             resp = self.client.get("https://duckduckgo.com/duckchat/v1/status", headers={"x-vqd-accept": "1"})
