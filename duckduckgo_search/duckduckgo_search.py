@@ -125,16 +125,16 @@ class DDGS:
 
         Args:
             keywords (str): The initial message or question to send to the AI.
-            model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b". 
+            model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b".
                 Defaults to "gpt-3.5".
 
         Returns:
             str: The response from the AI.
         """
         models = {
-            "claude-3-haiku": "claude-3-haiku-20240307", 
+            "claude-3-haiku": "claude-3-haiku-20240307",
             "gpt-3.5": "gpt-3.5-turbo-0125",
-            "llama-3-70b": "meta-llama/llama-3-70b-70b-chat-hf", 
+            "llama-3-70b": "meta-llama/llama-3-70b-70b-chat-hf",
             "mixtral-8x7b": "mistralai/mixtral-8x7b-8x7B-Instruct-v0.1",
         }
         # vqd
