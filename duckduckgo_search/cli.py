@@ -137,7 +137,7 @@ def version():
 def chat(save, proxy):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
-    models = ["gpt-3.5", "claude-3-haiku"]
+    models = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"]
     client = DDGS(proxy=proxy)
 
     print("DuckDuckGo AI chat. Available models:")
