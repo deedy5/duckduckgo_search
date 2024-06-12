@@ -14,9 +14,12 @@ def test_context_manager():
         results = ddgs.news("cars", max_results=30)
         assert 20 <= len(results) <= 30
 
-def test_chat():
-    results = DDGS().chat("cat")
+
+@pytest.mark.parametrize("model", ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"])
+def test_chat(model):
+    results = DDGS().chat("cat", model=model)
     assert  len(results) >= 1
+
 
 def test_text():
     results = DDGS().text("cat", safesearch="off", timelimit="m", max_results=30)

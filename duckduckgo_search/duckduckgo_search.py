@@ -125,12 +125,18 @@ class DDGS:
 
         Args:
             keywords (str): The initial message or question to send to the AI.
-            model (str): The model to use: "gpt-3.5", "claude-3-haiku". Defaults to "gpt-3.5".
+            model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b".
+                Defaults to "gpt-3.5".
 
         Returns:
             str: The response from the AI.
         """
-        models = {"claude-3-haiku": "claude-3-haiku-20240307", "gpt-3.5": "gpt-3.5-turbo-0125"}
+        models = {
+            "claude-3-haiku": "claude-3-haiku-20240307",
+            "gpt-3.5": "gpt-3.5-turbo-0125",
+            "llama-3-70b": "meta-llama/Llama-3-70b-chat-hf",
+            "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        }
         # vqd
         if not self._chat_vqd:
             resp = self.client.get("https://duckduckgo.com/duckchat/v1/status", headers={"x-vqd-accept": "1"})
