@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
@@ -134,25 +135,44 @@ def version():
 @cli.command()
 @click.option("-s", "--save", is_flag=True, default=False, help="save the conversation in the json file")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
-def chat(save, proxy):
+@click.option("-t", "--text", default=None, help="input text to send to the chat")
+@click.option("-m", "--model", default=None, help="model to use for the chat: gpt-3.5, claude-3-haiku, llama-3-70b, mixtral-8x7b")
+def chat(save, proxy, text, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
     models = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"]
     client = DDGS(proxy=proxy)
 
-    print("DuckDuckGo AI chat. Available models:")
-    for idx, model in enumerate(models, start=1):
-        print(f"{idx}. {model}")
-    chosen_model_idx = input("Choose a model by entering its number[1]: ")
-    chosen_model_idx = 0 if not chosen_model_idx.strip() else int(chosen_model_idx) - 1
-    model = models[chosen_model_idx]
-    print(f"Using model: {model}")
+    if model is None:
+        print("DuckDuckGo AI chat. Available models:")
+        for idx, model in enumerate(models, start=1):
+            print(f"{idx}. {model}")
+        chosen_model_idx = input("Choose a model by entering its number[1]: ")
+        chosen_model_idx = 0 if not chosen_model_idx.strip() else int(chosen_model_idx) - 1
+        model = models[chosen_model_idx]
+        print(f"Using model: {model}")
+    else:
+        if model not in models:
+            print(f"Invalid model specified. Available models are: {', '.join(models)}")
+            return
 
     if save and Path(cache_file).exists():
         with open(cache_file) as f:
             cache = json_loads(f.read())
             client._chat_vqd = cache.get("vqd", None)
             client._chat_messages = cache.get("messages", [])
+
+    if text:
+        resp_answer = client.chat(keywords=text, model=model)
+        print(resp_answer)
+        return
+
+    if not sys.stdin.isatty():
+        stdin_input = sys.stdin.read().strip()
+        if stdin_input:
+            resp_answer = client.chat(keywords=stdin_input, model=model)
+            print(resp_answer)
+            return
 
     while True:
         user_input = input(f"{'-'*78}\nYou: ")
