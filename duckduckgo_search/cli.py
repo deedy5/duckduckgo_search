@@ -170,8 +170,9 @@ def chat(save, proxy):
         retries = retry_default
         while retries > 0:
             resp_answer = client.chat(keywords=user_input, model=model)
-            text = click.wrap_text(resp_answer, width=78, preserve_paragraphs=True)
-            click.secho(f"AI: {text}", bg="black", fg="green", overline=False)
+            text = '\n'.join([click.wrap_text(paragraph, width=78, preserve_paragraphs=True) \
+                    for paragraph in resp_answer.split('\n')])
+            click.secho(f"AI:\n{text}", bg="black", fg="green", overline=False)
             if resp_answer:
                 break
 
