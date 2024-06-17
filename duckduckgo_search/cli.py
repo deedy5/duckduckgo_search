@@ -135,7 +135,8 @@ def version():
 @cli.command()
 @click.option("-s", "--save", is_flag=True, default=False, help="save the conversation in the json file")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
-def chat(save, proxy):
+@click.option("-w", "--disable-wrapping", is_flag=True, default=False, help="disable paragraph wrapping for output")
+def chat(save, proxy, disable_wrapping):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
     models = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"]
@@ -171,7 +172,7 @@ def chat(save, proxy):
         while retries > 0:
             resp_answer = client.chat(keywords=user_input, model=model)
             text = '\n'.join([click.wrap_text(paragraph, width=78, preserve_paragraphs=True) \
-                    for paragraph in resp_answer.split('\n')])
+                    for paragraph in resp_answer.split('\n')]) if not disable_wrapping else resp_answer
             click.secho(f"AI:\n{text}", bg="black", fg="green", overline=False)
             if resp_answer:
                 break
