@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
@@ -132,11 +133,13 @@ def version():
     return __version__
 
 
+multi_line_reminder = f"Multi-line input (press Ctrl+{'Z + Enter' if sys.platform == 'win32' else 'D'} to finish input)"
 @cli.command()
 @click.option("-s", "--save", is_flag=True, default=False, help="save the conversation in the json file")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 @click.option("-w", "--disable-wrapping", is_flag=True, default=False, help="disable paragraph wrapping for output")
-def chat(save, proxy, disable_wrapping):
+@click.option("-M", "--multi-line-input", is_flag=True, default=False, help=f"allow multi-line input. {multi_line_reminder}")
+def chat(save, proxy, disable_wrapping, multi_line_input):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
     models = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"]
@@ -161,10 +164,40 @@ def chat(save, proxy, disable_wrapping):
             client._chat_messages = cache.get("messages", [])
 
     while True:
-        user_input = input(f"{'-'*78}\nYou: ")
+        if multi_line_input:
+            user_input = ""
+            while True:
+                print(f"{multi_line_reminder}\n{'-'*78}\nYou: ")
+                try:
+                    user_input += input()
+                    if user_input and user_input[-1] != '\n':
+                        user_input += '\n'
+                    if not user_input.strip():
+                        print("Empty input detected. Exiting input loop.")
+                        break
+
+                except EOFError:
+                    print("\nEOF detected. Exiting input loop.")
+                    # Remove trailing new line
+                    if user_input and user_input[-1] == '\n':
+                        user_input = user_input[:-1]
+                    break
+
+                except KeyboardInterrupt:
+                    # Handle the KeyboardInterrupt gracefully
+                    print(multi_line_reminder)
+        else:
+            try:
+                user_input = input(f"{'-'*78}\nYou: ")
+            except EOFError:
+                print("\nEOF detected. Exiting")
+                break
+            if not user_input.strip():
+                print("Empty input detected. Exiting")
+                break
         if not user_input.strip():
             break
-
+        print(f"You typed:\n{user_input}")
         print("Waiting for response")
         # Occasionally responses fail, try again, unless something's really wrong!
         retry_default = 3
