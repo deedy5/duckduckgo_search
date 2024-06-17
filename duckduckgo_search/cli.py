@@ -139,17 +139,27 @@ multi_line_reminder = f"Multi-line input (press Ctrl+{'Z + Enter' if sys.platfor
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
 @click.option("-w", "--disable-wrapping", is_flag=True, default=False, help="disable paragraph wrapping for output")
 @click.option("-M", "--multi-line-input", is_flag=True, default=False, help=f"allow multi-line input. {multi_line_reminder}")
-def chat(save, proxy, disable_wrapping, multi_line_input):
+@click.option("-m", "--model-choice", default=None, help="the index of model to use")
+def chat(save, proxy, disable_wrapping, multi_line_input, model_choice):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
     models = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"]
-    client = DDGS(proxy=proxy)
-
-    print("DuckDuckGo AI chat. Available models:")
-    for idx, model in enumerate(models, start=1):
-        print(f"{idx}. {model}")
+    client = DDGS(proxy=proxy, timeout=30)
+    print("DuckDuckGo AI chat.")
+    # Running from an interactive terminal?
+    is_interactive_session = sys.stdin.isatty()
+    if is_interactive_session:
+        print("Available models:")
+        for idx, model in enumerate(models, start=1):
+            print(f"{idx}. {model}")
+    else:
+        if model_choice is None:
+            print("When piping into stdin, a model must be selected!")
+            return
+        # Set multi_line_input as default when reading from stdin pipe.
+        multi_line_input = True
     try:
-        chosen_model_idx = input("Choose a model by entering its number[1]: ")
+        chosen_model_idx = model_choice if model_choice else input("Choose a model by entering its number[1]: ")
         chosen_model_idx = 0 if not chosen_model_idx.strip() else int(chosen_model_idx) - 1
         model = models[chosen_model_idx]
     except (IndexError, ValueError) as e:
@@ -167,7 +177,8 @@ def chat(save, proxy, disable_wrapping, multi_line_input):
         if multi_line_input:
             user_input = ""
             while True:
-                print(f"{multi_line_reminder}\n{'-'*78}\nYou: ")
+                if is_interactive_session:
+                    print(f"{multi_line_reminder}\n{'-'*78}\nYou: ")
                 try:
                     user_input += input()
                     if user_input and user_input[-1] != '\n':
@@ -177,7 +188,8 @@ def chat(save, proxy, disable_wrapping, multi_line_input):
                         break
 
                 except EOFError:
-                    print("\nEOF detected. Exiting input loop.")
+                    if is_interactive_session:
+                        print("\nEOF detected. Exiting input loop.")
                     # Remove trailing new line
                     if user_input and user_input[-1] == '\n':
                         user_input = user_input[:-1]
@@ -190,7 +202,8 @@ def chat(save, proxy, disable_wrapping, multi_line_input):
             try:
                 user_input = input(f"{'-'*78}\nYou: ")
             except EOFError:
-                print("\nEOF detected. Exiting")
+                if is_interactive_session:
+                    print("\nEOF detected. Exiting")
                 break
             if not user_input.strip():
                 print("Empty input detected. Exiting")
