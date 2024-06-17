@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
@@ -159,9 +160,23 @@ def chat(save, proxy):
         if not user_input.strip():
             break
 
-        resp_answer = client.chat(keywords=user_input, model=model)
-        text = click.wrap_text(resp_answer, width=78, preserve_paragraphs=True)
-        click.secho(f"AI: {text}", bg="black", fg="green", overline=True)
+        print("Waiting for response")
+        # Occasionally responses fail, try again, unless something's really wrong!
+        retry_default = 3
+        retries = retry_default
+        while retries > 0:
+            resp_answer = client.chat(keywords=user_input, model=model)
+            text = click.wrap_text(resp_answer, width=78, preserve_paragraphs=True)
+            click.secho(f"AI: {text}", bg="black", fg="green", overline=False)
+            if resp_answer:
+                break
+
+            retries -= 1
+            print(f"Bad response, retry {retry_default - retries}")
+            if retries == 0:
+                print("Retry limit reached. Breaking loop!")
+                break
+            time.sleep(0.5)
 
         cache = {"vqd": client._chat_vqd, "messages": client._chat_messages}
         if save:
