@@ -144,9 +144,13 @@ def chat(save, proxy):
     print("DuckDuckGo AI chat. Available models:")
     for idx, model in enumerate(models, start=1):
         print(f"{idx}. {model}")
-    chosen_model_idx = input("Choose a model by entering its number[1]: ")
-    chosen_model_idx = 0 if not chosen_model_idx.strip() else int(chosen_model_idx) - 1
-    model = models[chosen_model_idx]
+    try:
+        chosen_model_idx = input("Choose a model by entering its number[1]: ")
+        chosen_model_idx = 0 if not chosen_model_idx.strip() else int(chosen_model_idx) - 1
+        model = models[chosen_model_idx]
+    except (IndexError, ValueError) as e:
+        print(f"'{chosen_model_idx}' is not a valid model index\n{e}")
+        return
     print(f"Using model: {model}")
 
     if save and Path(cache_file).exists():
