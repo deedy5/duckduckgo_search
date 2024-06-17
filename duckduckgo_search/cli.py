@@ -164,7 +164,8 @@ def chat(save, proxy):
         click.secho(f"AI: {text}", bg="black", fg="green", overline=True)
 
         cache = {"vqd": client._chat_vqd, "messages": client._chat_messages}
-        _save_json(cache_file, cache)
+        if save:
+            _save_json(cache_file, cache)
 
         if "exit" in user_input.lower() or "quit" in user_input.lower():
             break
