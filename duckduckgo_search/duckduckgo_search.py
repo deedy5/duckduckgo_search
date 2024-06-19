@@ -66,7 +66,7 @@ class DDGS:
             timeout=timeout,
             cookie_store=True,
             referer=True,
-            impersonate="chrome_124",
+            impersonate="chrome_126",
             follow_redirects=False,
             verify=False,
         )
