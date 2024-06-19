@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
@@ -132,20 +133,27 @@ def version():
 
 
 @cli.command()
-@click.option("-s", "--save", is_flag=True, default=False, help="save the conversation in the json file")
+@click.option("-s", "--save", is_flag=True, default=False, help="use a conversation saved in a json file")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
-def chat(save, proxy):
+@click.option("-ml", "--multiline", is_flag=True, default=False, help="multi-line input")
+@click.option(
+    "-m",
+    "--model",
+    prompt="""DuckDuckGo AI chat. Choose a model: 
+[1] gpt-3.5
+[2] claude-3-haiku
+[3] llama-3-70b
+[4] mixtral-8x7b
+""",
+    type=click.Choice(["1", "2", "3", "4"]),
+    default="3",
+)
+def chat(save, proxy, multiline, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
-    models = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"]
     client = DDGS(proxy=proxy)
 
-    print("DuckDuckGo AI chat. Available models:")
-    for idx, model in enumerate(models, start=1):
-        print(f"{idx}. {model}")
-    chosen_model_idx = input("Choose a model by entering its number[1]: ")
-    chosen_model_idx = 0 if not chosen_model_idx.strip() else int(chosen_model_idx) - 1
-    model = models[chosen_model_idx]
+    model = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"][int(model) - 1]
     print(f"Using model: {model}")
 
     if save and Path(cache_file).exists():
@@ -155,19 +163,23 @@ def chat(save, proxy):
             client._chat_messages = cache.get("messages", [])
 
     while True:
-        user_input = input(f"{'-'*78}\nYou: ")
-        if not user_input.strip():
-            break
+        print(f"{'-'*78}\nYou: ", end="")
+        if multiline:
+            print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]': """)
+            user_input = sys.stdin.read()
+            print("")
+        else:
+            user_input = input()
+        if user_input.strip():
+            resp_answer = client.chat(keywords=user_input, model=model)
+            if multiline:
+                click.secho(f"AI: {resp_answer}", bg="black", fg="green")
+            else:
+                text = click.wrap_text(resp_answer, width=78, preserve_paragraphs=True)
+                click.secho(f"AI: {text}", bg="black", fg="green", overline=True)
 
-        resp_answer = client.chat(keywords=user_input, model=model)
-        text = click.wrap_text(resp_answer, width=78, preserve_paragraphs=True)
-        click.secho(f"AI: {text}", bg="black", fg="green", overline=True)
-
-        cache = {"vqd": client._chat_vqd, "messages": client._chat_messages}
-        _save_json(cache_file, cache)
-
-        if "exit" in user_input.lower() or "quit" in user_input.lower():
-            break
+            cache = {"vqd": client._chat_vqd, "messages": client._chat_messages}
+            _save_json(cache_file, cache)
 
 
 @cli.command()
