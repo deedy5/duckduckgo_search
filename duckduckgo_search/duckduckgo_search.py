@@ -153,13 +153,11 @@ class DDGS:
         )
         self._chat_vqd = resp.headers.get("x-vqd-4", "")
 
-        messages = []
-        for line in resp.text.replace("data: ", "").replace("[DONE]", "").split("\n\n"):
-            x = line.strip()
-            if x:
-                j = json_loads(x)
-                message = j.get("message", "")
-                messages.append(message)
+        messages = [
+            json_loads(x).get("message", "")
+            for line in resp.text.replace("data: ", "").replace("[DONE]", "").split("\n\n")
+            if (x := line.strip())
+        ]
         result = "".join(messages)
         self._chat_messages.append({"role": "assistant", "content": result})
         return result
