@@ -133,22 +133,23 @@ def version():
 
 
 @cli.command()
-@click.option("-s", "--save", is_flag=True, default=False, help="use a conversation saved in a json file")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-l", "--load", is_flag=True, default=False, help="load the last conversation from the json cache")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-ml", "--multiline", is_flag=True, default=False, help="multi-line input")
 @click.option(
     "-m",
     "--model",
     prompt="""DuckDuckGo AI chat. Choose a model: 
-[1] gpt-3.5
-[2] claude-3-haiku
-[3] llama-3-70b
-[4] mixtral-8x7b
+[1]: gpt-3.5
+[2]: claude-3-haiku
+[3]: llama-3-70b
+[4]: mixtral-8x7b
 """,
     type=click.Choice(["1", "2", "3", "4"]),
+    show_choices=False,
     default="3",
 )
-def chat(save, proxy, multiline, model):
+def chat(load, proxy, multiline, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
     client = DDGS(proxy=proxy)
@@ -156,7 +157,7 @@ def chat(save, proxy, multiline, model):
     model = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"][int(model) - 1]
     print(f"Using model: {model}")
 
-    if save and Path(cache_file).exists():
+    if load and Path(cache_file).exists():
         with open(cache_file) as f:
             cache = json_loads(f.read())
             client._chat_vqd = cache.get("vqd", None)
@@ -165,18 +166,14 @@ def chat(save, proxy, multiline, model):
     while True:
         print(f"{'-'*78}\nYou: ", end="")
         if multiline:
-            print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]': """)
+            print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]: """)
             user_input = sys.stdin.read()
             print("")
         else:
             user_input = input()
         if user_input.strip():
             resp_answer = client.chat(keywords=user_input, model=model)
-            if multiline:
-                click.secho(f"AI: {resp_answer}", bg="black", fg="green")
-            else:
-                text = click.wrap_text(resp_answer, width=78, preserve_paragraphs=True)
-                click.secho(f"AI: {text}", bg="black", fg="green", overline=True)
+            click.secho(f"AI: {resp_answer}", bg="black", fg="green")
 
             cache = {"vqd": client._chat_vqd, "messages": client._chat_messages}
             _save_json(cache_file, cache)
