@@ -152,6 +152,7 @@ def version():
 def chat(load, proxy, multiline, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     client = DDGS(proxy=proxy)
 
     model = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"][int(model) - 1]
@@ -189,9 +190,10 @@ def chat(load, proxy, multiline, model):
 @click.option("-d", "--download", is_flag=True, default=False, help="download results to 'keywords' folder")
 @click.option("-b", "--backend", default="api", type=click.Choice(["api", "html", "lite"]), help="which backend to use")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def text(keywords, region, safesearch, timelimit, backend, output, download, threads, max_results, proxy):
     """CLI function to perform a text search using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).text(
         keywords=keywords,
         region=region,
@@ -215,9 +217,10 @@ def text(keywords, region, safesearch, timelimit, backend, output, download, thr
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="answers search, keywords for query")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def answers(keywords, output, proxy):
     """CLI function to perform a answers search using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).answers(keywords=keywords)
     filename = f"answers_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -271,7 +274,7 @@ def answers(keywords, output, proxy):
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
 @click.option("-d", "--download", is_flag=True, default=False, help="download and save images to 'keywords' folder")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def images(
     keywords,
     region,
@@ -289,6 +292,7 @@ def images(
     proxy,
 ):
     """CLI function to perform a images search using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).images(
         keywords=keywords,
         region=region,
@@ -323,9 +327,10 @@ def images(
 @click.option("-lic", "--license_videos", default=None, type=click.Choice(["creativeCommon", "youtube"]))
 @click.option("-m", "--max_results", default=50, help="maximum number of results, default=50")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def videos(keywords, region, safesearch, timelimit, resolution, duration, license_videos, max_results, output, proxy):
     """CLI function to perform a videos search using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).videos(
         keywords=keywords,
         region=region,
@@ -352,9 +357,10 @@ def videos(keywords, region, safesearch, timelimit, resolution, duration, licens
 @click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
 @click.option("-m", "--max_results", default=25, help="maximum number of results, default=25")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def news(keywords, region, safesearch, timelimit, max_results, output, proxy):
     """CLI function to perform a news search using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).news(
         keywords=keywords, region=region, safesearch=safesearch, timelimit=timelimit, max_results=max_results
     )
@@ -381,7 +387,7 @@ def news(keywords, region, safesearch, timelimit, max_results, output, proxy):
 @click.option("-r", "--radius", default=0, help="expand the search square by the distance in kilometers")
 @click.option("-m", "--max_results", default=50, help="number of results, default=50")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-proxy", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-proxy", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def maps(
     keywords,
     place,
@@ -399,6 +405,7 @@ def maps(
     proxy,
 ):
     """CLI function to perform a maps search using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).maps(
         keywords=keywords,
         place=place,
@@ -427,9 +434,10 @@ def maps(
 @click.option("-f", "--from_", help="What language to translate from (defaults automatically)")
 @click.option("-t", "--to", default="en", help="de, ru, fr, etc. What language to translate, defaults='en'")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def translate(keywords, from_, to, output, proxy):
     """CLI function to perform translate using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).translate(keywords=keywords, from_=from_, to=to)
     filename = f"translate_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":
@@ -444,9 +452,10 @@ def translate(keywords, from_, to, output, proxy):
 @click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://localhost:9150")
+@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 def suggestions(keywords, region, output, proxy):
     """CLI function to perform a suggestions search using DuckDuckGo API."""
+    proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
     data = DDGS(proxy=proxy).suggestions(keywords=keywords, region=region)
     filename = f"suggestions_{_sanitize_keywords(keywords)}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print":

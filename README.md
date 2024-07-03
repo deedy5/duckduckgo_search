@@ -53,8 +53,10 @@ CLI examples:
 ddgs chat
 # text search
 ddgs text -k "'how to tame a fox' site:wikihow.com"
-# find and download pdf files via proxy (example: Tor browser)
-ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p socks5://127.0.0.1:9150
+# find and download pdf files via proxy
+ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p https://123.123.123.123:12345
+# if you use Tor Browser as a proxy
+ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p tb #(`tb` is an alias for `socks5://127.0.0.1:9150`)
 # find and save to csv
 ddgs text -k "neuroscience exploring the brain filetype:pdf" -m 70 -o csv
 # find and download images
