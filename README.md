@@ -3,10 +3,6 @@
 
 Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
 
-**Disclaimer**
-
-This library is not affiliated with DuckDuckGo and is for educational purposes only. It is not intended for commercial use or any purpose that violates DuckDuckGo's Terms of Service. By using this library, you acknowledge that you will not use it in a way that infringes on DuckDuckGo's terms. The official DuckDuckGo website can be found at https://duckduckgo.com.
-
 ## Table of Contents
 * [Install](#install)
 * [CLI version](#cli-version)
@@ -24,14 +20,11 @@ This library is not affiliated with DuckDuckGo and is for educational purposes o
 * [7. maps() - map search](#7-maps---map-search-by-duckduckgocom)
 * [8. translate() - translation](#8-translate---translation-by-duckduckgocom)
 * [9. suggestions() - suggestions](#9-suggestions---suggestions-by-duckduckgocom)
+* [Disclaimer](#disclaimer)
 
 ## Install
 ```python
 pip install -U duckduckgo_search
-```
-There is also a beta release that uses the `httpx` library:
-```python
-pip install -U duckduckgo_search==5.3.1b1
 ```
 > [!NOTE]
 > you can install lxml to use the `text` function with `backend='html'` or `backend='lite'` (size ≈ 12Mb)</br>
@@ -42,11 +35,6 @@ pip install -U duckduckgo_search==5.3.1b1
 ```python3
 ddgs --help
 ```
-or
-```python3
-python -m duckduckgo_search --help
-```
-
 CLI examples:
 ```python3
 # AI chat
@@ -295,6 +283,14 @@ results = DDGS().text('russia filetype:pdf', region='wt-wt', safesearch='off', t
 
 # async
 results = await AsyncDDGS().atext('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+print(results)
+[
+    {
+        "title": "News, sport, celebrities and gossip | The Sun",
+        "href": "https://www.thesun.co.uk/",
+        "body": "Get the latest news, exclusives, sport, celebrities, showbiz, politics, business and lifestyle from The Sun",
+    }, ...
+]
 ```
 
 [Go To TOP](#TOP)
@@ -318,6 +314,15 @@ results = DDGS().answers("sun")
 
 # async
 results = await AsyncDDGS().aanswers("sun")
+print(results)
+[
+    {
+        "icon": None,
+        "text": "The Sun is the star at the center of the Solar System. It is a massive, nearly perfect sphere of hot plasma, heated to incandescence by nuclear fusion reactions in its core, radiating the energy from its surface mainly as visible light and infrared radiation with 10% at ultraviolet energies. It is by far the most important source of energy for life on Earth. The Sun has been an object of veneration in many cultures. It has been a central subject for astronomical research since antiquity. The Sun orbits the Galactic Center at a distance of 24,000 to 28,000 light-years. From Earth, it is 1 AU or about 8 light-minutes away. Its diameter is about 1,391,400 km, 109 times that of Earth. Its mass is about 330,000 times that of Earth, making up about 99.86% of the total mass of the Solar System. Roughly three-quarters of the Sun's mass consists of hydrogen; the rest is mostly helium, with much smaller quantities of heavier elements, including oxygen, carbon, neon, and iron.",
+        "topic": None,
+        "url": "https://en.wikipedia.org/wiki/Sun",
+    }, ...
+]
 ```
 
 [Go To TOP](#TOP)
@@ -376,6 +381,18 @@ results = DDGS().images(
 
 # async
 results = await AsyncDDGS().aimages('sun', region='wt-wt', safesearch='off', max_results=20)
+print(images)
+[
+    {
+        "title": "File:The Sun by the Atmospheric Imaging Assembly of NASA's Solar ...",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA's_Solar_Dynamics_Observatory_-_20100819.jpg",
+        "thumbnail": "https://tse4.mm.bing.net/th?id=OIP.lNgpqGl16U0ft3rS8TdFcgEsEe&pid=Api",
+        "url": "https://en.wikipedia.org/wiki/File:The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA's_Solar_Dynamics_Observatory_-_20100819.jpg",
+        "height": 3860,
+        "width": 4044,
+        "source": "Bing",
+    }, ...
+]
 ```
 
 [Go To TOP](#TOP)
@@ -423,6 +440,29 @@ results = DDGS().videos(
 
 # async
 results = await AsyncDDGS().avideos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
+print(results)
+[
+    {
+        "content": "https://www.youtube.com/watch?v=6901-C73P3g",
+        "description": "Watch the Best Scenes of popular Tamil Serial #Meena that airs on Sun TV. Watch all Sun TV serials immediately after the TV telecast on Sun NXT app. *Free for Indian Users only Download here: Android - http://bit.ly/SunNxtAdroid iOS: India - http://bit.ly/sunNXT Watch on the web - https://www.sunnxt.com/ Two close friends, Chidambaram ...",
+        "duration": "8:22",
+        "embed_html": '<iframe width="1280" height="720" src="https://www.youtube.com/embed/6901-C73P3g?autoplay=1" frameborder="0" allowfullscreen></iframe>',
+        "embed_url": "https://www.youtube.com/embed/6901-C73P3g?autoplay=1",
+        "image_token": "6c070b5f0e24e5972e360d02ddeb69856202f97718ea6c5d5710e4e472310fa3",
+        "images": {
+            "large": "https://tse4.mm.bing.net/th?id=OVF.JWBFKm1u%2fHd%2bz2e1GitsQw&pid=Api",
+            "medium": "https://tse4.mm.bing.net/th?id=OVF.JWBFKm1u%2fHd%2bz2e1GitsQw&pid=Api",
+            "motion": "",
+            "small": "https://tse4.mm.bing.net/th?id=OVF.JWBFKm1u%2fHd%2bz2e1GitsQw&pid=Api",
+        },
+        "provider": "Bing",
+        "published": "2024-07-03T05:30:03.0000000",
+        "publisher": "YouTube",
+        "statistics": {"viewCount": 29059},
+        "title": "Meena - Best Scenes | 02 July 2024 | Tamil Serial | Sun TV",
+        "uploader": "Sun TV",
+    }, ...
+]
 ```
 
 [Go To TOP](#TOP)
@@ -456,6 +496,17 @@ results = DDGS().news(keywords="sun", region="wt-wt", safesearch="off", timelimi
 
 # async
 results = await AsyncDDGS().anews('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
+print(results)
+[
+    {
+        "date": "2024-07-03T16:25:22+00:00",
+        "title": "Murdoch's Sun Endorses Starmer's Labour Day Before UK Vote",
+        "body": "Rupert Murdoch's Sun newspaper endorsed Keir Starmer and his opposition Labour Party to win the UK general election, a dramatic move in the British media landscape that illustrates the country's shifting political sands.",
+        "url": "https://www.msn.com/en-us/money/other/murdoch-s-sun-endorses-starmer-s-labour-day-before-uk-vote/ar-BB1plQwl",
+        "image": "https://img-s-msn-com.akamaized.net/tenant/amp/entityid/BB1plZil.img?w=2000&h=1333&m=4&q=79",
+        "source": "Bloomberg on MSN.com",
+    }, ...
+]
 ```
 
 [Go To TOP](#TOP)
@@ -504,6 +555,38 @@ results = DDGS().maps("school", place="Uganda", max_results=50)
 
 # async
 results = await AsyncDDGS().amaps('shop', place="Baltimor", max_results=10)
+print(results)
+[
+    {
+        "title": "The Bun Shop",
+        "address": "239 W Read St, Baltimore, MD 21201-4845",
+        "country_code": None,
+        "url": "https://www.facebook.com/TheBunShop/",
+        "phone": "+14109892033",
+        "latitude": 39.3006042,
+        "longitude": -76.6195788,
+        "source": "https://www.tripadvisor.com/Restaurant_Review-g60811-d4819859-Reviews-The_Bun_Shop-Baltimore_Maryland.html?m=63959",
+        "image": "",
+        "desc": "",
+        "hours": {
+            "Fri": "07:00:00–03:00:00",
+            "Mon": "07:00:00–03:00:00",
+            "Sat": "07:00:00–03:00:00",
+            "Sun": "07:00:00–03:00:00",
+            "Thu": "07:00:00–03:00:00",
+            "Tue": "07:00:00–03:00:00",
+            "Wed": "07:00:00–03:00:00",
+            "closes_soon": 0,
+            "is_open": 1,
+            "opens_soon": 0,
+            "state_switch_time": "03:00",
+        },
+        "category": "Cafe",
+        "facebook": "",
+        "instagram": "",
+        "twitter": "",
+    }, ...
+]
 ```
 
 [Go To TOP](#TOP)
@@ -537,6 +620,8 @@ results = DDGS().translate(keywords, to="de")
 
 # async
 results = await AsyncDDGS().atranslate('sun', to="de")
+print(results)
+[{"detected_language": "en", "translated": "Sonne", "original": "sun"}]
 ```
 
 [Go To TOP](#TOP)
@@ -564,6 +649,21 @@ results = DDGS().suggestions("fly")
 
 # async
 results = await AsyncDDGS().asuggestions('sun')
+print(results)
+[
+    {"phrase": "sunshine live"},
+    {"phrase": "sunexpress"},
+    {"phrase": "sunday natural"},
+    {"phrase": "sunrise village spiel"},
+    {"phrase": "sunny portal"},
+    {"phrase": "sundair"},
+    {"phrase": "sunny cars"},
+    {"phrase": "sunexpress online check-in"},
+]
 ```
+
+## Disclaimer
+
+This library is not affiliated with DuckDuckGo and is for educational purposes only. It is not intended for commercial use or any purpose that violates DuckDuckGo's Terms of Service. By using this library, you acknowledge that you will not use it in a way that infringes on DuckDuckGo's terms. The official DuckDuckGo website can be found at https://duckduckgo.com.
 
 [Go To TOP](#TOP)
