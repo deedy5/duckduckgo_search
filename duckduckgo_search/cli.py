@@ -136,6 +136,7 @@ def version():
 @click.option("-l", "--load", is_flag=True, default=False, help="load the last conversation from the json cache")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-ml", "--multiline", is_flag=True, default=False, help="multi-line input")
+@click.option("-t", "--timeout", default=20, help="timeout value for the HTTP client")
 @click.option(
     "-m",
     "--model",
@@ -149,7 +150,7 @@ def version():
     show_choices=False,
     default="3",
 )
-def chat(load, proxy, multiline, model):
+def chat(load, proxy, multiline, timeout, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     cache_file = "ddgs_chat_conversation.json"
     proxy = "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
@@ -173,7 +174,7 @@ def chat(load, proxy, multiline, model):
         else:
             user_input = input()
         if user_input.strip():
-            resp_answer = client.chat(keywords=user_input, model=model)
+            resp_answer = client.chat(keywords=user_input, model=model, timeout=timeout)
             click.secho(f"AI: {resp_answer}", bg="black", fg="green")
 
             cache = {"vqd": client._chat_vqd, "messages": client._chat_messages}

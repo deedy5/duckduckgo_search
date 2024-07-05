@@ -120,13 +120,14 @@ class DDGS:
         resp_content = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         return _extract_vqd(resp_content, keywords)
 
-    def chat(self, keywords: str, model: str = "gpt-3.5") -> str:
+    def chat(self, keywords: str, model: str = "gpt-3.5", timeout: int = 20) -> str:
         """Initiates a chat session with DuckDuckGo AI.
 
         Args:
             keywords (str): The initial message or question to send to the AI.
             model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b".
                 Defaults to "gpt-3.5".
+            timeout (int): Timeout value for the HTTP client. Defaults to 20.
 
         Returns:
             str: The response from the AI.
@@ -149,16 +150,15 @@ class DDGS:
             "messages": self._chat_messages,
         }
         resp = self.client.post(
-            "https://duckduckgo.com/duckchat/v1/chat", headers={"x-vqd-4": self._chat_vqd}, json=json_data
+            "https://duckduckgo.com/duckchat/v1/chat",
+            headers={"x-vqd-4": self._chat_vqd},
+            json=json_data,
+            timeout=timeout,
         )
         self._chat_vqd = resp.headers.get("x-vqd-4", "")
 
-        messages = [
-            json_loads(x).get("message", "")
-            for line in resp.text.replace("data: ", "").replace("[DONE]", "").split("\n\n")
-            if (x := line.strip())
-        ]
-        result = "".join(messages)
+        messages = [e.split('","')[0] for e in resp.text.split('"message":"')[1:]]
+        result = "".join(messages).replace("\\n", "\n").replace("\\t", "\t")
         self._chat_messages.append({"role": "assistant", "content": result})
         return result
 
