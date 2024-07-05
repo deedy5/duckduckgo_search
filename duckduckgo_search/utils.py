@@ -1,11 +1,10 @@
+import json
 import re
 from decimal import Decimal
 from html import unescape
 from math import atan2, cos, radians, sin, sqrt
 from typing import Any, Dict, List, Union
 from urllib.parse import unquote
-
-import orjson
 
 from .exceptions import DuckDuckGoSearchException
 
@@ -14,14 +13,14 @@ REGEX_STRIP_TAGS = re.compile("<.*?>")
 
 def json_dumps(obj: Any) -> str:
     try:
-        return orjson.dumps(obj).decode("utf-8")
+        return json.dumps(obj)
     except Exception as ex:
         raise DuckDuckGoSearchException(f"{type(ex).__name__}: {ex}") from ex
 
 
 def json_loads(obj: Union[str, bytes]) -> Any:
     try:
-        return orjson.loads(obj)
+        return json.loads(obj)
     except Exception as ex:
         raise DuckDuckGoSearchException(f"{type(ex).__name__}: {ex}") from ex
 

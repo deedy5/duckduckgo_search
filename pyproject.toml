@@ -30,7 +30,6 @@ classifiers = [
 dependencies = [
     "click>=8.1.7",
     "pyreqwest_impersonate>=0.4.9",
-    "orjson>=3.10.6",
 ]
 dynamic = ["version"]
 
