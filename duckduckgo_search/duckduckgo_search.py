@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from functools import cached_property
 from itertools import cycle, islice
+from random import choice
 from threading import Event
 from types import TracebackType
 from typing import Dict, List, Optional, Tuple, Type, Union, cast
@@ -37,6 +38,15 @@ class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com."""
 
     _executor: ThreadPoolExecutor = ThreadPoolExecutor()
+    _impersonates = (
+        "chrome_99", "chrome_100", "chrome_101", "chrome_104", "chrome_105", "chrome_106", "chrome_108", 
+        "chrome_107", "chrome_109", "chrome_114", "chrome_116", "chrome_117", "chrome_118", "chrome_119", 
+        "chrome_120", #"chrome_123", "chrome_124", "chrome_126",
+        "safari_ios_16.5", "safari_ios_17.2", "safari_ios_17.4.1", "safari_15.3", "safari_15.5", 
+        "safari_15.6.1", "safari_16", "safari_16.5", "safari_17.2.1", "safari_17.4.1",
+        #"okhttp_3.9", "okhttp_3.11", "okhttp_3.13", "okhttp_3.14", "okhttp_4.9", "okhttp_4.10", "okhttp_5",
+        "edge_99", "edge_101", "edge_122",
+    )  # fmt: skip
 
     def __init__(
         self,
@@ -66,7 +76,7 @@ class DDGS:
             timeout=timeout,
             cookie_store=True,
             referer=True,
-            impersonate="chrome_126",
+            impersonate=choice(self._impersonates),
             follow_redirects=False,
             verify=False,
         )
