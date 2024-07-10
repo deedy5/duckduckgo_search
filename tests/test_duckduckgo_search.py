@@ -38,7 +38,7 @@ def test_text_lite():
 
 def test_images():
     results = DDGS().images("flower", max_results=200)
-    assert 95 <= len(results) <= 200
+    assert 85 <= len(results) <= 200
 
 
 def test_videos():

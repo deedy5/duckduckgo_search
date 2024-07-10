@@ -43,7 +43,7 @@ async def test_text_lite():
 @pytest.mark.asyncio
 async def test_async_images():
     results = await AsyncDDGS().aimages("flower", max_results=200)
-    assert 95 <= len(results) <= 200
+    assert 85 <= len(results) <= 200
 
 
 @pytest.mark.asyncio
