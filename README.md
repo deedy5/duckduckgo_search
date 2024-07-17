@@ -40,7 +40,7 @@ CLI examples:
 # AI chat
 ddgs chat
 # text search
-ddgs text -k "yuchi language"
+ddgs text -k "standard oil"
 # find and download pdf files via proxy
 ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p https://1.2.3.4:1234
 # using Tor Browser as a proxy (`tb` is an alias for `socks5://127.0.0.1:9150`)
@@ -50,7 +50,7 @@ ddgs text -k "'neuroscience exploring the brain' filetype:pdf" -m 70 -o csv
 # find and download images
 ddgs images -k "beware of false prophets" -r wt-wt -type photo -m 500 -d
 # get news for the last day and save to json
-ddgs news -k "sanctions" -m 50 -t d -o json
+ddgs news -k "sanctions" -m 100 -t d -o json
 ```
 [Go To TOP](#TOP)
 
