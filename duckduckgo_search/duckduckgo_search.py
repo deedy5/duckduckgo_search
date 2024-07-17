@@ -461,7 +461,11 @@ class DDGS:
                             title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, List) else ""
                     elif i == 2:
                         bodyxpath = e.xpath(".//td[@class='result-snippet']//text()")
-                        body = "".join(str(x) for x in bodyxpath) if bodyxpath and isinstance(bodyxpath, List) else ""
+                        body = (
+                            "".join(str(x) for x in bodyxpath).strip()
+                            if bodyxpath and isinstance(bodyxpath, List)
+                            else ""
+                        )
                         if href:
                             result = {
                                 "title": _normalize(title),
