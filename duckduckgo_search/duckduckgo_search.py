@@ -356,7 +356,7 @@ class DDGS:
             for e in elements:
                 if isinstance(e, _Element):
                     hrefxpath = e.xpath("./a/@href")
-                    href = str(hrefxpath[0]) if isinstance(hrefxpath, List) else None
+                    href = str(hrefxpath[0]) if hrefxpath and isinstance(hrefxpath, List) else None
                     if (
                         href
                         and href not in cache
@@ -366,9 +366,9 @@ class DDGS:
                     ):
                         cache.add(href)
                         titlexpath = e.xpath("./h2/a/text()")
-                        title = str(titlexpath[0]) if isinstance(titlexpath, List) else ""
+                        title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, List) else ""
                         bodyxpath = e.xpath("./a//text()")
-                        body = "".join(str(x) for x in bodyxpath) if isinstance(bodyxpath, List) else ""
+                        body = "".join(str(x) for x in bodyxpath) if bodyxpath and isinstance(bodyxpath, List) else ""
                         result = {
                             "title": _normalize(title),
                             "href": _normalize_url(href),
@@ -458,10 +458,10 @@ class DDGS:
                         else:
                             cache.add(href)
                             titlexpath = e.xpath(".//a//text()")
-                            title = str(titlexpath[0]) if isinstance(titlexpath, List) else ""
+                            title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, List) else ""
                     elif i == 2:
                         bodyxpath = e.xpath(".//td[@class='result-snippet']//text()")
-                        body = "".join(str(x) for x in bodyxpath) if isinstance(bodyxpath, List) else ""
+                        body = "".join(str(x) for x in bodyxpath) if bodyxpath and isinstance(bodyxpath, List) else ""
                         if href:
                             result = {
                                 "title": _normalize(title),
