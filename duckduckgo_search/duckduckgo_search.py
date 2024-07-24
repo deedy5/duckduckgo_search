@@ -81,8 +81,8 @@ class DDGS:
             verify=False,
         )
         self._exception_event = Event()
-        self._chat_conversation_size = 0
         self._chat_messages: List[Dict[str, str]] = []
+        self._chat_tokens_count = 0
         self._chat_vqd: str = ""
 
     def __enter__(self) -> "DDGS":
@@ -155,6 +155,7 @@ class DDGS:
             self._chat_vqd = resp.headers.get("x-vqd-4", "")
 
         self._chat_messages.append({"role": "user", "content": keywords})
+        self._chat_tokens_count += len(keywords) // 4 if len(keywords) >= 4 else 1  # approximate number of tokens
 
         json_data = {
             "model": models[model],
@@ -182,11 +183,12 @@ class DDGS:
                         else RatelimitException(err_message)
                     )
                 raise DuckDuckGoSearchException(err_message)
-            results.append(x.get("message", ""))
+            elif message := x.get("message"):
+                results.append(message)
         result = "".join(results)
 
         self._chat_messages.append({"role": "assistant", "content": result})
-        self._chat_conversation_size = sum(len(d["content"]) for d in self._chat_messages)
+        self._chat_tokens_count += len(results)
         return result
 
     def text(

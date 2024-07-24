@@ -165,7 +165,7 @@ def chat(load, proxy, multiline, timeout, model):
             client._chat_messages = cache.get("messages", [])
 
     while True:
-        print(f"{'-'*78}\nYou[{model=} contextsize={client._chat_conversation_size}]: ", end="")
+        print(f"{'-'*78}\nYou[{model=} tokens={client._chat_tokens_count}]: ", end="")
         if multiline:
             print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]""")
             user_input = sys.stdin.read()
