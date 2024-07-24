@@ -21,7 +21,7 @@ try:
 except ImportError:
     LXML_AVAILABLE = False
 
-from .exceptions import DuckDuckGoSearchException, RatelimitException, TimeoutException
+from .exceptions import ConversationLimitException, DuckDuckGoSearchException, RatelimitException, TimeoutException
 from .utils import (
     _calculate_distance,
     _extract_vqd,
@@ -81,6 +81,7 @@ class DDGS:
             verify=False,
         )
         self._exception_event = Event()
+        self._chat_conversation_size = 0
         self._chat_messages: List[Dict[str, str]] = []
         self._chat_vqd: str = ""
 
@@ -167,10 +168,25 @@ class DDGS:
         )
         self._chat_vqd = resp.headers.get("x-vqd-4", "")
 
-        data = ",".join(x for line in resp.text.rstrip("[DONE]\n").split("data:") if (x := line.strip()))
-        result = "".join(x.get("message", "") for x in json_loads("[" + data + "]"))
+        data = ",".join(x for line in resp.text.rstrip("[DONE]LIMT_CVRSA\n").split("data:") if (x := line.strip()))
+        data = json_loads("[" + data + "]")
+
+        results = []
+        for x in data:
+            if x.get("action") == "error":
+                err_message = x.get("type", "")
+                if x.get("status") == 429:
+                    raise (
+                        ConversationLimitException(err_message)
+                        if err_message == "ERR_CONVERSATION_LIMIT"
+                        else RatelimitException(err_message)
+                    )
+                raise DuckDuckGoSearchException(err_message)
+            results.append(x.get("message", ""))
+        result = "".join(results)
 
         self._chat_messages.append({"role": "assistant", "content": result})
+        self._chat_conversation_size = sum(len(d["content"]) for d in self._chat_messages)
         return result
 
     def text(

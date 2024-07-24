@@ -157,7 +157,6 @@ def chat(load, proxy, multiline, timeout, model):
     client = DDGS(proxy=proxy)
 
     model = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"][int(model) - 1]
-    print(f"Using model: {model}")
 
     if load and Path(cache_file).exists():
         with open(cache_file) as f:
@@ -166,11 +165,11 @@ def chat(load, proxy, multiline, timeout, model):
             client._chat_messages = cache.get("messages", [])
 
     while True:
-        print(f"{'-'*78}\nYou: ", end="")
+        print(f"{'-'*78}\nYou[{model=} contextsize={client._chat_conversation_size}]: ", end="")
         if multiline:
-            print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]: """)
+            print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]""")
             user_input = sys.stdin.read()
-            print("")
+            print("...")
         else:
             user_input = input()
         if user_input.strip():

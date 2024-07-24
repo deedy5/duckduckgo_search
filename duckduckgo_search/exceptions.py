@@ -8,3 +8,7 @@ class RatelimitException(DuckDuckGoSearchException):
 
 class TimeoutException(DuckDuckGoSearchException):
     """Raised for timeout errors during API requests."""
+
+
+class ConversationLimitException(DuckDuckGoSearchException):
+    """Raised for conversation limit during API requests to AI endpoint."""
