@@ -163,6 +163,7 @@ def chat(load, proxy, multiline, timeout, model):
             cache = json_loads(f.read())
             client._chat_vqd = cache.get("vqd", None)
             client._chat_messages = cache.get("messages", [])
+            client._chat_tokens_count = cache.get("tokens", 0)
 
     while True:
         print(f"{'-'*78}\nYou[{model=} tokens={client._chat_tokens_count}]: ", end="")
@@ -176,7 +177,7 @@ def chat(load, proxy, multiline, timeout, model):
             resp_answer = client.chat(keywords=user_input, model=model, timeout=timeout)
             click.secho(f"AI: {resp_answer}", bg="black", fg="green")
 
-            cache = {"vqd": client._chat_vqd, "messages": client._chat_messages}
+            cache = {"vqd": client._chat_vqd, "tokens": client._chat_tokens_count, "messages": client._chat_messages}
             _save_json(cache_file, cache)
 
 
