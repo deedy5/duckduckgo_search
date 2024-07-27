@@ -10,7 +10,7 @@ from threading import Event
 from types import TracebackType
 from typing import Dict, List, Optional, Tuple, Type, Union, cast
 
-import pyreqwest_impersonate as pri  # type: ignore
+import primp  # type: ignore
 
 try:
     from lxml.etree import _Element
@@ -70,7 +70,7 @@ class DDGS:
             self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
         self.headers = headers if headers else {}
         self.headers["Referer"] = "https://duckduckgo.com/"
-        self.client = pri.Client(
+        self.client = primp.Client(
             headers=self.headers,
             proxy=self.proxy,
             timeout=timeout,

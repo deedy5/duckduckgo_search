@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 import click
-import pyreqwest_impersonate as pri
+import primp
 
 from .duckduckgo_search import DDGS
 from .utils import json_dumps, json_loads
@@ -83,7 +83,7 @@ def _sanitize_keywords(keywords):
 
 def _download_file(url, dir_path, filename, proxy):
     try:
-        resp = pri.Client(proxy=proxy, impersonate="chrome_126", timeout=10, verify=False).get(url)
+        resp = primp.Client(proxy=proxy, impersonate="chrome_126", timeout=10, verify=False).get(url)
         if resp.status_code == 200:
             with open(os.path.join(dir_path, filename[:200]), "wb") as file:
                 file.write(resp.content)

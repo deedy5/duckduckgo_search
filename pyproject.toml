@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1.7",
-    "pyreqwest_impersonate>=0.5.3",
+    "primp>=0.5.4",
 ]
 dynamic = ["version"]
 
