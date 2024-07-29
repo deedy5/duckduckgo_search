@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1.7",
-    "primp>=0.5.4",
+    "primp>=0.5.5",
 ]
 dynamic = ["version"]
 
@@ -50,7 +50,7 @@ dev = [
     "mypy>=1.11.0",
     "pytest>=8.3.1",
     "pytest-asyncio>=0.23.8",
-    "ruff>=0.5.4",
+    "ruff>=0.5.5",
 ]
 
 [tool.ruff]
