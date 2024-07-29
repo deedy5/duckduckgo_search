@@ -148,15 +148,14 @@ def version():
 """,
     type=click.Choice(["1", "2", "3", "4"]),
     show_choices=False,
-    default="3",
+    default="1",
 )
 def chat(load, proxy, multiline, timeout, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
-    cache_file = "ddgs_chat_conversation.json"
     client = DDGS(proxy=_expand_proxy_tb_alias(proxy))
-
     model = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"][int(model) - 1]
 
+    cache_file = "ddgs_chat_conversation.json"
     if load and Path(cache_file).exists():
         with open(cache_file) as f:
             cache = json_loads(f.read())
@@ -174,7 +173,7 @@ def chat(load, proxy, multiline, timeout, model):
             user_input = input()
         if user_input.strip():
             resp_answer = client.chat(keywords=user_input, model=model, timeout=timeout)
-            click.secho(f"AI: {resp_answer}", bg="black", fg="green")
+            click.secho(f"AI: {resp_answer}", fg="green")
 
             cache = {"vqd": client._chat_vqd, "tokens": client._chat_tokens_count, "messages": client._chat_messages}
             _save_json(cache_file, cache)
