@@ -24,6 +24,7 @@ except ImportError:
 from .exceptions import ConversationLimitException, DuckDuckGoSearchException, RatelimitException, TimeoutException
 from .utils import (
     _calculate_distance,
+    _expand_proxy_tb_alias,
     _extract_vqd,
     _normalize,
     _normalize_url,
@@ -64,7 +65,7 @@ class DDGS:
                 example: "http://user:pass@example.com:3128". Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
         """
-        self.proxy: Optional[str] = proxy
+        self.proxy: Optional[str] = _expand_proxy_tb_alias(proxy)  # replaces "tb" with "socks5://127.0.0.1:9150"
         assert self.proxy is None or isinstance(self.proxy, str), "proxy must be a str"
         if not proxy and proxies:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)

@@ -201,7 +201,7 @@ Use a rotating proxy. Otherwise, use a new proxy with each DDGS or AsyncDDGS ini
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
-ddgs = DDGS(proxy="socks5://127.0.0.1:9150", timeout=20)
+ddgs = DDGS(proxy="tb", timeout=20)  # "tb" is an alias for "socks5://127.0.0.1:9150"
 results = ddgs.text("something you need", max_results=50)
 ```
 *2. Use any proxy server* (*example with [iproyal rotating residential proxies](https://iproyal.com?r=residential_proxies)*)

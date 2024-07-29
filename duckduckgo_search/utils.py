@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 from html import unescape
 from math import atan2, cos, radians, sin, sqrt
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import unquote
 
 from .exceptions import DuckDuckGoSearchException
@@ -82,3 +82,8 @@ def _calculate_distance(lat1: Decimal, lon1: Decimal, lat2: Decimal, lon2: Decim
     a = sin(dlat / 2) ** 2 + cos(rlat1) * cos(rlat2) * sin(dlon / 2) ** 2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
+
+
+def _expand_proxy_tb_alias(proxy: Optional[str]) -> Optional[str]:
+    """Expand "tb" to a full proxy URL if applicable."""
+    return "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
