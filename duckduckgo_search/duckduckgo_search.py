@@ -138,7 +138,7 @@ class DDGS:
 
         Args:
             keywords (str): The initial message or question to send to the AI.
-            model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b".
+            model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b", "gpt-4o".
                 Defaults to "gpt-3.5".
             timeout (int): Timeout value for the HTTP client. Defaults to 20.
 
@@ -150,6 +150,7 @@ class DDGS:
             "gpt-3.5": "gpt-3.5-turbo-0125",
             "llama-3-70b": "meta-llama/Llama-3-70b-chat-hf",
             "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            "gpt-4o": "gpt-4o-mini",
         }
         # vqd
         if not self._chat_vqd:

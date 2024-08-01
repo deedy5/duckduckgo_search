@@ -41,7 +41,7 @@ class AsyncDDGS(DDGS):
 
         Args:
             keywords (str): The initial message or question to send to the AI.
-            model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b".
+            model (str): The model to use: "gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b", "gpt-4o".
                 Defaults to "gpt-3.5".
 
         Returns:
