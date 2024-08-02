@@ -136,7 +136,7 @@ def version():
 @click.option("-l", "--load", is_flag=True, default=False, help="load the last conversation from the json cache")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-ml", "--multiline", is_flag=True, default=False, help="multi-line input")
-@click.option("-t", "--timeout", default=20, help="timeout value for the HTTP client")
+@click.option("-t", "--timeout", default=30, help="timeout value for the HTTP client")
 @click.option(
     "-m",
     "--model",

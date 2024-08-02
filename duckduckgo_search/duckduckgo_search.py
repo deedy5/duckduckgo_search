@@ -133,7 +133,7 @@ class DDGS:
         resp_content = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
         return _extract_vqd(resp_content, keywords)
 
-    def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 20) -> str:
+    def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
         """Initiates a chat session with DuckDuckGo AI.
 
         Args:
