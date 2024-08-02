@@ -141,7 +141,7 @@ def version():
     "-m",
     "--model",
     prompt="""DuckDuckGo AI chat. Choose a model: 
-[1]: gpt-3.5
+[1]: gpt-4o-mini
 [2]: claude-3-haiku
 [3]: llama-3-70b
 [4]: mixtral-8x7b
@@ -153,7 +153,7 @@ def version():
 def chat(load, proxy, multiline, timeout, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     client = DDGS(proxy=_expand_proxy_tb_alias(proxy))
-    model = ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"][int(model) - 1]
+    model = ["gpt-4o-mini", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"][int(model) - 1]
 
     cache_file = "ddgs_chat_conversation.json"
     if load and Path(cache_file).exists():
