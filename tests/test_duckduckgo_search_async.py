@@ -16,7 +16,7 @@ async def test_context_manager():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("model", ["gpt-3.5", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"])
+@pytest.mark.parametrize("model", ["gpt-4o-mini", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"])
 async def test_chat(model):
     results = await AsyncDDGS().achat("cat", model=model)
     assert  len(results) >= 1
