@@ -15,7 +15,7 @@ def test_context_manager():
         assert 20 <= len(results) <= 30
 
 
-@pytest.mark.parametrize("model", ["gpt-4o-mini", "claude-3-haiku", "llama-3-70b", "mixtral-8x7b"])
+@pytest.mark.parametrize("model", ["gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b"])
 def test_chat(model):
     results = DDGS().chat("cat", model=model)
     assert  len(results) >= 1
