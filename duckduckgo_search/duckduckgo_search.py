@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import warnings
 from concurrent.futures import ThreadPoolExecutor
@@ -8,7 +10,7 @@ from itertools import cycle, islice
 from random import choice
 from threading import Event
 from types import TracebackType
-from typing import Dict, List, Optional, Tuple, Type, Union, cast
+from typing import cast
 
 import primp  # type: ignore
 
@@ -52,10 +54,10 @@ class DDGS:
 
     def __init__(
         self,
-        headers: Optional[Dict[str, str]] = None,
-        proxy: Optional[str] = None,
-        proxies: Union[Dict[str, str], str, None] = None,  # deprecated
-        timeout: Optional[int] = 10,
+        headers: dict[str, str] | None = None,
+        proxy: str | None = None,
+        proxies: dict[str, str] | str | None = None,  # deprecated
+        timeout: int | None = 10,
     ) -> None:
         """Initialize the DDGS object.
 
@@ -65,7 +67,7 @@ class DDGS:
                 example: "http://user:pass@example.com:3128". Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
         """
-        self.proxy: Optional[str] = _expand_proxy_tb_alias(proxy)  # replaces "tb" with "socks5://127.0.0.1:9150"
+        self.proxy: str | None = _expand_proxy_tb_alias(proxy)  # replaces "tb" with "socks5://127.0.0.1:9150"
         assert self.proxy is None or isinstance(self.proxy, str), "proxy must be a str"
         if not proxy and proxies:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
@@ -83,23 +85,23 @@ class DDGS:
             verify=False,
         )
         self._exception_event = Event()
-        self._chat_messages: List[Dict[str, str]] = []
+        self._chat_messages: list[dict[str, str]] = []
         self._chat_tokens_count = 0
         self._chat_vqd: str = ""
 
-    def __enter__(self) -> "DDGS":
+    def __enter__(self) -> DDGS:
         return self
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]] = None,
-        exc_val: Optional[BaseException] = None,
-        exc_tb: Optional[TracebackType] = None,
+        exc_type: type[BaseException] | None = None,
+        exc_val: BaseException | None = None,
+        exc_tb: TracebackType | None = None,
     ) -> None:
         pass
 
     @cached_property
-    def parser(self) -> "LHTMLParser":
+    def parser(self) -> LHTMLParser:
         """Get HTML parser."""
         return LHTMLParser(remove_blank_text=True, remove_comments=True, remove_pis=True, collect_ids=False)
 
@@ -107,9 +109,9 @@ class DDGS:
         self,
         method: str,
         url: str,
-        params: Optional[Dict[str, str]] = None,
-        content: Optional[bytes] = None,
-        data: Optional[Union[Dict[str, str], bytes]] = None,
+        params: dict[str, str] | None = None,
+        content: bytes | None = None,
+        data: dict[str, str] | bytes | None = None,
     ) -> bytes:
         if self._exception_event.is_set():
             raise DuckDuckGoSearchException("Exception occurred in previous call.")
@@ -205,10 +207,10 @@ class DDGS:
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
+        timelimit: str | None = None,
         backend: str = "api",
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -247,9 +249,9 @@ class DDGS:
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -293,9 +295,9 @@ class DDGS:
             payload["df"] = timelimit
 
         cache = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
 
-        def _text_api_page(s: int) -> List[Dict[str, str]]:
+        def _text_api_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
             resp_content = self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             page_data = _text_extract_json(resp_content, keywords)
@@ -330,9 +332,9 @@ class DDGS:
         self,
         keywords: str,
         region: str = "wt-wt",
-        timelimit: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -367,9 +369,9 @@ class DDGS:
             payload["vqd"] = vqd
 
         cache = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
 
-        def _text_html_page(s: int) -> List[Dict[str, str]]:
+        def _text_html_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
             resp_content = self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if b"No  results." in resp_content:
@@ -378,12 +380,12 @@ class DDGS:
             page_results = []
             tree = document_fromstring(resp_content, self.parser)
             elements = tree.xpath("//div[h2]")
-            if not isinstance(elements, List):
+            if not isinstance(elements, list):
                 return []
             for e in elements:
                 if isinstance(e, _Element):
                     hrefxpath = e.xpath("./a/@href")
-                    href = str(hrefxpath[0]) if hrefxpath and isinstance(hrefxpath, List) else None
+                    href = str(hrefxpath[0]) if hrefxpath and isinstance(hrefxpath, list) else None
                     if (
                         href
                         and href not in cache
@@ -393,9 +395,9 @@ class DDGS:
                     ):
                         cache.add(href)
                         titlexpath = e.xpath("./h2/a/text()")
-                        title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, List) else ""
+                        title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, list) else ""
                         bodyxpath = e.xpath("./a//text()")
-                        body = "".join(str(x) for x in bodyxpath) if bodyxpath and isinstance(bodyxpath, List) else ""
+                        body = "".join(str(x) for x in bodyxpath) if bodyxpath and isinstance(bodyxpath, list) else ""
                         result = {
                             "title": _normalize(title),
                             "href": _normalize_url(href),
@@ -420,9 +422,9 @@ class DDGS:
         self,
         keywords: str,
         region: str = "wt-wt",
-        timelimit: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -454,9 +456,9 @@ class DDGS:
             payload["df"] = timelimit
 
         cache = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
 
-        def _text_lite_page(s: int) -> List[Dict[str, str]]:
+        def _text_lite_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
             resp_content = self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if b"No more results." in resp_content:
@@ -465,7 +467,7 @@ class DDGS:
             page_results = []
             tree = document_fromstring(resp_content, self.parser)
             elements = tree.xpath("//table[last()]//tr")
-            if not isinstance(elements, List):
+            if not isinstance(elements, list):
                 return []
 
             data = zip(cycle(range(1, 5)), elements)
@@ -473,7 +475,7 @@ class DDGS:
                 if isinstance(e, _Element):
                     if i == 1:
                         hrefxpath = e.xpath(".//a//@href")
-                        href = str(hrefxpath[0]) if hrefxpath and isinstance(hrefxpath, List) else None
+                        href = str(hrefxpath[0]) if hrefxpath and isinstance(hrefxpath, list) else None
                         if (
                             href is None
                             or href in cache
@@ -485,12 +487,12 @@ class DDGS:
                         else:
                             cache.add(href)
                             titlexpath = e.xpath(".//a//text()")
-                            title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, List) else ""
+                            title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, list) else ""
                     elif i == 2:
                         bodyxpath = e.xpath(".//td[@class='result-snippet']//text()")
                         body = (
                             "".join(str(x) for x in bodyxpath).strip()
-                            if bodyxpath and isinstance(bodyxpath, List)
+                            if bodyxpath and isinstance(bodyxpath, list)
                             else ""
                         )
                         if href:
@@ -519,14 +521,14 @@ class DDGS:
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
-        size: Optional[str] = None,
-        color: Optional[str] = None,
-        type_image: Optional[str] = None,
-        layout: Optional[str] = None,
-        license_image: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        size: str | None = None,
+        color: str | None = None,
+        type_image: str | None = None,
+        layout: str | None = None,
+        license_image: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -575,9 +577,9 @@ class DDGS:
         }
 
         cache = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
 
-        def _images_page(s: int) -> List[Dict[str, str]]:
+        def _images_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
             resp_content = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
             resp_json = json_loads(resp_content)
@@ -617,12 +619,12 @@ class DDGS:
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
-        resolution: Optional[str] = None,
-        duration: Optional[str] = None,
-        license_videos: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        resolution: str | None = None,
+        duration: str | None = None,
+        license_videos: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -662,9 +664,9 @@ class DDGS:
         }
 
         cache = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
 
-        def _videos_page(s: int) -> List[Dict[str, str]]:
+        def _videos_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
             resp_content = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
             resp_json = json_loads(resp_content)
@@ -694,9 +696,9 @@ class DDGS:
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -731,9 +733,9 @@ class DDGS:
             payload["df"] = timelimit
 
         cache = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
 
-        def _news_page(s: int) -> List[Dict[str, str]]:
+        def _news_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
             resp_content = self._get_url("GET", "https://duckduckgo.com/news.js", params=payload)
             resp_json = json_loads(resp_content)
@@ -766,7 +768,7 @@ class DDGS:
 
         return list(islice(results, max_results))
 
-    def answers(self, keywords: str) -> List[Dict[str, str]]:
+    def answers(self, keywords: str) -> list[dict[str, str]]:
         """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -837,7 +839,7 @@ class DDGS:
 
         return results
 
-    def suggestions(self, keywords: str, region: str = "wt-wt") -> List[Dict[str, str]]:
+    def suggestions(self, keywords: str, region: str = "wt-wt") -> list[dict[str, str]]:
         """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -865,18 +867,18 @@ class DDGS:
     def maps(
         self,
         keywords: str,
-        place: Optional[str] = None,
-        street: Optional[str] = None,
-        city: Optional[str] = None,
-        county: Optional[str] = None,
-        state: Optional[str] = None,
-        country: Optional[str] = None,
-        postalcode: Optional[str] = None,
-        latitude: Optional[str] = None,
-        longitude: Optional[str] = None,
+        place: str | None = None,
+        street: str | None = None,
+        city: str | None = None,
+        county: str | None = None,
+        state: str | None = None,
+        country: str | None = None,
+        postalcode: str | None = None,
+        latitude: str | None = None,
+        longitude: str | None = None,
         radius: int = 0,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -960,11 +962,11 @@ class DDGS:
         logger.debug(f"bbox coordinates\n{lat_t} {lon_l}\n{lat_b} {lon_r}")
 
         cache = set()
-        results: List[Dict[str, str]] = []
+        results: list[dict[str, str]] = []
 
         def _maps_page(
-            bbox: Tuple[Decimal, Decimal, Decimal, Decimal],
-        ) -> Optional[List[Dict[str, str]]]:
+            bbox: tuple[Decimal, Decimal, Decimal, Decimal],
+        ) -> list[dict[str, str]] | None:
             if max_results and len(results) >= max_results:
                 return None
             lat_t, lon_l, lat_b, lon_r = bbox
@@ -1051,9 +1053,7 @@ class DDGS:
 
         return list(islice(results, max_results))
 
-    def translate(
-        self, keywords: Union[List[str], str], from_: Optional[str] = None, to: str = "en"
-    ) -> List[Dict[str, str]]:
+    def translate(self, keywords: list[str] | str, from_: str | None = None, to: str = "en") -> list[dict[str, str]]:
         """DuckDuckGo translate.
 
         Args:
@@ -1081,14 +1081,14 @@ class DDGS:
         if from_:
             payload["from"] = from_
 
-        def _translate_keyword(keyword: str) -> Dict[str, str]:
+        def _translate_keyword(keyword: str) -> dict[str, str]:
             resp_content = self._get_url(
                 "POST",
                 "https://duckduckgo.com/translation.js",
                 params=payload,
                 content=keyword.encode(),
             )
-            page_data: Dict[str, str] = json_loads(resp_content)
+            page_data: dict[str, str] = json_loads(resp_content)
             page_data["original"] = keyword
             return page_data
 

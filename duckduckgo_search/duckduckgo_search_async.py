@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import asyncio
 from types import TracebackType
-from typing import Dict, List, Optional, Type, Union
 
 from .duckduckgo_search import DDGS
 
@@ -8,10 +9,10 @@ from .duckduckgo_search import DDGS
 class AsyncDDGS(DDGS):
     def __init__(
         self,
-        headers: Optional[Dict[str, str]] = None,
-        proxy: Optional[str] = None,
-        proxies: Union[Dict[str, str], str, None] = None,  # deprecated
-        timeout: Optional[int] = 10,
+        headers: dict[str, str] | None = None,
+        proxy: str | None = None,
+        proxies: dict[str, str] | str | None = None,  # deprecated
+        timeout: int | None = 10,
     ) -> None:
         """Initialize the AsyncDDGS object.
 
@@ -25,14 +26,14 @@ class AsyncDDGS(DDGS):
         self._loop = asyncio.get_running_loop()
         self._executor = super()._executor
 
-    async def __aenter__(self) -> "AsyncDDGS":
+    async def __aenter__(self) -> AsyncDDGS:
         return self
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         pass
 
@@ -56,10 +57,10 @@ class AsyncDDGS(DDGS):
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
+        timelimit: str | None = None,
         backend: str = "api",
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async text search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -91,14 +92,14 @@ class AsyncDDGS(DDGS):
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
-        size: Optional[str] = None,
-        color: Optional[str] = None,
-        type_image: Optional[str] = None,
-        layout: Optional[str] = None,
-        license_image: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        size: str | None = None,
+        color: str | None = None,
+        type_image: str | None = None,
+        layout: str | None = None,
+        license_image: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async images search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -147,12 +148,12 @@ class AsyncDDGS(DDGS):
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
-        resolution: Optional[str] = None,
-        duration: Optional[str] = None,
-        license_videos: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        resolution: str | None = None,
+        duration: str | None = None,
+        license_videos: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async videos search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -192,9 +193,9 @@ class AsyncDDGS(DDGS):
         keywords: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: Optional[str] = None,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        timelimit: str | None = None,
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async news search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -226,7 +227,7 @@ class AsyncDDGS(DDGS):
     async def aanswers(
         self,
         keywords: str,
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async instant answers. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -251,7 +252,7 @@ class AsyncDDGS(DDGS):
         self,
         keywords: str,
         region: str = "wt-wt",
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async suggestions. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -277,18 +278,18 @@ class AsyncDDGS(DDGS):
     async def amaps(
         self,
         keywords: str,
-        place: Optional[str] = None,
-        street: Optional[str] = None,
-        city: Optional[str] = None,
-        county: Optional[str] = None,
-        state: Optional[str] = None,
-        country: Optional[str] = None,
-        postalcode: Optional[str] = None,
-        latitude: Optional[str] = None,
-        longitude: Optional[str] = None,
+        place: str | None = None,
+        street: str | None = None,
+        city: str | None = None,
+        county: str | None = None,
+        state: str | None = None,
+        country: str | None = None,
+        postalcode: str | None = None,
+        latitude: str | None = None,
+        longitude: str | None = None,
         radius: int = 0,
-        max_results: Optional[int] = None,
-    ) -> List[Dict[str, str]]:
+        max_results: int | None = None,
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async maps search. Query params: https://duckduckgo.com/params.
 
         Args:
@@ -334,10 +335,10 @@ class AsyncDDGS(DDGS):
 
     async def atranslate(
         self,
-        keywords: Union[List[str], str],
-        from_: Optional[str] = None,
+        keywords: list[str] | str,
+        from_: str | None = None,
         to: str = "en",
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """DuckDuckGo async translate.
 
         Args:
