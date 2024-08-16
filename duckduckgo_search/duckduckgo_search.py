@@ -46,8 +46,8 @@ class DDGS:
         "chrome_127",
         "safari_ios_16.5", "safari_ios_17.2", "safari_ios_17.4.1", "safari_15.3", "safari_15.5", 
         "safari_15.6.1", "safari_16", "safari_16.5", "safari_17.2.1", "safari_17.4.1", "safari_17.5",
-        #"okhttp_3.9", "okhttp_3.11", "okhttp_3.13", "okhttp_3.14", "okhttp_4.9", "okhttp_4.10", "okhttp_5",
-        "edge_99", "edge_101", "edge_122", "edge_127",
+        "edge_101", "edge_122", "edge_127",
+        # "safari_17.0"(primp>=0.6.0)
     )  # fmt: skip
 
     def __init__(
