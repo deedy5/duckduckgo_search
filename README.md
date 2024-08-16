@@ -255,10 +255,10 @@ def text(
     keywords: str,
     region: str = "wt-wt",
     safesearch: str = "moderate",
-    timelimit: Optional[str] = None,
+    timelimit: str | None = None,
     backend: str = "api",
-    max_results: Optional[int] = None,
-) -> List[Dict[str, str]]:
+    max_results: int | None = None,
+) -> list[dict[str, str]]:
     """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
 
     Args:
@@ -299,7 +299,7 @@ print(results)
 ## 3. answers() - instant answers by duckduckgo.com
 
 ```python
-def answers(keywords: str) -> List[Dict[str, str]]:
+def answers(keywords: str) -> list[dict[str, str]]:
     """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -335,14 +335,14 @@ def images(
     keywords: str,
     region: str = "wt-wt",
     safesearch: str = "moderate",
-    timelimit: Optional[str] = None,
-    size: Optional[str] = None,
-    color: Optional[str] = None,
-    type_image: Optional[str] = None,
-    layout: Optional[str] = None,
-    license_image: Optional[str] = None,
-    max_results: Optional[int] = None,
-) -> List[Dict[str, str]]:
+    timelimit: str | None = None,
+    size: str | None = None,
+    color: str | None = None,
+    type_image: str | None = None,
+    layout: str | None = None,
+    license_image: str | None = None,
+    max_results: int | None = None,
+) -> list[dict[str, str]]:
     """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -405,12 +405,12 @@ def videos(
     keywords: str,
     region: str = "wt-wt",
     safesearch: str = "moderate",
-    timelimit: Optional[str] = None,
-    resolution: Optional[str] = None,
-    duration: Optional[str] = None,
-    license_videos: Optional[str] = None,
-    max_results: Optional[int] = None,
-) -> List[Dict[str, str]]:
+    timelimit: str | None = None,
+    resolution: str | None = None,
+    duration: str | None = None,
+    license_videos: str | None = None,
+    max_results: int | None = None,
+) -> list[dict[str, str]]:
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -475,9 +475,9 @@ def news(
     keywords: str,
     region: str = "wt-wt",
     safesearch: str = "moderate",
-    timelimit: Optional[str] = None,
-    max_results: Optional[int] = None,
-) -> List[Dict[str, str]]:
+    timelimit: str | None = None,
+    max_results: int | None = None,
+) -> list[dict[str, str]]:
     """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -517,18 +517,18 @@ print(results)
 ```python
 def maps(
     keywords,
-    place: Optional[str] = None,
-    street: Optional[str] = None,
-    city: Optional[str] = None,
-    county: Optional[str] = None,
-    state: Optional[str] = None,
-    country: Optional[str] = None,
-    postalcode: Optional[str] = None,
-    latitude: Optional[str] = None,
-    longitude: Optional[str] = None,
+    place: str | None = None,
+    street: str | None = None,
+    city: str | None = None,
+    county: str | None = None,
+    state: str | None = None,
+    country: str | None = None,
+    postalcode: str | None = None,
+    latitude: str | None = None,
+    longitude: str | None = None,
     radius: int = 0,
-    max_results: Optional[int] = None,
-) -> List[Dict[str, str]]:
+    max_results: int | None = None,
+) -> list[dict[str, str]]:
     """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
     
     Args:
@@ -598,9 +598,9 @@ print(results)
 def translate(
     self,
     keywords: str,
-    from_: Optional[str] = None,
+    from_: str | None = None,
     to: str = "en",
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """DuckDuckGo translate.
     
     Args:
@@ -633,7 +633,7 @@ print(results)
 def suggestions(
     keywords,
     region: str = "wt-wt",
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
     
     Args:

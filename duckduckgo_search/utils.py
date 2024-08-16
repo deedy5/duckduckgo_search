@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import re
 from decimal import Decimal
 from html import unescape
 from math import atan2, cos, radians, sin, sqrt
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from urllib.parse import unquote
 
 from .exceptions import DuckDuckGoSearchException
@@ -28,7 +30,7 @@ def json_dumps(obj: Any) -> str:
         raise DuckDuckGoSearchException(f"{type(ex).__name__}: {ex}") from ex
 
 
-def json_loads(obj: Union[str, bytes]) -> Any:
+def json_loads(obj: str | bytes) -> Any:
     try:
         return orjson.loads(obj) if HAS_ORJSON else json.loads(obj)
     except Exception as ex:
@@ -51,13 +53,13 @@ def _extract_vqd(html_bytes: bytes, keywords: str) -> str:
     raise DuckDuckGoSearchException(f"_extract_vqd() {keywords=} Could not extract vqd.")
 
 
-def _text_extract_json(html_bytes: bytes, keywords: str) -> List[Dict[str, str]]:
+def _text_extract_json(html_bytes: bytes, keywords: str) -> list[dict[str, str]]:
     """text(backend="api") -> extract json from html."""
     try:
         start = html_bytes.index(b"DDG.pageLayout.load('d',") + 24
         end = html_bytes.index(b");DDG.duckbar.load(", start)
         data = html_bytes[start:end]
-        result: List[Dict[str, str]] = json_loads(data)
+        result: list[dict[str, str]] = json_loads(data)
         return result
     except Exception as ex:
         raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} {type(ex).__name__}: {ex}") from ex
@@ -84,6 +86,6 @@ def _calculate_distance(lat1: Decimal, lon1: Decimal, lat2: Decimal, lon2: Decim
     return R * c
 
 
-def _expand_proxy_tb_alias(proxy: Optional[str]) -> Optional[str]:
+def _expand_proxy_tb_alias(proxy: str | None) -> str | None:
     """Expand "tb" to a full proxy URL if applicable."""
     return "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
