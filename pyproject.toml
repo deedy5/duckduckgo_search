@@ -30,7 +30,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1.7",
-    "primp>=0.5.5",
+    "primp>=0.6.0",
 ]
 dynamic = ["version"]
 
