@@ -30,7 +30,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1.7",
-    "primp>=0.5.5",
+    "httpx[http2,socks,brotli]>=0.27.0",
 ]
 dynamic = ["version"]
 

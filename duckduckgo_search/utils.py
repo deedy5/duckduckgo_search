@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import re
+import ssl
 from decimal import Decimal
 from html import unescape
 from math import atan2, cos, radians, sin, sqrt
+from random import SystemRandom, choice, choices
 from typing import Any
 from urllib.parse import unquote
 
+import certifi
+
 from .exceptions import DuckDuckGoSearchException
+from .headers import DEFAULT_HEADERS
 
 try:
     HAS_ORJSON = True
@@ -15,8 +20,62 @@ try:
 except ImportError:
     HAS_ORJSON = False
     import json
-
 REGEX_STRIP_TAGS = re.compile("<.*?>")
+
+
+CRYPTORAND = SystemRandom()
+SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+# Include all cipher suites that Cloudflare supports today. https://developers.cloudflare.com/ssl/reference/cipher-suites/recommendations/
+DEFAULT_CIPHERS = [
+    # Modern:
+    "ECDHE-ECDSA-AES128-GCM-SHA256",
+    "ECDHE-ECDSA-CHACHA20-POLY1305",
+    "ECDHE-RSA-AES128-GCM-SHA256",
+    "ECDHE-RSA-CHACHA20-POLY1305",
+    "ECDHE-ECDSA-AES256-GCM-SHA384",
+    "ECDHE-RSA-AES256-GCM-SHA384",
+    # Compatible:
+    "ECDHE-ECDSA-AES128-GCM-SHA256",
+    "ECDHE-ECDSA-CHACHA20-POLY1305",
+    "ECDHE-RSA-AES128-GCM-SHA256",
+    "ECDHE-RSA-CHACHA20-POLY1305",
+    "ECDHE-ECDSA-AES256-GCM-SHA384",
+    "ECDHE-RSA-AES256-GCM-SHA384",
+    "ECDHE-ECDSA-AES128-SHA256",
+    "ECDHE-RSA-AES128-SHA256",
+    "ECDHE-ECDSA-AES256-SHA384",
+    "ECDHE-RSA-AES256-SHA384",
+    # Legacy:
+    "ECDHE-ECDSA-AES128-SHA",
+    "ECDHE-RSA-AES128-SHA",
+    "AES128-GCM-SHA256",
+    "AES128-SHA256",
+    "AES128-SHA",
+    "ECDHE-RSA-AES256-SHA",
+    "AES256-GCM-SHA384",
+    "AES256-SHA256",
+    "AES256-SHA",
+    "DES-CBC3-SHA",
+]
+HEADERS: list[dict[str, str]] = [item["header"] for item in DEFAULT_HEADERS if isinstance(item["header"], dict)]
+HEADERS_PROB: list[float] = [item["probability"] for item in DEFAULT_HEADERS if isinstance(item["probability"], float)]
+
+
+def _get_probability_headers() -> dict[str, str]:
+    """Get probability headers using probability."""
+    return choices(HEADERS, weights=HEADERS_PROB)[0]
+
+
+def _get_random_headers() -> dict[str, str]:
+    """Get random headers."""
+    return choice(HEADERS)
+
+
+def _get_random_ssl_context() -> ssl.SSLContext:
+    """Get SSL context with shuffled ciphers."""
+    shuffled_ciphers = CRYPTORAND.sample(DEFAULT_CIPHERS[6:], len(DEFAULT_CIPHERS) - 6)
+    SSL_CONTEXT.set_ciphers(":".join(DEFAULT_CIPHERS[:6] + shuffled_ciphers))
+    return SSL_CONTEXT
 
 
 def json_dumps(obj: Any) -> str:
