@@ -28,7 +28,7 @@ pip install -U duckduckgo_search
 ```
 There is also a beta release that uses the `httpx` library:
 ```python
-pip install -U duckduckgo_search==6.2.8b1
+pip install -U duckduckgo_search==6.2.11b1
 ```
 > [!NOTE]
 > you can install lxml to use the `text` function with `backend='html'` or `backend='lite'` (size ≈ 12Mb)</br>
