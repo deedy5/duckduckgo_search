@@ -73,7 +73,7 @@ def _normalize(raw_html: str) -> str:
 
 def _normalize_url(url: str) -> str:
     """Unquote URL and replace spaces with '+'."""
-    return unquote(url.replace(" ", "+")) if url else ""
+    return unquote(url).replace(" ", "+") if url else ""
 
 
 def _calculate_distance(lat1: Decimal, lon1: Decimal, lat2: Decimal, lon2: Decimal) -> float:
