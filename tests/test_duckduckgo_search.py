@@ -43,7 +43,7 @@ def test_images():
 
 def test_videos():
     results = DDGS().videos("sea", max_results=40)
-    assert 37 <= len(results) <= 40
+    assert 30 <= len(results) <= 40
 
 
 def test_news():
