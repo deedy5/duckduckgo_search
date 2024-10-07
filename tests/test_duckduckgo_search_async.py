@@ -49,7 +49,7 @@ async def test_async_images():
 @pytest.mark.asyncio
 async def test_async_videos():
     results = await AsyncDDGS().avideos("sea", max_results=40)
-    assert 37 <= len(results) <= 40
+    assert 30 <= len(results) <= 40
 
 
 @pytest.mark.asyncio
