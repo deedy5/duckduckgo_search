@@ -132,7 +132,7 @@ class DDGS:
 
     def _get_vqd(self, keywords: str) -> str:
         """Get vqd value for a search query."""
-        resp_content = self._get_url("POST", "https://duckduckgo.com", data={"q": keywords})
+        resp_content = self._get_url("GET", "https://duckduckgo.com", params={"q": keywords})
         return _extract_vqd(resp_content, keywords)
 
     def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
