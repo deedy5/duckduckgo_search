@@ -83,7 +83,6 @@ class DDGS:
             referer=True,
             impersonate=choice(self._impersonates),
             follow_redirects=False,
-            verify=False,
         )
         self._exception_event = Event()
         self._chat_messages: list[dict[str, str]] = []
