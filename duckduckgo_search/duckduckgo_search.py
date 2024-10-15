@@ -38,7 +38,7 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 
 
 class DDGS:
-    """DuckDuckgo_search class to get search results from duckduckgo.com."""
+    """DuckDuckgo_search class to get search results from duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion."""
 
     _executor: ThreadPoolExecutor = ThreadPoolExecutor()
     _impersonates = (
@@ -73,7 +73,7 @@ class DDGS:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
             self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
         self.headers = headers if headers else {}
-        self.headers["Referer"] = "https://duckduckgo.com/"
+        self.headers["Referer"] = "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/"
         self.client = primp.Client(
             headers=self.headers,
             proxy=self.proxy,
@@ -82,7 +82,7 @@ class DDGS:
             referer=True,
             impersonate=choice(self._impersonates),
             follow_redirects=False,
-            verify=False,
+            verify=False
         )
         self._exception_event = Event()
         self._chat_messages: list[dict[str, str]] = []
@@ -132,7 +132,7 @@ class DDGS:
 
     def _get_vqd(self, keywords: str) -> str:
         """Get vqd value for a search query."""
-        resp_content = self._get_url("GET", "https://duckduckgo.com", params={"q": keywords})
+        resp_content = self._get_url("GET", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion", params={"q": keywords})
         return _extract_vqd(resp_content, keywords)
 
     def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
@@ -162,7 +162,7 @@ class DDGS:
         }
         # vqd
         if not self._chat_vqd:
-            resp = self.client.get("https://duckduckgo.com/duckchat/v1/status", headers={"x-vqd-accept": "1"})
+            resp = self.client.get("https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/duckchat/v1/status", headers={"x-vqd-accept": "1"})
             self._chat_vqd = resp.headers.get("x-vqd-4", "")
 
         self._chat_messages.append({"role": "user", "content": keywords})
@@ -173,7 +173,7 @@ class DDGS:
             "messages": self._chat_messages,
         }
         resp = self.client.post(
-            "https://duckduckgo.com/duckchat/v1/chat",
+            "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/duckchat/v1/chat",
             headers={"x-vqd-4": self._chat_vqd},
             json=json_data,
             timeout=timeout,
@@ -211,7 +211,7 @@ class DDGS:
         backend: str = "api",
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo text search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -219,9 +219,9 @@ class DDGS:
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m, y. Defaults to None.
             backend: api, html, lite. Defaults to api.
-                api - collect data from https://duckduckgo.com,
-                html - collect data from https://html.duckduckgo.com,
-                lite - collect data from https://lite.duckduckgo.com.
+                api - collect data from https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,
+                html - collect data from https://html.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,
+                lite - collect data from https://lite.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
@@ -252,7 +252,7 @@ class DDGS:
         timelimit: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo text search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -299,7 +299,7 @@ class DDGS:
 
         def _text_api_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
-            resp_content = self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
+            resp_content = self._get_url("GET", "https://links.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/d.js", params=payload)
             page_data = _text_extract_json(resp_content, keywords)
             page_results = []
             for row in page_data:
@@ -335,7 +335,7 @@ class DDGS:
         timelimit: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo text search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -373,7 +373,7 @@ class DDGS:
 
         def _text_html_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
-            resp_content = self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
+            resp_content = self._get_url("POST", "https://html.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/html", data=payload)
             if b"No  results." in resp_content:
                 return []
 
@@ -390,7 +390,7 @@ class DDGS:
                         href
                         and href not in cache
                         and not href.startswith(
-                            ("http://www.google.com/search?q=", "https://duckduckgo.com/y.js?ad_domain")
+                            ("http://www.google.com/search?q=", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/y.js?ad_domain")
                         )
                     ):
                         cache.add(href)
@@ -425,7 +425,7 @@ class DDGS:
         timelimit: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo text search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -460,7 +460,7 @@ class DDGS:
 
         def _text_lite_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
-            resp_content = self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
+            resp_content = self._get_url("POST", "https://lite.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/lite/", data=payload)
             if b"No more results." in resp_content:
                 return []
 
@@ -480,7 +480,7 @@ class DDGS:
                             href is None
                             or href in cache
                             or href.startswith(
-                                ("http://www.google.com/search?q=", "https://duckduckgo.com/y.js?ad_domain")
+                                ("http://www.google.com/search?q=", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/y.js?ad_domain")
                             )
                         ):
                             [next(data, None) for _ in range(3)]  # skip block(i=1,2,3,4)
@@ -529,7 +529,7 @@ class DDGS:
         license_image: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo images search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -581,7 +581,7 @@ class DDGS:
 
         def _images_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
-            resp_content = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload)
+            resp_content = self._get_url("GET", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/i.js", params=payload)
             resp_json = json_loads(resp_content)
 
             page_data = resp_json.get("results", [])
@@ -625,7 +625,7 @@ class DDGS:
         license_videos: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo videos search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -668,7 +668,7 @@ class DDGS:
 
         def _videos_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
-            resp_content = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
+            resp_content = self._get_url("GET", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/v.js", params=payload)
             resp_json = json_loads(resp_content)
 
             page_data = resp_json.get("results", [])
@@ -699,7 +699,7 @@ class DDGS:
         timelimit: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo news search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -737,11 +737,11 @@ class DDGS:
 
         def _news_page(s: int) -> list[dict[str, str]]:
             payload["s"] = f"{s}"
-            resp_content = self._get_url("GET", "https://duckduckgo.com/news.js", params=payload)
-            resp_json = json_loads(resp_content)
+            resp_content = self._get_url("GET", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/news.js", params=payload)
+            resp_json = json_loads(resp_content)    
             page_data = resp_json.get("results", [])
             page_results = []
-            for row in page_data:
+            for row in page_data:               
                 if row["url"] not in cache:
                     cache.add(row["url"])
                     image_url = row.get("image", None)
@@ -769,7 +769,7 @@ class DDGS:
         return list(islice(results, max_results))
 
     def answers(self, keywords: str) -> list[dict[str, str]]:
-        """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo instant answers. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query,
@@ -788,7 +788,7 @@ class DDGS:
             "q": f"what is {keywords}",
             "format": "json",
         }
-        resp_content = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
+        resp_content = self._get_url("GET", "https://api.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/", params=payload)
         page_data = json_loads(resp_content)
 
         results = []
@@ -809,7 +809,7 @@ class DDGS:
             "q": f"{keywords}",
             "format": "json",
         }
-        resp_content = self._get_url("GET", "https://api.duckduckgo.com/", params=payload)
+        resp_content = self._get_url("GET", "https://api.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/", params=payload)
         resp_json = json_loads(resp_content)
         page_data = resp_json.get("RelatedTopics", [])
 
@@ -819,7 +819,7 @@ class DDGS:
                 icon = row["Icon"].get("URL")
                 results.append(
                     {
-                        "icon": f"https://duckduckgo.com{icon}" if icon else "",
+                        "icon": f"https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion{icon}" if icon else "",
                         "text": row["Text"],
                         "topic": None,
                         "url": row["FirstURL"],
@@ -830,7 +830,7 @@ class DDGS:
                     icon = subrow["Icon"].get("URL")
                     results.append(
                         {
-                            "icon": f"https://duckduckgo.com{icon}" if icon else "",
+                            "icon": f"https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion{icon}" if icon else "",
                             "text": subrow["Text"],
                             "topic": topic,
                             "url": subrow["FirstURL"],
@@ -840,7 +840,7 @@ class DDGS:
         return results
 
     def suggestions(self, keywords: str, region: str = "wt-wt") -> list[dict[str, str]]:
-        """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo suggestions. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -860,7 +860,7 @@ class DDGS:
             "q": keywords,
             "kl": region,
         }
-        resp_content = self._get_url("GET", "https://duckduckgo.com/ac/", params=payload)
+        resp_content = self._get_url("GET", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ac/", params=payload)
         page_data = json_loads(resp_content)
         return [r for r in page_data]
 
@@ -879,7 +879,7 @@ class DDGS:
         radius: int = 0,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo maps search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query
@@ -982,7 +982,7 @@ class DDGS:
                 "bbox_br": f"{lat_b},{lon_r}",
                 "strict_bbox": "1",
             }
-            resp_content = self._get_url("GET", "https://duckduckgo.com/local.js", params=params)
+            resp_content = self._get_url("GET", "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/local.js", params=params)
             resp_json = json_loads(resp_content)
             page_data = resp_json.get("results", [])
 
@@ -1084,7 +1084,7 @@ class DDGS:
         def _translate_keyword(keyword: str) -> dict[str, str]:
             resp_content = self._get_url(
                 "POST",
-                "https://duckduckgo.com/translation.js",
+                "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/translation.js",
                 params=payload,
                 content=keyword.encode(),
             )

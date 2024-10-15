@@ -61,7 +61,7 @@ class AsyncDDGS(DDGS):
         backend: str = "api",
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo async text search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo async text search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -69,9 +69,9 @@ class AsyncDDGS(DDGS):
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m, y. Defaults to None.
             backend: api, html, lite. Defaults to api.
-                api - collect data from https://duckduckgo.com,
-                html - collect data from https://html.duckduckgo.com,
-                lite - collect data from https://lite.duckduckgo.com.
+                api - collect data from https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,
+                html - collect data from https://html.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,
+                lite - collect data from https://lite.duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
@@ -100,7 +100,7 @@ class AsyncDDGS(DDGS):
         license_image: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo async images search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo async images search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -154,7 +154,7 @@ class AsyncDDGS(DDGS):
         license_videos: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo async videos search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo async videos search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -196,7 +196,7 @@ class AsyncDDGS(DDGS):
         timelimit: str | None = None,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo async news search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo async news search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -228,7 +228,7 @@ class AsyncDDGS(DDGS):
         self,
         keywords: str,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo async instant answers. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo async instant answers. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query,
@@ -253,7 +253,7 @@ class AsyncDDGS(DDGS):
         keywords: str,
         region: str = "wt-wt",
     ) -> list[dict[str, str]]:
-        """DuckDuckGo async suggestions. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo async suggestions. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query.
@@ -290,7 +290,7 @@ class AsyncDDGS(DDGS):
         radius: int = 0,
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
-        """DuckDuckGo async maps search. Query params: https://duckduckgo.com/params.
+        """DuckDuckGo async maps search. Query params: https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/params.
 
         Args:
             keywords: keywords for query

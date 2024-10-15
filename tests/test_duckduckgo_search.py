@@ -8,7 +8,6 @@ from duckduckgo_search import DDGS
 def pause_between_tests():
     time.sleep(0.5)
 
-
 def test_context_manager():
     with DDGS() as ddgs:
         results = ddgs.news("cars", max_results=30)
@@ -48,13 +47,12 @@ def test_videos():
 
 def test_news():
     results = DDGS().news("tesla", max_results=30)
-    assert 20 <= len(results) <= 30
-
+    print(results)
+    assert 20 <= len(results) <= 30     
 
 def test_maps():
     results = DDGS().maps("school", place="London", max_results=30)
     assert 27 <= len(results) <= 30
-
 
 def test_answers():
     results = DDGS().answers("sun")
