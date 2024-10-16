@@ -51,6 +51,8 @@ ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p https://1.2.3.4:1234
 ddgs text -k "'to kill a mockingbird' filetype:doc" -m 50 -d -p tb
 # find and save to csv
 ddgs text -k "'neuroscience exploring the brain' filetype:pdf" -m 70 -o csv
+# don't verify SSL when making the request
+ddgs text -k "Mississippi Burning" -v false
 # find and download images
 ddgs images -k "beware of false prophets" -r wt-wt -type photo -m 500 -d
 # get news for the last day and save to json
@@ -166,6 +168,7 @@ class DDGS:
         proxy (str, optional): proxy for the HTTP client, supports http/https/socks5 protocols.
             example: "http://user:pass@example.com:3128". Defaults to None.
         timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+        verify (bool): SSL verification when making the request. Defaults to True.
     """
 ```
 
