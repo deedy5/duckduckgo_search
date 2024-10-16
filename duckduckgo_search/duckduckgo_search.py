@@ -59,6 +59,7 @@ class DDGS:
         proxy: str | None = None,
         proxies: dict[str, str] | str | None = None,  # deprecated
         timeout: int | None = 10,
+        verify: bool = True,
     ) -> None:
         """Initialize the DDGS object.
 
@@ -67,6 +68,7 @@ class DDGS:
             proxy (str, optional): proxy for the HTTP client, supports http/https/socks5 protocols.
                 example: "http://user:pass@example.com:3128". Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+            verify (bool): SSL verification when making the request. Defaults to True.
         """
         self.proxy: str | None = _expand_proxy_tb_alias(proxy)  # replaces "tb" with "socks5://127.0.0.1:9150"
         assert self.proxy is None or isinstance(self.proxy, str), "proxy must be a str"
@@ -83,6 +85,7 @@ class DDGS:
             referer=True,
             impersonate=choice(self._impersonates),
             follow_redirects=False,
+            verify=verify,
         )
         self._exception_event = Event()
         self._chat_messages: list[dict[str, str]] = []

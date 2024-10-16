@@ -13,6 +13,7 @@ class AsyncDDGS(DDGS):
         proxy: str | None = None,
         proxies: dict[str, str] | str | None = None,  # deprecated
         timeout: int | None = 10,
+        verify: bool = True,
     ) -> None:
         """Initialize the AsyncDDGS object.
 
@@ -21,8 +22,9 @@ class AsyncDDGS(DDGS):
             proxy (str, optional): proxy for the HTTP client, supports http/https/socks5 protocols.
                 example: "http://user:pass@example.com:3128". Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
+            verify (bool): SSL verification when making the request. Defaults to True.
         """
-        super().__init__(headers=headers, proxy=proxy, proxies=proxies, timeout=timeout)
+        super().__init__(headers=headers, proxy=proxy, proxies=proxies, timeout=timeout, verify=verify)
         self._loop = asyncio.get_running_loop()
         self._executor = super()._executor
 
