@@ -268,7 +268,7 @@ def answers(keywords, output, proxy, verify):
     "-lic",
     "--license_image",
     default=None,
-    type=click.Choice(["any", "Public", "Share", "Modify", "ModifyCommercially"]),
+    type=click.Choice(["any", "Public", "Share", "ShareCommercially", "Modify", "ModifyCommercially"]),
 )
 @click.option("-m", "--max_results", default=90, help="maximum number of results, default=90")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
