@@ -187,12 +187,13 @@ def chat(load, proxy, multiline, timeout, verify, model):
 @click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
 @click.option("-m", "--max_results", default=20, help="maximum number of results, default=20")
 @click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file)")
+@click.option("-f", "--filename", default=None, help="specify the file name (without extension) to save the results")
 @click.option("-d", "--download", is_flag=True, default=False, help="download results to 'keywords' folder")
 @click.option("-b", "--backend", default="api", type=click.Choice(["api", "html", "lite"]), help="which backend to use")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
-def text(keywords, region, safesearch, timelimit, backend, output, download, threads, max_results, proxy, verify):
+def text(keywords, region, safesearch, timelimit, backend, output, filename, download, threads, max_results, proxy, verify):
     """CLI function to perform a text search using DuckDuckGo API."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).text(
         keywords=keywords,
@@ -203,7 +204,7 @@ def text(keywords, region, safesearch, timelimit, backend, output, download, thr
         max_results=max_results,
     )
     keywords = _sanitize_keywords(keywords)
-    filename = f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+    filename = filename if filename else f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     if output == "print" and not download:
         _print_data(data)
     elif output == "csv":
