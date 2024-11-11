@@ -180,13 +180,33 @@ def chat(load, proxy, multiline, timeout, verify, model):
             _save_json(cache_file, cache)
 
 
+class Union(click.ParamType):
+    def __init__(self, types, name="Union"):
+        self.types = types
+        self.name = name
+    
+    def convert(self, value, param, ctx):
+        for type in self.types:
+            try:
+                return type.convert(value, param, ctx)
+            except click.BadParameter:
+                continue
+        
+        self.fail("Parameter is not valid")
+
+
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="text search, keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
 @click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
 @click.option("-m", "--max_results", default=20, help="maximum number of results, default=20")
-@click.option("-o", "--output", default="print", help="csv, json (save the results to a csv or json file). optionally specify the full filename")
+@click.option("-o", "--output", default="print",
+              help="csv, json (save the results to a csv or json file). optionally specify the full filename",
+              type=Union(
+                  [click.Choice(["print", "csv", "json"]), click.Path(file_okay=True, dir_okay=False, writable=True)],
+                  name="output")
+              )
 @click.option("-d", "--download", is_flag=True, default=False, help="download results to 'keywords' folder")
 @click.option("-b", "--backend", default="api", type=click.Choice(["api", "html", "lite"]), help="which backend to use")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
