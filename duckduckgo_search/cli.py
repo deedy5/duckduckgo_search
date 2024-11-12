@@ -91,9 +91,9 @@ def _download_file(url, dir_path, filename, proxy, verify):
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
 
-def _download_results(keywords, results, images=False, proxy=None, threads=None, verify=True):
+def _download_results(keywords, results, images=False, proxy=None, threads=None, verify=True, dirname=None):
     path_type = "images" if images else "text"
-    path = f"{path_type}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
+    path = f"{path_type}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}" if dirname is None else dirname
     os.makedirs(path, exist_ok=True)
 
     threads = 10 if threads is None else threads
@@ -188,8 +188,8 @@ def chat(load, proxy, multiline, timeout, verify, model):
 @click.option("-m", "--max_results", default=20, help="maximum number of results, default=20")
 @click.option("-o", "--output", default="print",
               help="csv, json (save the results to a csv or json file). optionally specify the full filename",
-              type=click.Path(file_okay=True, dir_okay=False, writable=True))
-@click.option("-d", "--download", is_flag=True, default=False, help="download results to 'keywords' folder")
+              type=click.Path(file_okay=True, dir_okay=True, writable=True))
+@click.option("-d", "--download", is_flag=True, default=False, help="download results to 'keywords' folder. optionally specify the full path")
 @click.option("-b", "--backend", default="api", type=click.Choice(["api", "html", "lite"]), help="which backend to use")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
 @click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
@@ -205,19 +205,23 @@ def text(keywords, region, safesearch, timelimit, backend, output, download, thr
         max_results=max_results,
     )
     keywords = _sanitize_keywords(keywords)
+    filename = dirname = None
     if output.endswith(".json") or output.endswith(".csv"):
         filename = output.rsplit(".", 1)[0]
     else:
         filename = f"text_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
-
+    
     if output == "print" and not download:
         _print_data(data)
     elif output == "csv" or output.endswith(".csv"):
         _save_csv(f"{filename}.csv", data)
     elif output == "json" or output.endswith(".json"):
         _save_json(f"{filename}.json", data)
+    else:
+        dirname = output
+    
     if download:
-        _download_results(keywords, data, proxy=proxy, threads=threads, verify=verify)
+        _download_results(keywords, data, proxy=proxy, threads=threads, verify=verify, dirname=dirname)
 
 
 @cli.command()
