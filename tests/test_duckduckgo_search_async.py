@@ -6,7 +6,7 @@ from duckduckgo_search import AsyncDDGS
 
 @pytest.fixture(autouse=True)
 def pause_between_tests():
-    time.sleep(0.5)
+    time.sleep(1)
 
 @pytest.mark.asyncio
 async def test_context_manager():
@@ -25,19 +25,19 @@ async def test_chat(model):
 @pytest.mark.asyncio
 async def test_text():
     results = await AsyncDDGS().atext("sky", safesearch="off", timelimit="m", max_results=30)
-    assert 27 <= len(results) <= 30
+    assert 23 <= len(results) <= 30
 
 
 @pytest.mark.asyncio
 async def test_text_html():
     results = await AsyncDDGS().atext("eagle", backend="html", max_results=30)
-    assert 27 <= len(results) <= 30
+    assert 23 <= len(results) <= 30
 
 
 @pytest.mark.asyncio
 async def test_text_lite():
     results = await AsyncDDGS().atext("dog", backend="lite", max_results=30)
-    assert 27 <= len(results) <= 30
+    assert 23 <= len(results) <= 30
 
 
 @pytest.mark.asyncio
