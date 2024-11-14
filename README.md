@@ -26,10 +26,6 @@ Search for words, documents, images, videos, news, maps and text translation usi
 ```python
 pip install -U duckduckgo_search
 ```
-There is also a beta release that uses the `httpx` library:
-```python
-pip install -U duckduckgo_search==6.2.11b1
-```
 > [!NOTE]
 > you can install lxml to use the `text` function with `backend='html'` or `backend='lite'` (size ≈ 12Mb)</br>
 > `pip install -U duckduckgo_search[lxml]`
@@ -44,13 +40,13 @@ CLI examples:
 # AI chat
 ddgs chat
 # text search
-ddgs text -k "standard oil"
+ddgs text -k "Assyrian siege of Jerusalem"
 # find and download pdf files via proxy
-ddgs text -k "pushkin filetype:pdf" -r wt-wt -m 50 -d -p https://1.2.3.4:1234
+ddgs text -k "Economics in one lesson filetype:pdf" -r wt-wt -m 50 -p https://1.2.3.4:1234 -d -dd economics_reading
 # using Tor Browser as a proxy (`tb` is an alias for `socks5://127.0.0.1:9150`)
-ddgs text -k "'to kill a mockingbird' filetype:doc" -m 50 -d -p tb
+ddgs text -k "'The history of the Standard Oil Company' filetype:doc" -m 50 -d -p tb
 # find and save to csv
-ddgs text -k "'neuroscience exploring the brain' filetype:pdf" -m 70 -o csv
+ddgs text -k "'neuroscience exploring the brain' filetype:pdf" -m 70 -o neuroscience_list.csv
 # don't verify SSL when making the request
 ddgs text -k "Mississippi Burning" -v false
 # find and download images
