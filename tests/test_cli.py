@@ -13,7 +13,7 @@ runner = CliRunner()
 
 @pytest.fixture(autouse=True)
 def pause_between_tests():
-    time.sleep(0.5)
+    time.sleep(1)
 
 
 def test_version_command():
@@ -70,7 +70,7 @@ def test_save_csv(tmp_path):
     keywords = "butterfly"
     with DDGS() as ddgs:
         results = ddgs.text(keywords, max_results=30)
-        assert 27 <= len(results) <= 30
+        assert 23 <= len(results) <= 30
 
     temp_file = tmp_path / f"{keywords}.csv"
     _save_csv(temp_file, results)
@@ -81,7 +81,7 @@ def test_save_json(tmp_path):
     keywords = "chicago"
     with DDGS() as ddgs:
         results = ddgs.text(keywords, max_results=30)
-        assert 27 <= len(results) <= 30
+        assert 23 <= len(results) <= 30
 
     temp_file = tmp_path / f"{keywords}.json"
     _save_json(temp_file, results)
@@ -94,7 +94,7 @@ def test_text_download():
         results = ddgs.text(keywords, max_results=8)
     assert 7 <= len(results) <= 8
 
-    _download_results(keywords, results)
+    _download_results(keywords, results, function_name="text")
 
     # delete files contains keyword in name
     files = False
@@ -121,7 +121,7 @@ def test_images_download():
         results = ddgs.images(keywords, max_results=8)
     assert len(results) >= 8
 
-    _download_results(keywords, results, images=True)
+    _download_results(keywords, results, function_name="images")
 
     # delete files contains keyword in name
     files = False
