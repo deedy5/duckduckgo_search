@@ -193,7 +193,7 @@ def chat(load, proxy, multiline, timeout, verify, model):
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
 @click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
-@click.option("-m", "--max_results", default=20, help="maximum number of results, default=20")
+@click.option("-m", "--max_results", default=10, help="maximum number of results, default=10")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
 @click.option("-d", "--download", is_flag=True, default=False, help="download results. -dd to set custom directory")
 @click.option("-dd", "--download-directory", help="Specify custom download directory")
