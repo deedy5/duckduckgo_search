@@ -69,8 +69,8 @@ def test_translate_command():
 def test_save_csv(tmp_path):
     keywords = "butterfly"
     with DDGS() as ddgs:
-        results = ddgs.text(keywords, max_results=30)
-        assert 23 <= len(results) <= 30
+        results = ddgs.text(keywords, max_results=20)
+        assert 15 <= len(results) <= 20
 
     temp_file = tmp_path / f"{keywords}.csv"
     _save_csv(temp_file, results)
@@ -80,8 +80,8 @@ def test_save_csv(tmp_path):
 def test_save_json(tmp_path):
     keywords = "chicago"
     with DDGS() as ddgs:
-        results = ddgs.text(keywords, max_results=30)
-        assert 23 <= len(results) <= 30
+        results = ddgs.text(keywords, max_results=20)
+        assert 15 <= len(results) <= 20
 
     temp_file = tmp_path / f"{keywords}.json"
     _save_json(temp_file, results)

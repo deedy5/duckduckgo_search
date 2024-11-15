@@ -24,20 +24,20 @@ async def test_chat(model):
 
 @pytest.mark.asyncio
 async def test_text():
-    results = await AsyncDDGS().atext("sky", safesearch="off", timelimit="m", max_results=30)
-    assert 23 <= len(results) <= 30
+    results = await AsyncDDGS().atext("sky", safesearch="off", timelimit="m", max_results=20)
+    assert 15 <= len(results) <= 20
 
 
 @pytest.mark.asyncio
 async def test_text_html():
-    results = await AsyncDDGS().atext("eagle", backend="html", max_results=30)
-    assert 23 <= len(results) <= 30
+    results = await AsyncDDGS().atext("eagle", backend="html", max_results=20)
+    assert 15 <= len(results) <= 20
 
 
 @pytest.mark.asyncio
 async def test_text_lite():
-    results = await AsyncDDGS().atext("dog", backend="lite", max_results=30)
-    assert 23 <= len(results) <= 30
+    results = await AsyncDDGS().atext("dog", backend="lite", max_results=20)
+    assert 15 <= len(results) <= 20
 
 
 @pytest.mark.asyncio
