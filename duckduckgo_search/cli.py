@@ -92,7 +92,7 @@ def _sanitize_keywords(keywords):
 
 def _download_file(url, dir_path, filename, proxy, verify):
     try:
-        resp = primp.Client(proxy=proxy, impersonate="chrome_130", timeout=10, verify=verify).get(url)
+        resp = primp.Client(proxy=proxy, impersonate="chrome_131", timeout=10, verify=verify).get(url)
         if resp.status_code == 200:
             with open(os.path.join(dir_path, filename[:200]), "wb") as file:
                 file.write(resp.content)
