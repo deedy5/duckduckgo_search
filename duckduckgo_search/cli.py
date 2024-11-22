@@ -142,7 +142,7 @@ def version():
 
 @cli.command()
 @click.option("-l", "--load", is_flag=True, default=False, help="load the last conversation from the json cache")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-ml", "--multiline", is_flag=True, default=False, help="multi-line input")
 @click.option("-t", "--timeout", default=30, help="timeout value for the HTTP client")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
@@ -192,14 +192,14 @@ def chat(load, proxy, multiline, timeout, verify, model):
 @click.option("-k", "--keywords", required=True, help="text search, keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
-@click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
-@click.option("-m", "--max_results", default=10, help="maximum number of results, default=10")
+@click.option("-t", "--timelimit", type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
+@click.option("-m", "--max_results", type=int, help="maximum number of results")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
 @click.option("-d", "--download", is_flag=True, default=False, help="download results. -dd to set custom directory")
 @click.option("-dd", "--download-directory", help="Specify custom download directory")
 @click.option("-b", "--backend", default="api", type=click.Choice(["api", "html", "lite"]), help="which backend to use")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def text(
     keywords,
@@ -244,7 +244,7 @@ def text(
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="answers search, keywords for query")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def answers(keywords, output, proxy, verify):
     """CLI function to perform a answers search using DuckDuckGo API."""
@@ -260,8 +260,8 @@ def answers(keywords, output, proxy, verify):
 @click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
-@click.option("-t", "--timelimit", default=None, type=click.Choice(["Day", "Week", "Month", "Year"]))
-@click.option("-size", "--size", default=None, type=click.Choice(["Small", "Medium", "Large", "Wallpaper"]))
+@click.option("-t", "--timelimit", type=click.Choice(["Day", "Week", "Month", "Year"]))
+@click.option("-size", "--size", type=click.Choice(["Small", "Medium", "Large", "Wallpaper"]))
 @click.option(
     "-c",
     "--color",
@@ -286,21 +286,21 @@ def answers(keywords, output, proxy, verify):
     ),
 )
 @click.option(
-    "-type", "--type_image", default=None, type=click.Choice(["photo", "clipart", "gif", "transparent", "line"])
+    "-type", "--type_image", type=click.Choice(["photo", "clipart", "gif", "transparent", "line"])
 )
-@click.option("-l", "--layout", default=None, type=click.Choice(["Square", "Tall", "Wide"]))
+@click.option("-l", "--layout", type=click.Choice(["Square", "Tall", "Wide"]))
 @click.option(
     "-lic",
     "--license_image",
     default=None,
     type=click.Choice(["any", "Public", "Share", "ShareCommercially", "Modify", "ModifyCommercially"]),
 )
-@click.option("-m", "--max_results", default=90, help="maximum number of results, default=90")
+@click.option("-m", "--max_results", type=int, help="maximum number of results")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
 @click.option("-d", "--download", is_flag=True, default=False, help="download results. -dd to set custom directory")
 @click.option("-dd", "--download-directory", help="Specify custom download directory")
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def images(
     keywords,
@@ -354,13 +354,13 @@ def images(
 @click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
-@click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m"]), help="day, week, month")
-@click.option("-res", "--resolution", default=None, type=click.Choice(["high", "standart"]))
-@click.option("-d", "--duration", default=None, type=click.Choice(["short", "medium", "long"]))
-@click.option("-lic", "--license_videos", default=None, type=click.Choice(["creativeCommon", "youtube"]))
-@click.option("-m", "--max_results", default=50, help="maximum number of results, default=50")
+@click.option("-t", "--timelimit", type=click.Choice(["d", "w", "m"]), help="day, week, month")
+@click.option("-res", "--resolution", type=click.Choice(["high", "standart"]))
+@click.option("-d", "--duration", type=click.Choice(["short", "medium", "long"]))
+@click.option("-lic", "--license_videos", type=click.Choice(["creativeCommon", "youtube"]))
+@click.option("-m", "--max_results", type=int, help="maximum number of results")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def videos(
     keywords, region, safesearch, timelimit, resolution, duration, license_videos, max_results, output, proxy, verify
@@ -387,10 +387,10 @@ def videos(
 @click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
-@click.option("-t", "--timelimit", default=None, type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
-@click.option("-m", "--max_results", default=25, help="maximum number of results, default=25")
+@click.option("-t", "--timelimit", type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
+@click.option("-m", "--max_results", type=int, help="maximum number of results")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def news(keywords, region, safesearch, timelimit, max_results, output, proxy, verify):
     """CLI function to perform a news search using DuckDuckGo API."""
@@ -406,19 +406,19 @@ def news(keywords, region, safesearch, timelimit, max_results, output, proxy, ve
 
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="keywords for query")
-@click.option("-p", "--place", default=None, help="simplified search - if set, the other parameters are not used")
-@click.option("-s", "--street", default=None, help="house number/street")
-@click.option("-c", "--city", default=None, help="city of search")
-@click.option("-county", "--county", default=None, help="county of search")
-@click.option("-state", "--state", default=None, help="state of search")
-@click.option("-country", "--country", default=None, help="country of search")
-@click.option("-post", "--postalcode", default=None, help="postalcode of search")
-@click.option("-lat", "--latitude", default=None, help="""if lat and long are set, the other params are not used""")
-@click.option("-lon", "--longitude", default=None, help="""if lat and long are set, the other params are not used""")
+@click.option("-p", "--place", help="simplified search - if set, the other parameters are not used")
+@click.option("-s", "--street", help="house number/street")
+@click.option("-c", "--city", help="city of search")
+@click.option("-county", "--county", help="county of search")
+@click.option("-state", "--state", help="state of search")
+@click.option("-country", "--country", help="country of search")
+@click.option("-post", "--postalcode", help="postalcode of search")
+@click.option("-lat", "--latitude", help="""if lat and long are set, the other params are not used""")
+@click.option("-lon", "--longitude", help="""if lat and long are set, the other params are not used""")
 @click.option("-r", "--radius", default=0, help="expand the search square by the distance in kilometers")
-@click.option("-m", "--max_results", default=50, help="number of results, default=50")
+@click.option("-m", "--max_results", type=int, help="maximum number of results")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
-@click.option("-proxy", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-proxy", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def maps(
     keywords,
@@ -464,7 +464,7 @@ def maps(
 @click.option("-f", "--from_", help="What language to translate from (defaults automatically)")
 @click.option("-t", "--to", default="en", help="de, ru, fr, etc. What language to translate, defaults='en'")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def translate(keywords, from_, to, output, proxy, verify):
     """CLI function to perform translate using DuckDuckGo API."""
@@ -480,7 +480,7 @@ def translate(keywords, from_, to, output, proxy, verify):
 @click.option("-k", "--keywords", required=True, help="keywords for query")
 @click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
-@click.option("-p", "--proxy", default=None, help="the proxy to send requests, example: socks5://127.0.0.1:9150")
+@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def suggestions(keywords, region, output, proxy, verify):
     """CLI function to perform a suggestions search using DuckDuckGo API."""
