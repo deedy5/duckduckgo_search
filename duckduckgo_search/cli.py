@@ -265,7 +265,6 @@ def answers(keywords, output, proxy, verify):
 @click.option(
     "-c",
     "--color",
-    default=None,
     type=click.Choice(
         [
             "color",
@@ -285,14 +284,11 @@ def answers(keywords, output, proxy, verify):
         ]
     ),
 )
-@click.option(
-    "-type", "--type_image", type=click.Choice(["photo", "clipart", "gif", "transparent", "line"])
-)
+@click.option("-type", "--type_image", type=click.Choice(["photo", "clipart", "gif", "transparent", "line"]))
 @click.option("-l", "--layout", type=click.Choice(["Square", "Tall", "Wide"]))
 @click.option(
     "-lic",
     "--license_image",
-    default=None,
     type=click.Choice(["any", "Public", "Share", "ShareCommercially", "Modify", "ModifyCommercially"]),
 )
 @click.option("-m", "--max_results", type=int, help="maximum number of results")
