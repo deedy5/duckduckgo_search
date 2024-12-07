@@ -168,7 +168,7 @@ class DDGS:
     """
 ```
 
-Here is an example of initializing the DDGS class. 
+Here is an example of initializing the DDGS class.
 ```python3
 from duckduckgo_search import DDGS
 
@@ -212,6 +212,10 @@ results = ddgs.text("something you need", max_results=50)
 ddgs = DDGS(proxy="socks5h://user:password@geo.iproyal.com:32325", timeout=20)
 results = ddgs.text("something you need", max_results=50)
 ```
+*3. The proxy can also be set using the `DDGS_PROXY` environment variable.*
+```python3
+export DDGS_PROXY="socks5h://user:password@geo.iproyal.com:32325"
+```
 
 [Go To TOP](#TOP)
 
@@ -222,7 +226,7 @@ Exceptions:
 - `RatelimitException`: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
 - `TimeoutException`: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
 
-  
+
 [Go To TOP](#TOP)
 
 ## 1. chat() - AI chat
@@ -304,10 +308,10 @@ print(results)
 ```python
 def answers(keywords: str) -> list[dict[str, str]]:
     """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
-    
+
     Args:
         keywords: keywords for query,
-    
+
     Returns:
         List of dictionaries with instant answers results.
     """
@@ -347,7 +351,7 @@ def images(
     max_results: int | None = None,
 ) -> list[dict[str, str]]:
     """DuckDuckGo images search. Query params: https://duckduckgo.com/params.
-    
+
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
@@ -364,7 +368,7 @@ def images(
             Modify (Free to Modify, Share, and Use), ModifyCommercially (Free to Modify, Share, and
             Use Commercially). Defaults to None.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-    
+
     Returns:
         List of dictionaries with images search results.
     """
@@ -415,7 +419,7 @@ def videos(
     max_results: int | None = None,
 ) -> list[dict[str, str]]:
     """DuckDuckGo videos search. Query params: https://duckduckgo.com/params.
-    
+
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
@@ -425,7 +429,7 @@ def videos(
         duration: short, medium, long. Defaults to None.
         license_videos: creativeCommon, youtube. Defaults to None.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-    
+
     Returns:
         List of dictionaries with videos search results.
     """
@@ -482,14 +486,14 @@ def news(
     max_results: int | None = None,
 ) -> list[dict[str, str]]:
     """DuckDuckGo news search. Query params: https://duckduckgo.com/params.
-    
+
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m. Defaults to None.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-    
+
     Returns:
         List of dictionaries with news search results.
     """
@@ -533,7 +537,7 @@ def maps(
     max_results: int | None = None,
 ) -> list[dict[str, str]]:
     """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
-    
+
     Args:
         keywords: keywords for query
         place: if set, the other parameters are not used. Defaults to None.
@@ -548,7 +552,7 @@ def maps(
             longitude are set, the other parameters are not used. Defaults to None.
         radius: expand the search square by the distance in kilometers. Defaults to 0.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-    
+
     Returns:
         List of dictionaries with maps search results.
     """
@@ -605,12 +609,12 @@ def translate(
     to: str = "en",
 ) -> list[dict[str, str]]:
     """DuckDuckGo translate.
-    
+
     Args:
         keywords: string or list of strings to translate.
         from_: translate from (defaults automatically). Defaults to None.
         to: what language to translate. Defaults to "en".
-    
+
     Returns:
         List od dictionaries with translated keywords.
     """
@@ -638,11 +642,11 @@ def suggestions(
     region: str = "wt-wt",
 ) -> list[dict[str, str]]:
     """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
-    
+
     Args:
         keywords: keywords for query.
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-    
+
     Returns:
         List of dictionaries with suggestions results.
     """
