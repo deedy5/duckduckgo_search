@@ -85,7 +85,7 @@ class DDGS:
             timeout=timeout,
             cookie_store=True,
             referer=True,
-            impersonate=choice(self._impersonates),
+            impersonate="chaos",
             follow_redirects=False,
             verify=verify,
         )
