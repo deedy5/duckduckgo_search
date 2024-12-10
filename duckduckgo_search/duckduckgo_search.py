@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from functools import cached_property
 from itertools import cycle, islice
-from random import choice
 from threading import Event
 from types import TracebackType
 from typing import cast
@@ -29,6 +28,7 @@ from .utils import (
     _calculate_distance,
     _expand_proxy_tb_alias,
     _extract_vqd,
+    _get_random_headers,
     _normalize,
     _normalize_url,
     _text_extract_json,
@@ -77,7 +77,7 @@ class DDGS:
         if not proxy and proxies:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
             self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
-        self.headers = headers if headers else {}
+        self.headers = headers if headers else _get_random_headers()
         self.headers["Referer"] = "https://duckduckgo.com/"
         self.client = primp.Client(
             headers=self.headers,

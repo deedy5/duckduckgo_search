@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import gzip
 import re
 from decimal import Decimal
 from html import unescape
 from math import atan2, cos, radians, sin, sqrt
+from pathlib import Path
+from random import choice, choices
 from typing import Any
 from urllib.parse import unquote
 
@@ -89,3 +92,20 @@ def _calculate_distance(lat1: Decimal, lon1: Decimal, lat2: Decimal, lon2: Decim
 def _expand_proxy_tb_alias(proxy: str | None) -> str | None:
     """Expand "tb" to a full proxy URL if applicable."""
     return "socks5://127.0.0.1:9150" if proxy == "tb" else proxy
+
+
+### HEADERS section ###
+with gzip.open(f"{Path(__file__).parent}/headers.json.gz", "rb") as f:
+    DEFAULT_HEADERS = json_loads(f.read())
+HEADERS: list[dict[str, str]] = [item["header"] for item in DEFAULT_HEADERS if isinstance(item["header"], dict)]
+HEADERS_PROB: list[float] = [item["probability"] for item in DEFAULT_HEADERS if isinstance(item["probability"], float)]
+
+
+def _get_probability_headers() -> dict[str, str]:
+    """Get probability headers using probability."""
+    return choices(HEADERS, weights=HEADERS_PROB)[0]
+
+
+def _get_random_headers() -> dict[str, str]:
+    """Get random headers."""
+    return choice(HEADERS)
