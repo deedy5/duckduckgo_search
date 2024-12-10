@@ -92,7 +92,7 @@ def _sanitize_keywords(keywords):
 
 def _download_file(url, dir_path, filename, proxy, verify):
     try:
-        resp = primp.Client(proxy=proxy, impersonate="chrome_131", timeout=10, verify=verify).get(url)
+        resp = primp.Client(proxy=proxy, impersonate="random", timeout=10, verify=verify).get(url)
         if resp.status_code == 200:
             with open(os.path.join(dir_path, filename[:200]), "wb") as file:
                 file.write(resp.content)
@@ -149,7 +149,7 @@ def version():
 @click.option(
     "-m",
     "--model",
-    prompt="""DuckDuckGo AI chat. Choose a model: 
+    prompt="""DuckDuckGo AI chat. Choose a model:
 [1]: gpt-4o-mini
 [2]: claude-3-haiku
 [3]: llama-3.1-70b
