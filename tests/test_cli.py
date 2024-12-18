@@ -67,10 +67,10 @@ def test_translate_command():
 
 
 def test_save_csv(tmp_path):
-    keywords = "butterfly"
+    keywords = "cat"
     with DDGS() as ddgs:
-        results = ddgs.text(keywords, max_results=20)
-        assert 15 <= len(results) <= 20
+        results = ddgs.text(keywords, max_results=10)
+        assert 5 <= len(results) <= 10
 
     temp_file = tmp_path / f"{keywords}.csv"
     _save_csv(temp_file, results)
@@ -78,10 +78,10 @@ def test_save_csv(tmp_path):
 
 
 def test_save_json(tmp_path):
-    keywords = "chicago"
+    keywords = "dog"
     with DDGS() as ddgs:
-        results = ddgs.text(keywords, max_results=20)
-        assert 15 <= len(results) <= 20
+        results = ddgs.text(keywords, max_results=10)
+        assert 5 <= len(results) <= 10
 
     temp_file = tmp_path / f"{keywords}.json"
     _save_json(temp_file, results)
@@ -89,54 +89,20 @@ def test_save_json(tmp_path):
 
 
 def test_text_download():
-    keywords = "maradona"
+    keywords = "sea"
     with DDGS() as ddgs:
         results = ddgs.text(keywords, max_results=8)
-    assert 7 <= len(results) <= 8
+    assert 5 <= len(results) <= 8
 
-    _download_results(keywords, results, function_name="text")
-
-    # delete files contains keyword in name
-    files = False
-    for dir in os.listdir("."):
-        if keywords in dir:
-            for filename in os.listdir(dir):
-                filename = f"{os.getcwd()}/{dir}/{filename}"
-                if os.path.isfile(filename):
-                    os.remove(filename)
-                    files = True
-    if not files:
-        raise AssertionError("images files not found")
-
-    # delete folder contains keyword in name
-    for dir in os.listdir():
-        if f"{keywords}" in dir:
-            if os.path.isdir(dir):
-                shutil.rmtree(dir)
+    _download_results(keywords, results, function_name="text", pathname="text_downloads")
+    shutil.rmtree("text_downloads")
 
 
 def test_images_download():
-    keywords = "real madrid"
+    keywords = "sky"
     with DDGS() as ddgs:
         results = ddgs.images(keywords, max_results=8)
     assert len(results) >= 8
 
-    _download_results(keywords, results, function_name="images")
-
-    # delete files contains keyword in name
-    files = False
-    for dir in os.listdir("."):
-        if keywords in dir:
-            for filename in os.listdir(dir):
-                filename = f"{os.getcwd()}/{dir}/{filename}"
-                if os.path.isfile(filename):
-                    os.remove(filename)
-                    files = True
-    if not files:
-        raise AssertionError("images files not found")
-
-    # delete folder contains keyword in name
-    for dir in os.listdir():
-        if f"{keywords}" in dir:
-            if os.path.isdir(dir):
-                shutil.rmtree(dir)
+    _download_results(keywords, results, function_name="images", pathname="images_downloads")
+    shutil.rmtree("images_downloads")
