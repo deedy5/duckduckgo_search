@@ -8,7 +8,7 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [CLI version](#cli-version)
 * [Duckduckgo search operators](#duckduckgo-search-operators)
 * [Regions](#regions)
-* [DDGS and AsyncDDGS classes](#ddgs-and-asyncddgs-classes)
+* [DDGS class](#ddgs-class)
 * [Proxy](#proxy)
 * [Exceptions](#exceptions)
 * [1. chat() - AI chat](#1-chat---ai-chat)
@@ -150,11 +150,9 @@ ___
 [Go To TOP](#TOP)
 
 
-## DDGS and AsyncDDGS classes
+## DDGS class
 
-The DDGS and AsyncDDGS classes are used to retrieve search results from DuckDuckGo.com.
-To use the AsyncDDGS class, you can perform asynchronous operations using Python's asyncio library.
-To initialize an instance of the DDGS or AsyncDDGS classes, you can provide the following optional arguments:
+The DDGS classes is used to retrieve search results from DuckDuckGo.com.
 ```python3
 class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com
@@ -175,32 +173,13 @@ from duckduckgo_search import DDGS
 results = DDGS().text("python programming", max_results=5)
 print(results)
 ```
-Here is an example of initializing the AsyncDDGS class:
-```python3
-import asyncio
-
-from duckduckgo_search import AsyncDDGS
-
-async def aget_results(word):
-    results = await AsyncDDGS(proxy=None).atext(word, max_results=100)
-    return results
-
-async def main():
-    words = ["sun", "earth", "moon"]
-    tasks = [aget_results(w) for w in words]
-    results = await asyncio.gather(*tasks)
-    print(results)
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
 
 [Go To TOP](#TOP)
 
 ## Proxy
 
 Package supports http/https/socks proxies. Example: `http://user:pass@example.com:3128`.
-Use a rotating proxy. Otherwise, use a new proxy with each DDGS or AsyncDDGS initialization.
+Use a rotating proxy. Otherwise, use a new proxy with each DDGS class initialization.
 
 *1. The easiest way. Launch the Tor Browser*
 ```python3
@@ -248,9 +227,6 @@ def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> 
 ***Example***
 ```python
 results = DDGS().chat("summarize Daniel Defoe's The Consolidator", model='claude-3-haiku')
-
-# async
-results = await AsyncDDGS().achat('describe the characteristic habits and behaviors of humans as a species')
 ```
 
 [Go To TOP](#TOP)
@@ -288,9 +264,6 @@ def text(
 results = DDGS().text('live free or die', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 # Searching for pdf files
 results = DDGS().text('russia filetype:pdf', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
-
-# async
-results = await AsyncDDGS().atext('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 print(results)
 [
     {
@@ -319,9 +292,6 @@ def answers(keywords: str) -> list[dict[str, str]]:
 ***Example***
 ```python
 results = DDGS().answers("sun")
-
-# async
-results = await AsyncDDGS().aanswers("sun")
 print(results)
 [
     {
@@ -386,9 +356,6 @@ results = DDGS().images(
     license_image=None,
     max_results=100,
 )
-
-# async
-results = await AsyncDDGS().aimages('sun', region='wt-wt', safesearch='off', max_results=20)
 print(images)
 [
     {
@@ -445,9 +412,6 @@ results = DDGS().videos(
     duration="medium",
     max_results=100,
 )
-
-# async
-results = await AsyncDDGS().avideos('sun', region='wt-wt', safesearch='off', timelimit='y', max_results=10)
 print(results)
 [
     {
@@ -501,9 +465,6 @@ def news(
 ***Example***
 ```python
 results = DDGS().news(keywords="sun", region="wt-wt", safesearch="off", timelimit="m", max_results=20)
-
-# async
-results = await AsyncDDGS().anews('sun', region='wt-wt', safesearch='off', timelimit='d', max_results=10)
 print(results)
 [
     {
@@ -560,9 +521,6 @@ def maps(
 ***Example***
 ```python
 results = DDGS().maps("school", place="Uganda", max_results=50)
-
-# async
-results = await AsyncDDGS().amaps('shop', place="Baltimor", max_results=10)
 print(results)
 [
     {
@@ -625,9 +583,6 @@ keywords = 'school'
 # also valid
 keywords = ['school', 'cat']
 results = DDGS().translate(keywords, to="de")
-
-# async
-results = await AsyncDDGS().atranslate('sun', to="de")
 print(results)
 [{"detected_language": "en", "translated": "Sonne", "original": "sun"}]
 ```
@@ -655,9 +610,6 @@ def suggestions(
 ```python3
 results = DDGS().suggestions("fly")
 
-# async
-results = await AsyncDDGS().asuggestions('sun')
-print(results)
 [
     {"phrase": "sunshine live"},
     {"phrase": "sunexpress"},

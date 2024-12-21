@@ -4,19 +4,12 @@ Search for words, documents, images, videos, news, maps and text translation
 using the DuckDuckGo.com search engine.
 """
 
-import asyncio
 import logging
-import sys
 
 from .duckduckgo_search import DDGS
-from .duckduckgo_search_async import AsyncDDGS
 from .version import __version__
 
-__all__ = ["DDGS", "AsyncDDGS", "__version__", "cli"]
-
-
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+__all__ = ["DDGS", "__version__", "cli"]
 
 
 # A do-nothing logging handler
