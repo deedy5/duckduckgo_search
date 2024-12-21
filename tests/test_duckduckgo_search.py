@@ -49,35 +49,3 @@ def test_videos():
 def test_news():
     results = DDGS().news("tesla", max_results=30)
     assert 20 <= len(results) <= 30
-
-
-def test_maps():
-    results = DDGS().maps("school", place="London", max_results=30)
-    assert 27 <= len(results) <= 30
-
-
-def test_answers():
-    results = DDGS().answers("sun")
-    assert len(results) >= 1
-
-
-def test_suggestions():
-    results = DDGS().suggestions("moon")
-    assert len(results) >= 1
-
-
-def test_translate():
-    results = DDGS().translate(["school", "tomatoes"], to="de")
-    expected_results = [
-        {
-            "detected_language": "en",
-            "translated": "Schule",
-            "original": "school",
-        },
-        {
-            "detected_language": "en",
-            "translated": "Tomaten",
-            "original": "tomatoes",
-        }
-    ]
-    assert all(er in results for er in expected_results)

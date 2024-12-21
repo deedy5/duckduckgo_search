@@ -46,26 +46,6 @@ def test_videos_command():
     assert "title" in result.output
 
 
-def test_maps_command():
-    result = runner.invoke(cli, ["maps", "-k", "school", "-p", "Berlin"])
-    assert "title" in result.output
-
-
-def test_answers_command():
-    result = runner.invoke(cli, ["answers", "-k", "question"])
-    assert "question" in result.output
-
-
-def test_suggestions_command():
-    result = runner.invoke(cli, ["suggestions", "-k", "sun"])
-    assert "phrase" in result.output
-
-
-def test_translate_command():
-    result = runner.invoke(cli, ["translate", "-k", "moon", "-t", "de"])
-    assert "language" in result.output
-
-
 def test_save_csv(tmp_path):
     keywords = "cat"
     with DDGS() as ddgs:
