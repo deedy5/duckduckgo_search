@@ -3,10 +3,9 @@ from __future__ import annotations
 import logging
 import os
 import warnings
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import cached_property
-from itertools import cycle, islice
+from itertools import cycle
 from random import choice
 from time import sleep, time
 from types import TracebackType
@@ -39,7 +38,6 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com."""
 
-    _executor: ThreadPoolExecutor = ThreadPoolExecutor()
     _impersonates = (
         "chrome_100", "chrome_101", "chrome_104", "chrome_105", "chrome_106", "chrome_107", "chrome_108",
         "chrome_109", "chrome_114", "chrome_116", "chrome_117", "chrome_118", "chrome_119", "chrome_120",
