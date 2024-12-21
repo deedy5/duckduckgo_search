@@ -658,12 +658,11 @@ class DDGS:
         cache = set()
         results: list[dict[str, str]] = []
 
-        def _news_page(s: int) -> list[dict[str, str]]:
-            payload["s"] = f"{s}"
+        for _ in range(5):
             resp_content = self._get_url("GET", "https://duckduckgo.com/news.js", params=payload)
             resp_json = json_loads(resp_content)
             page_data = resp_json.get("results", [])
-            page_results = []
+
             for row in page_data:
                 if row["url"] not in cache:
                     cache.add(row["url"])
@@ -676,17 +675,13 @@ class DDGS:
                         "image": _normalize_url(image_url),
                         "source": row["source"],
                     }
-                    page_results.append(result)
-            return page_results
+                    results.append(result)
+                    if max_results and len(results) >= max_results:
+                        return results
 
-        slist = [0]
-        if max_results:
-            max_results = min(max_results, 120)
-            slist.extend(range(30, max_results, 30))
-        try:
-            for r in self._executor.map(_news_page, slist):
-                results.extend(r)
-        except Exception as e:
-            raise e
+            next = resp_json.get("next")
+            if next is None:
+                return results
+            payload["s"] = next.split("s=")[-1].split("&")[0]
 
-        return list(islice(results, max_results))
+        return results
