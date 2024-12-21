@@ -596,30 +596,23 @@ class DDGS:
         cache = set()
         results: list[dict[str, str]] = []
 
-        def _videos_page(s: int) -> list[dict[str, str]]:
-            payload["s"] = f"{s}"
+        for _ in range(8):
             resp_content = self._get_url("GET", "https://duckduckgo.com/v.js", params=payload)
             resp_json = json_loads(resp_content)
-
             page_data = resp_json.get("results", [])
-            page_results = []
+
             for row in page_data:
                 if row["content"] not in cache:
                     cache.add(row["content"])
-                    page_results.append(row)
-            return page_results
+                    results.append(row)
+                    if max_results and len(results) >= max_results:
+                        return results
+            next = resp_json.get("next")
+            if next is None:
+                return results
+            payload["s"] = next.split("s=")[-1].split("&")[0]
 
-        slist = [0]
-        if max_results:
-            max_results = min(max_results, 200)
-            slist.extend(range(60, max_results, 60))
-        try:
-            for r in self._executor.map(_videos_page, slist):
-                results.extend(r)
-        except Exception as e:
-            raise e
-
-        return list(islice(results, max_results))
+        return results
 
     def news(
         self,
