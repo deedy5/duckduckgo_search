@@ -1,7 +1,7 @@
 ![Python >= 3.8](https://img.shields.io/badge/python->=3.8-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/badge/duckduckgo-search)](https://pepy.tech/project/duckduckgo-search) [![Downloads](https://static.pepy.tech/badge/duckduckgo-search/week)](https://pepy.tech/project/duckduckgo-search)
 # Duckduckgo_search<a name="TOP"></a>
 
-Search for words, documents, images, videos, news, maps and text translation using the DuckDuckGo.com search engine. Downloading files and images to a local hard drive.
+AI chat and search for text, news, images and videos using the DuckDuckGo.com search engine.
 
 ## Table of Contents
 * [Install](#install)
@@ -13,13 +13,9 @@ Search for words, documents, images, videos, news, maps and text translation usi
 * [Exceptions](#exceptions)
 * [1. chat() - AI chat](#1-chat---ai-chat)
 * [2. text() - text search](#2-text---text-search-by-duckduckgocom)
-* [3. answers() - instant answers](#3-answers---instant-answers-by-duckduckgocom)
-* [4. images() - image search](#4-images---image-search-by-duckduckgocom)
-* [5. videos() - video search](#5-videos---video-search-by-duckduckgocom)
-* [6. news() - news search](#6-news---news-search-by-duckduckgocom)
-* [7. maps() - map search](#7-maps---map-search-by-duckduckgocom)
-* [8. translate() - translation](#8-translate---translation-by-duckduckgocom)
-* [9. suggestions() - suggestions](#9-suggestions---suggestions-by-duckduckgocom)
+* [3. images() - image search](#3-images---image-search-by-duckduckgocom)
+* [4. videos() - video search](#4-videos---video-search-by-duckduckgocom)
+* [5. news() - news search](#5-news---news-search-by-duckduckgocom)
 * [Disclaimer](#disclaimer)
 
 ## Install
@@ -276,36 +272,7 @@ print(results)
 
 [Go To TOP](#TOP)
 
-## 3. answers() - instant answers by duckduckgo.com
-
-```python
-def answers(keywords: str) -> list[dict[str, str]]:
-    """DuckDuckGo instant answers. Query params: https://duckduckgo.com/params.
-
-    Args:
-        keywords: keywords for query,
-
-    Returns:
-        List of dictionaries with instant answers results.
-    """
-```
-***Example***
-```python
-results = DDGS().answers("sun")
-print(results)
-[
-    {
-        "icon": None,
-        "text": "The Sun is the star at the center of the Solar System. It is a massive, nearly perfect sphere of hot plasma, heated to incandescence by nuclear fusion reactions in its core, radiating the energy from its surface mainly as visible light and infrared radiation with 10% at ultraviolet energies. It is by far the most important source of energy for life on Earth. The Sun has been an object of veneration in many cultures. It has been a central subject for astronomical research since antiquity. The Sun orbits the Galactic Center at a distance of 24,000 to 28,000 light-years. From Earth, it is 1 AU or about 8 light-minutes away. Its diameter is about 1,391,400 km, 109 times that of Earth. Its mass is about 330,000 times that of Earth, making up about 99.86% of the total mass of the Solar System. Roughly three-quarters of the Sun's mass consists of hydrogen; the rest is mostly helium, with much smaller quantities of heavier elements, including oxygen, carbon, neon, and iron.",
-        "topic": None,
-        "url": "https://en.wikipedia.org/wiki/Sun",
-    }, ...
-]
-```
-
-[Go To TOP](#TOP)
-
-## 4. images() - image search by duckduckgo.com
+## 3. images() - image search by duckduckgo.com
 
 ```python
 def images(
@@ -372,7 +339,7 @@ print(images)
 
 [Go To TOP](#TOP)
 
-## 5. videos() - video search by duckduckgo.com
+## 4. videos() - video search by duckduckgo.com
 
 ```python
 def videos(
@@ -439,7 +406,7 @@ print(results)
 
 [Go To TOP](#TOP)
 
-## 6. news() - news search by duckduckgo.com
+## 5. news() - news search by duckduckgo.com
 
 ```python
 def news(
@@ -480,150 +447,6 @@ print(results)
 
 [Go To TOP](#TOP)
 
-## 7. maps() - map search by duckduckgo.com
-
-```python
-def maps(
-    keywords,
-    place: str | None = None,
-    street: str | None = None,
-    city: str | None = None,
-    county: str | None = None,
-    state: str | None = None,
-    country: str | None = None,
-    postalcode: str | None = None,
-    latitude: str | None = None,
-    longitude: str | None = None,
-    radius: int = 0,
-    max_results: int | None = None,
-) -> list[dict[str, str]]:
-    """DuckDuckGo maps search. Query params: https://duckduckgo.com/params.
-
-    Args:
-        keywords: keywords for query
-        place: if set, the other parameters are not used. Defaults to None.
-        street: house number/street. Defaults to None.
-        city: city of search. Defaults to None.
-        county: county of search. Defaults to None.
-        state: state of search. Defaults to None.
-        country: country of search. Defaults to None.
-        postalcode: postalcode of search. Defaults to None.
-        latitude: geographic coordinate (north-south position). Defaults to None.
-        longitude: geographic coordinate (east-west position); if latitude and
-            longitude are set, the other parameters are not used. Defaults to None.
-        radius: expand the search square by the distance in kilometers. Defaults to 0.
-        max_results: max number of results. If None, returns results only from the first response. Defaults to None.
-
-    Returns:
-        List of dictionaries with maps search results.
-    """
-```
-***Example***
-```python
-results = DDGS().maps("school", place="Uganda", max_results=50)
-print(results)
-[
-    {
-        "title": "The Bun Shop",
-        "address": "239 W Read St, Baltimore, MD 21201-4845",
-        "country_code": None,
-        "url": "https://www.facebook.com/TheBunShop/",
-        "phone": "+14109892033",
-        "latitude": 39.3006042,
-        "longitude": -76.6195788,
-        "source": "https://www.tripadvisor.com/Restaurant_Review-g60811-d4819859-Reviews-The_Bun_Shop-Baltimore_Maryland.html?m=63959",
-        "image": "",
-        "desc": "",
-        "hours": {
-            "Fri": "07:00:00–03:00:00",
-            "Mon": "07:00:00–03:00:00",
-            "Sat": "07:00:00–03:00:00",
-            "Sun": "07:00:00–03:00:00",
-            "Thu": "07:00:00–03:00:00",
-            "Tue": "07:00:00–03:00:00",
-            "Wed": "07:00:00–03:00:00",
-            "closes_soon": 0,
-            "is_open": 1,
-            "opens_soon": 0,
-            "state_switch_time": "03:00",
-        },
-        "category": "Cafe",
-        "facebook": "",
-        "instagram": "",
-        "twitter": "",
-    }, ...
-]
-```
-
-[Go To TOP](#TOP)
-
-## 8. translate() - translation by duckduckgo.com
-
-```python
-def translate(
-    self,
-    keywords: str,
-    from_: str | None = None,
-    to: str = "en",
-) -> list[dict[str, str]]:
-    """DuckDuckGo translate.
-
-    Args:
-        keywords: string or list of strings to translate.
-        from_: translate from (defaults automatically). Defaults to None.
-        to: what language to translate. Defaults to "en".
-
-    Returns:
-        List od dictionaries with translated keywords.
-    """
-```
-***Example***
-```python
-keywords = 'school'
-# also valid
-keywords = ['school', 'cat']
-results = DDGS().translate(keywords, to="de")
-print(results)
-[{"detected_language": "en", "translated": "Sonne", "original": "sun"}]
-```
-
-[Go To TOP](#TOP)
-
-## 9. suggestions() - suggestions by duckduckgo.com
-
-```python
-def suggestions(
-    keywords,
-    region: str = "wt-wt",
-) -> list[dict[str, str]]:
-    """DuckDuckGo suggestions. Query params: https://duckduckgo.com/params.
-
-    Args:
-        keywords: keywords for query.
-        region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
-
-    Returns:
-        List of dictionaries with suggestions results.
-    """
-```
-***Example***
-```python3
-results = DDGS().suggestions("fly")
-
-[
-    {"phrase": "sunshine live"},
-    {"phrase": "sunexpress"},
-    {"phrase": "sunday natural"},
-    {"phrase": "sunrise village spiel"},
-    {"phrase": "sunny portal"},
-    {"phrase": "sundair"},
-    {"phrase": "sunny cars"},
-    {"phrase": "sunexpress online check-in"},
-]
-```
-
 ## Disclaimer
 
 This library is not affiliated with DuckDuckGo and is for educational purposes only. It is not intended for commercial use or any purpose that violates DuckDuckGo's Terms of Service. By using this library, you acknowledge that you will not use it in a way that infringes on DuckDuckGo's terms. The official DuckDuckGo website can be found at https://duckduckgo.com.
-
-[Go To TOP](#TOP)

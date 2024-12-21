@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import re
-from decimal import Decimal
 from html import unescape
-from math import atan2, cos, radians, sin, sqrt
 from typing import Any
 from urllib.parse import unquote
 
@@ -74,16 +72,6 @@ def _normalize(raw_html: str) -> str:
 def _normalize_url(url: str) -> str:
     """Unquote URL and replace spaces with '+'."""
     return unquote(url).replace(" ", "+") if url else ""
-
-
-def _calculate_distance(lat1: Decimal, lon1: Decimal, lat2: Decimal, lon2: Decimal) -> float:
-    """Calculate distance between two points in km. Haversine formula."""
-    R = 6371.0087714  # Earth's radius in km
-    rlat1, rlon1, rlat2, rlon2 = map(radians, [float(lat1), float(lon1), float(lat2), float(lon2)])
-    dlon, dlat = rlon2 - rlon1, rlat2 - rlat1
-    a = sin(dlat / 2) ** 2 + cos(rlat1) * cos(rlat2) * sin(dlon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    return R * c
 
 
 def _expand_proxy_tb_alias(proxy: str | None) -> str | None:
