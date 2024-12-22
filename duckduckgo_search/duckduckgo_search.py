@@ -299,7 +299,7 @@ class DDGS:
                             return results
                 else:
                     next_page_url = row.get("n")
-                    if not next_page_url:
+                    if not next_page_url or not max_results:
                         return results
                     payload["s"] = next_page_url.split("s=")[1].split("&")[0]
         return results
@@ -365,7 +365,7 @@ class DDGS:
                             return results
 
             npx = tree.xpath('.//div[@class="nav-link"]')
-            if not npx:
+            if not npx or not max_results:
                 return results
             next_page = npx[-1] if isinstance(npx, list) else None
             if isinstance(next_page, _Element):
@@ -447,7 +447,7 @@ class DDGS:
                                 return results
 
             next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
-            if not next_page_s:
+            if not next_page_s or not max_results:
                 return results
             elif isinstance(next_page_s, list):
                 payload["s"] = str(next_page_s[0])
@@ -539,7 +539,7 @@ class DDGS:
                     if max_results and len(results) >= max_results:
                         return results
             next = resp_json.get("next")
-            if next is None:
+            if next is None or not max_results:
                 return results
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
@@ -609,7 +609,7 @@ class DDGS:
                     if max_results and len(results) >= max_results:
                         return results
             next = resp_json.get("next")
-            if next is None:
+            if next is None or not max_results:
                 return results
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
@@ -681,7 +681,7 @@ class DDGS:
                         return results
 
             next = resp_json.get("next")
-            if next is None:
+            if next is None or not max_results:
                 return results
             payload["s"] = next.split("s=")[-1].split("&")[0]
 
