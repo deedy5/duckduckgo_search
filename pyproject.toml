@@ -31,6 +31,7 @@ classifiers = [
 dependencies = [
     "click>=8.1.7",
     "primp>=0.9.1",
+    "lxml>=5.3.0",
 ]
 dynamic = ["version"]
 
@@ -44,9 +45,6 @@ ddgs = "duckduckgo_search.cli:safe_entry_point"
 version = {attr = "duckduckgo_search.version.__version__"}
 
 [project.optional-dependencies]
-lxml = [
-    "lxml>=5.3.0",
-]
 dev = [
     "mypy>=1.13.0",
     "pytest>=8.3.4",
