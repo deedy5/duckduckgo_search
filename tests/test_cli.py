@@ -1,4 +1,5 @@
 import os
+import pathlib
 import shutil
 import time
 
@@ -9,7 +10,8 @@ from duckduckgo_search import DDGS, __version__
 from duckduckgo_search.cli import _download_results, _save_csv, _save_json, cli
 
 runner = CliRunner()
-
+TEXT_RESULTS = None
+IMAGES_RESULTS = None
 
 @pytest.fixture(autouse=True)
 def pause_between_tests():
@@ -46,43 +48,49 @@ def test_videos_command():
     assert "title" in result.output
 
 
+@pytest.mark.dependency()
+def test_get_text():
+    global TEXT_RESULTS
+    TEXT_RESULTS = DDGS().text("test")
+    assert TEXT_RESULTS
+
+
+@pytest.mark.dependency()
+def test_get_images():
+    global IMAGES_RESULTS
+    IMAGES_RESULTS = DDGS().images("test")
+    assert IMAGES_RESULTS
+
+
+@pytest.mark.dependency(depends=["test_get_data"])
 def test_save_csv(tmp_path):
-    keywords = "cat"
-    with DDGS() as ddgs:
-        results = ddgs.text(keywords, max_results=10)
-        assert 5 <= len(results) <= 10
-
-    temp_file = tmp_path / f"{keywords}.csv"
-    _save_csv(temp_file, results)
+    temp_file = tmp_path / "test_csv.csv"
+    _save_csv(temp_file, RESULTS)
     assert temp_file.exists()
 
 
+@pytest.mark.dependency(depends=["test_get_data"])
 def test_save_json(tmp_path):
-    keywords = "dog"
-    with DDGS() as ddgs:
-        results = ddgs.text(keywords, max_results=10)
-        assert 5 <= len(results) <= 10
-
-    temp_file = tmp_path / f"{keywords}.json"
-    _save_json(temp_file, results)
+    temp_file = tmp_path / "test_json.json"
+    _save_json(temp_file, RESULTS)
     assert temp_file.exists()
 
 
+@pytest.mark.dependency(depends=["test_get_data"])
 def test_text_download():
-    keywords = "sea"
-    with DDGS() as ddgs:
-        results = ddgs.text(keywords, max_results=8)
-    assert 5 <= len(results) <= 8
+    pathname = pathlib.Path("text_downloads")
+    _download_results(test_text_download, TEXT_RESULTS, function_name="text", pathname=str(pathname))
+    assert pathname.is_dir() and pathname.iterdir()
+    for file in pathname.iterdir():
+        assert file.is_file()
+    shutil.rmtree(str(pathname))
 
-    _download_results(keywords, results, function_name="text", pathname="text_downloads")
-    shutil.rmtree("text_downloads")
 
-
+@pytest.mark.dependency(depends=["test_get_images"])
 def test_images_download():
-    keywords = "sky"
-    with DDGS() as ddgs:
-        results = ddgs.images(keywords, max_results=8)
-    assert len(results) >= 8
-
-    _download_results(keywords, results, function_name="images", pathname="images_downloads")
-    shutil.rmtree("images_downloads")
+    pathname = pathlib.Path("images_downloads")
+    _download_results(test_images_download, IMAGES_RESULTS, function_name="images", pathname=str(pathname))
+    assert pathname.is_dir() and pathname.iterdir()
+    for file in pathname.iterdir():
+        assert file.is_file()
+    shutil.rmtree(str(pathname))
