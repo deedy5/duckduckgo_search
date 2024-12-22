@@ -22,9 +22,6 @@ AI chat and search for text, news, images and videos using the DuckDuckGo.com se
 ```python
 pip install -U duckduckgo_search
 ```
-> [!NOTE]
-> you can install lxml to use the `text` function with `backend='html'` or `backend='lite'` (size ≈ 12Mb)</br>
-> `pip install -U duckduckgo_search[lxml]`
 
 ## CLI version
 
@@ -235,7 +232,7 @@ def text(
     region: str = "wt-wt",
     safesearch: str = "moderate",
     timelimit: str | None = None,
-    backend: str = "api",
+    backend: str = "auto",
     max_results: int | None = None,
 ) -> list[dict[str, str]]:
     """DuckDuckGo text search generator. Query params: https://duckduckgo.com/params.
@@ -245,7 +242,8 @@ def text(
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m, y. Defaults to None.
-        backend: api, html, lite. Defaults to api.
+        backend: auto, api, html, lite. Defaults to auto.
+            auto - try all backends in random order,
             api - collect data from https://duckduckgo.com,
             html - collect data from https://html.duckduckgo.com,
             lite - collect data from https://lite.duckduckgo.com.

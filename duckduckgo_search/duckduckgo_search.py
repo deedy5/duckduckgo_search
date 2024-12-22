@@ -6,21 +6,15 @@ import warnings
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import cycle
-from random import choice
+from random import choice, shuffle
 from time import sleep, time
 from types import TracebackType
 from typing import cast
 
 import primp  # type: ignore
-
-try:
-    from lxml.etree import _Element
-    from lxml.html import HTMLParser as LHTMLParser
-    from lxml.html import document_fromstring
-
-    LXML_AVAILABLE = True
-except ImportError:
-    LXML_AVAILABLE = False
+from lxml.etree import _Element
+from lxml.html import HTMLParser as LHTMLParser
+from lxml.html import document_fromstring
 
 from .exceptions import ConversationLimitException, DuckDuckGoSearchException, RatelimitException, TimeoutException
 from .utils import (
@@ -213,7 +207,7 @@ class DDGS:
         region: str = "wt-wt",
         safesearch: str = "moderate",
         timelimit: str | None = None,
-        backend: str = "api",
+        backend: str = "auto",
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
         """DuckDuckGo text search. Query params: https://duckduckgo.com/params.
@@ -223,7 +217,8 @@ class DDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m, y. Defaults to None.
-            backend: api, html, lite. Defaults to api.
+            backend: auto, api, html, lite. Defaults to auto.
+                auto - try all backends in random order,
                 api - collect data from https://duckduckgo.com,
                 html - collect data from https://html.duckduckgo.com,
                 lite - collect data from https://lite.duckduckgo.com.
@@ -237,17 +232,25 @@ class DDGS:
             RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
             TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
-        if LXML_AVAILABLE is False and backend != "api":
-            backend = "api"
-            warnings.warn("lxml is not installed. Using backend='api'.", stacklevel=2)
 
-        if backend == "api":
-            results = self._text_api(keywords, region, safesearch, timelimit, max_results)
-        elif backend == "html":
-            results = self._text_html(keywords, region, timelimit, max_results)
-        elif backend == "lite":
-            results = self._text_lite(keywords, region, timelimit, max_results)
-        return results
+        backends = ["api", "html", "lite"] if backend == "auto" else [backend]
+        shuffle(backends)
+
+        results, err = [], None
+        for b in backends:
+            try:
+                if b == "api":
+                    results = self._text_api(keywords, region, safesearch, timelimit, max_results)
+                elif b == "html":
+                    results = self._text_html(keywords, region, timelimit, max_results)
+                elif b == "lite":
+                    results = self._text_lite(keywords, region, timelimit, max_results)
+                return results
+            except Exception as ex:
+                logger.info(f"Error to search using {b} backend: {ex}")
+                err = ex
+
+        raise DuckDuckGoSearchException(err)
 
     def _text_api(
         self,
