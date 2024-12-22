@@ -48,6 +48,7 @@ version = {attr = "duckduckgo_search.version.__version__"}
 dev = [
     "mypy>=1.13.0",
     "pytest>=8.3.4",
+    "pytest-dependency>=0.6.0",
     "ruff>=0.8.3",
 ]
 
