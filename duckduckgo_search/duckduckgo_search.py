@@ -284,7 +284,7 @@ class DDGS:
         cache = set()
         results: list[dict[str, str]] = []
 
-        for _ in range(11):
+        for _ in range(3):
             resp_content = self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
             page_data = _text_extract_json(resp_content, keywords)
             for row in page_data:
@@ -333,7 +333,7 @@ class DDGS:
         cache = set()
         results: list[dict[str, str]] = []
 
-        for _ in range(11):
+        for _ in range(5):
             resp_content = self._get_url("POST", "https://html.duckduckgo.com/html", data=payload)
             if b"No  results." in resp_content:
                 return results
@@ -405,7 +405,7 @@ class DDGS:
         cache = set()
         results: list[dict[str, str]] = []
 
-        for _ in range(11):
+        for _ in range(5):
             resp_content = self._get_url("POST", "https://lite.duckduckgo.com/lite/", data=payload)
             if b"No more results." in resp_content:
                 return results
@@ -495,7 +495,7 @@ class DDGS:
         cache = set()
         results: list[dict[str, str]] = []
 
-        for _ in range(11):
+        for _ in range(5):
             resp_content = self._get_url("GET", "https://www.ecosia.org/search", params=payload, cookies=cookies)
             if b"Unfortunately we didn\xe2\x80\x99t find any results for" in resp_content:
                 return results
