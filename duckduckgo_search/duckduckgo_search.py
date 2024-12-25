@@ -43,7 +43,6 @@ class DDGS:
         "safari_18", "safari_18.2",
         "safari_ipad_18",
         "edge_101", "edge_122", "edge_127", "edge_131",
-        "okhttp_3.13", "okhttp_3.14", "okhttp_4.9", "okhttp_4.10", "okhttp_5",
         "firefox_109", "firefox_133",
     )  # fmt: skip
 
