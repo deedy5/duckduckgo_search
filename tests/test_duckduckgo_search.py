@@ -36,6 +36,10 @@ def test_text_lite():
     assert 15 <= len(results) <= 20
 
 
+def test_text_ecosia():
+    results = DDGS().text("dog", region="br-pt", safesearch="off", backend="ecosia", max_results=20)
+    assert 15 <= len(results) <= 20
+
 def test_images():
     results = DDGS().images("flower", max_results=200)
     assert 85 <= len(results) <= 200

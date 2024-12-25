@@ -246,7 +246,8 @@ def text(
             auto - try all backends in random order,
             api - collect data from https://duckduckgo.com,
             html - collect data from https://html.duckduckgo.com,
-            lite - collect data from https://lite.duckduckgo.com.
+            lite - collect data from https://lite.duckduckgo.com,
+            ecosia - collect data from https://www.ecosia.com.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
     Returns:
