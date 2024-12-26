@@ -21,24 +21,20 @@ def test_chat(model):
     assert  len(results) >= 1
 
 
-def test_text():
-    results = DDGS().text("cat", safesearch="off", timelimit="m", max_results=20)
-    assert 15 <= len(results) <= 20
-
-
 def test_text_html():
-    results = DDGS().text("eagle", backend="html", max_results=20)
+    results = DDGS().text("eagle", backend="html", region="br-pt", timelimit="y", max_results=20)
     assert 15 <= len(results) <= 20
 
 
 def test_text_lite():
-    results = DDGS().text("dog", backend="lite", max_results=20)
+    results = DDGS().text("dog", backend="lite", region="br-pt", timelimit="y", max_results=20)
     assert 15 <= len(results) <= 20
 
 
 def test_text_ecosia():
-    results = DDGS().text("dog", region="br-pt", safesearch="off", backend="ecosia", max_results=20)
+    results = DDGS().text("cat", backend="ecosia", region="br-pt", safesearch="off", max_results=20)
     assert 15 <= len(results) <= 20
+
 
 def test_images():
     results = DDGS().images("flower", max_results=200)

@@ -22,7 +22,6 @@ from .utils import (
     _extract_vqd,
     _normalize,
     _normalize_url,
-    _text_extract_json,
     json_loads,
 )
 
@@ -221,7 +220,6 @@ class DDGS:
             timelimit: d, w, m, y. Defaults to None.
             backend: auto, api, html, lite. Defaults to auto.
                 auto - try all backends in random order,
-                api - collect data from https://duckduckgo.com,
                 html - collect data from https://html.duckduckgo.com,
                 lite - collect data from https://lite.duckduckgo.com,
                 ecosia - collect data from https://www.ecosia.com.
@@ -235,16 +233,16 @@ class DDGS:
             RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
             TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
-
-        backends = ["api", "html", "lite", "ecosia"] if backend == "auto" else [backend]
+        if backend == "api":
+            warnings.warn("'api' backend is deprecated, using backend='auto'", stacklevel=2)
+            backend = "auto"
+        backends = ["html", "lite", "ecosia"] if backend == "auto" else [backend]
         shuffle(backends)
 
         results, err = [], None
         for b in backends:
             try:
-                if b == "api":
-                    results = self._text_api(keywords, region, safesearch, timelimit, max_results)
-                elif b == "html":
+                if b == "html":
                     results = self._text_html(keywords, region, timelimit, max_results)
                 elif b == "lite":
                     results = self._text_lite(keywords, region, timelimit, max_results)
@@ -256,58 +254,6 @@ class DDGS:
                 err = ex
 
         raise DuckDuckGoSearchException(err)
-
-    def _text_api(
-        self,
-        keywords: str,
-        region: str = "wt-wt",
-        safesearch: str = "moderate",
-        timelimit: str | None = None,
-        max_results: int | None = None,
-    ) -> list[dict[str, str]]:
-        assert keywords, "keywords is mandatory"
-
-        vqd = self._get_vqd(keywords)
-
-        payload = {
-            "q": keywords,
-            "kl": region,
-            "l": region,
-            "p": "1" if safesearch == "on" else "",
-            "s": "0",
-            "df": timelimit or "",
-            "vqd": vqd,
-            "bing_market": f"{region[3:]}-{region[:2].upper()}",
-            "ex": "-1" if safesearch == "moderate" else "-2" if safesearch == "off" else "",
-        }
-
-        cache = set()
-        results: list[dict[str, str]] = []
-
-        for _ in range(3):
-            resp_content = self._get_url("GET", "https://links.duckduckgo.com/d.js", params=payload)
-            page_data = _text_extract_json(resp_content, keywords)
-            for row in page_data:
-                href = row.get("u")
-                if href and href not in cache and href != f"http://www.google.com/search?q={keywords}":
-                    cache.add(href)
-                    body = _normalize(row["a"])
-                    if body:
-                        results.append(
-                            {
-                                "title": _normalize(row["t"]),
-                                "href": _normalize_url(href),
-                                "body": body,
-                            }
-                        )
-                        if max_results and len(results) >= max_results:
-                            return results
-                else:
-                    next_page_url = row.get("n")
-                    if not next_page_url or not max_results:
-                        return results
-                    payload["s"] = next_page_url.split("s=")[1].split("&")[0]
-        return results
 
     def _text_html(
         self,

@@ -51,19 +51,6 @@ def _extract_vqd(html_bytes: bytes, keywords: str) -> str:
     raise DuckDuckGoSearchException(f"_extract_vqd() {keywords=} Could not extract vqd.")
 
 
-def _text_extract_json(html_bytes: bytes, keywords: str) -> list[dict[str, str]]:
-    """text(backend="api") -> extract json from html."""
-    try:
-        start = html_bytes.index(b"DDG.pageLayout.load('d',") + 24
-        end = html_bytes.index(b");DDG.", start)
-        data = html_bytes[start:end]
-        result: list[dict[str, str]] = json_loads(data)
-        return result
-    except Exception as ex:
-        raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} {type(ex).__name__}: {ex}") from ex
-    raise DuckDuckGoSearchException(f"_text_extract_json() {keywords=} return None")
-
-
 def _normalize(raw_html: str) -> str:
     """Strip HTML tags from the raw_html string."""
     return unescape(REGEX_STRIP_TAGS.sub("", raw_html)) if raw_html else ""
