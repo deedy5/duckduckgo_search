@@ -197,7 +197,7 @@ def chat(load, proxy, multiline, timeout, verify, model):
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
 @click.option("-d", "--download", is_flag=True, default=False, help="download results. -dd to set custom directory")
 @click.option("-dd", "--download-directory", help="Specify custom download directory")
-@click.option("-b", "--backend", default="auto", type=click.Choice(["auto", "api", "html", "lite", "ecosia"]))
+@click.option("-b", "--backend", default="auto", type=click.Choice(["auto", "html", "lite", "ecosia"]))
 @click.option("-th", "--threads", default=10, help="download threads, default=10")
 @click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
