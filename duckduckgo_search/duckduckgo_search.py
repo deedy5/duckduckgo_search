@@ -218,11 +218,10 @@ class DDGS:
             region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
             safesearch: on, moderate, off. Defaults to "moderate".
             timelimit: d, w, m, y. Defaults to None.
-            backend: auto, html, lite, ecosia. Defaults to auto.
+            backend: auto, html, lite. Defaults to auto.
                 auto - try all backends in random order,
                 html - collect data from https://html.duckduckgo.com,
-                lite - collect data from https://lite.duckduckgo.com,
-                ecosia - collect data from https://www.ecosia.com.
+                lite - collect data from https://lite.duckduckgo.com.
             max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
         Returns:
@@ -233,10 +232,10 @@ class DDGS:
             RatelimitException: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
             TimeoutException: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
         """
-        if backend == "api":
-            warnings.warn("'api' backend is deprecated, using backend='auto'", stacklevel=2)
+        if backend in ("api", "ecosia"):
+            warnings.warn(f"{backend=} is deprecated, using backend='auto'", stacklevel=2)
             backend = "auto"
-        backends = ["html", "lite", "ecosia"] if backend == "auto" else [backend]
+        backends = ["html", "lite"] if backend == "auto" else [backend]
         shuffle(backends)
 
         results, err = [], None
@@ -246,8 +245,6 @@ class DDGS:
                     results = self._text_html(keywords, region, timelimit, max_results)
                 elif b == "lite":
                     results = self._text_lite(keywords, region, timelimit, max_results)
-                elif b == "ecosia":
-                    results = self._text_ecosia(keywords, region, safesearch, max_results)
                 return results
             except Exception as ex:
                 logger.info(f"Error to search using {b} backend: {ex}")
@@ -402,80 +399,6 @@ class DDGS:
                 return results
             elif isinstance(next_page_s, list):
                 payload["s"] = str(next_page_s[0])
-
-        return results
-
-    def _text_ecosia(
-        self,
-        keywords: str,
-        region: str = "wt-wt",
-        safesearch: str = "moderate",
-        max_results: int | None = None,
-    ) -> list[dict[str, str]]:
-        assert keywords, "keywords is mandatory"
-
-        payload = {
-            "q": keywords,
-        }
-        cookies = {
-            "a": "0",
-            "as": "0",
-            "cs": "1",
-            "dt": "pc",
-            "f": "y" if safesearch == "on" else "n" if safesearch == "off" else "i",
-            "fr": "0",
-            "fs": "1",
-            "l": "en",
-            "lt": f"{int(time() * 1000)}",
-            "mc": f"{region[3:]}-{region[:2]}",
-            "nf": "0",
-            "nt": "0",
-            "pz": "0",
-            "t": "6",
-            "tt": "",
-            "tu": "auto",
-            "wu": "auto",
-            "ma": "1",
-        }
-
-        cache = set()
-        results: list[dict[str, str]] = []
-
-        for _ in range(5):
-            resp_content = self._get_url("GET", "https://www.ecosia.org/search", params=payload, cookies=cookies)
-            if b"Unfortunately we didn\xe2\x80\x99t find any results for" in resp_content:
-                return results
-
-            tree = document_fromstring(resp_content, self.parser)
-            elements = tree.xpath("//div[@class='result__body']")
-            if not isinstance(elements, list):
-                return results
-
-            for e in elements:
-                if isinstance(e, _Element):
-                    hrefxpath = e.xpath(".//div[@class='result__title']/a/@href")
-                    href = str(hrefxpath[0]) if hrefxpath and isinstance(hrefxpath, list) else None
-                    if href and href not in cache:
-                        cache.add(href)
-                        titlexpath = e.xpath(".//div[@class='result__title']/a/h2/text()")
-                        title = str(titlexpath[0]) if titlexpath and isinstance(titlexpath, list) else ""
-                        bodyxpath = e.xpath(".//div[@class='result__description']//text()")
-                        body = "".join(str(x) for x in bodyxpath) if bodyxpath and isinstance(bodyxpath, list) else ""
-                        results.append(
-                            {
-                                "title": _normalize(title.strip()),
-                                "href": _normalize_url(href),
-                                "body": _normalize(body.strip()),
-                            }
-                        )
-                        if max_results and len(results) >= max_results:
-                            return results
-
-            npx = tree.xpath("//div[contains(@class, 'pagination')]//a[contains(@data-test-id, 'next')]/@href")
-            if not npx or not max_results:
-                return results
-            if isinstance(npx, list):
-                payload["p"] = str(npx[-1]).split("p=")[1].split("&")[0]
 
         return results
 

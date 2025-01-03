@@ -242,11 +242,10 @@ def text(
         region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m, y. Defaults to None.
-        backend: auto, html, lite, ecosia. Defaults to auto.
+        backend: auto, html, lite. Defaults to auto.
             auto - try all backends in random order,
             html - collect data from https://html.duckduckgo.com,
-            lite - collect data from https://lite.duckduckgo.com,
-            ecosia - collect data from https://www.ecosia.com.
+            lite - collect data from https://lite.duckduckgo.com.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
 
     Returns:
