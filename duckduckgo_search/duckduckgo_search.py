@@ -42,7 +42,7 @@ class DDGS:
         "safari_18", "safari_18.2",
         "safari_ipad_18",
         "edge_101", "edge_122", "edge_127", "edge_131",
-        "firefox_109", "firefox_117", "firefox_133",
+        "firefox_109", "firefox_117", "firefox_128", "firefox_133",
     )  # fmt: skip
 
     def __init__(
