@@ -9,7 +9,6 @@ from itertools import cycle
 from random import choice, shuffle
 from time import sleep, time
 from types import TracebackType
-from typing import cast
 
 import primp
 from lxml.etree import _Element
