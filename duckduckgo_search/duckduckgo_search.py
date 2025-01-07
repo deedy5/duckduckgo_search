@@ -11,7 +11,7 @@ from time import sleep, time
 from types import TracebackType
 from typing import cast
 
-import primp  # type: ignore
+import primp
 from lxml.etree import _Element
 from lxml.html import HTMLParser as LHTMLParser
 from lxml.html import document_fromstring
@@ -76,7 +76,7 @@ class DDGS:
             timeout=timeout,
             cookie_store=True,
             referer=True,
-            impersonate=choice(self._impersonates),
+            impersonate=choice(self._impersonates),  # type: ignore
             follow_redirects=False,
             verify=verify,
         )
@@ -113,7 +113,7 @@ class DDGS:
         url: str,
         params: dict[str, str] | None = None,
         content: bytes | None = None,
-        data: dict[str, str] | bytes | None = None,
+        data: dict[str, str] | None = None,
         cookies: dict[str, str] | None = None,
     ) -> bytes:
         self._sleep()
@@ -125,7 +125,7 @@ class DDGS:
             raise DuckDuckGoSearchException(f"{url} {type(ex).__name__}: {ex}") from ex
         logger.debug(f"_get_url() {resp.url} {resp.status_code} {len(resp.content)}")
         if resp.status_code == 200:
-            return cast(bytes, resp.content)
+            return resp.content
         elif resp.status_code in (202, 301, 403):
             raise RatelimitException(f"{resp.url} {resp.status_code} Ratelimit")
         raise DuckDuckGoSearchException(f"{resp.url} return None. {params=} {content=} {data=}")
@@ -183,19 +183,20 @@ class DDGS:
         data = ",".join(x for line in resp.text.rstrip("[DONE]LIMT_CVRSA\n").split("data:") if (x := line.strip()))
         data = json_loads("[" + data + "]")
 
-        results = []
+        results: list[str] = []
         for x in data:
-            if x.get("action") == "error":
-                err_message = x.get("type", "")
-                if x.get("status") == 429:
-                    raise (
-                        ConversationLimitException(err_message)
-                        if err_message == "ERR_CONVERSATION_LIMIT"
-                        else RatelimitException(err_message)
-                    )
-                raise DuckDuckGoSearchException(err_message)
-            elif message := x.get("message"):
-                results.append(message)
+            if isinstance(x, dict):
+                if x.get("action") == "error":
+                    err_message = x.get("type", "")
+                    if x.get("status") == 429:
+                        raise (
+                            ConversationLimitException(err_message)
+                            if err_message == "ERR_CONVERSATION_LIMIT"
+                            else RatelimitException(err_message)
+                        )
+                    raise DuckDuckGoSearchException(err_message)
+                elif message := x.get("message"):
+                    results.append(message)
         result = "".join(results)
 
         self._chat_messages.append({"role": "assistant", "content": result})
