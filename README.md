@@ -193,11 +193,20 @@ export DDGS_PROXY="socks5h://user:password@geo.iproyal.com:32325"
 
 ## Exceptions
 
+```python
+from duckduckgo_search.exceptions import (
+    ConversationLimitException,
+    DuckDuckGoSearchException,
+    RatelimitException,
+    TimeoutException,
+)
+```
+
 Exceptions:
 - `DuckDuckGoSearchException`: Base exception for duckduckgo_search errors.
 - `RatelimitException`: Inherits from DuckDuckGoSearchException, raised for exceeding API request rate limits.
 - `TimeoutException`: Inherits from DuckDuckGoSearchException, raised for API request timeouts.
-
+- `ConversationLimitException`: Inherits from DuckDuckGoSearchException, raised for conversation limit during API requests to AI endpoint.
 
 [Go To TOP](#TOP)
 
