@@ -173,7 +173,7 @@ def chat(load, proxy, multiline, timeout, verify, model):
             client._chat_tokens_count = cache.get("tokens", 0)
 
     while True:
-        print(f"{'-'*78}\nYou[{model=} tokens={client._chat_tokens_count}]: ", end="")
+        print(f"{'-' * 78}\nYou[{model=} tokens={client._chat_tokens_count}]: ", end="")
         if multiline:
             print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]""")
             user_input = sys.stdin.read()
