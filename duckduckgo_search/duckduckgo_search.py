@@ -43,6 +43,7 @@ class DDGS:
         "edge_101", "edge_122", "edge_127", "edge_131",
         "firefox_109", "firefox_117", "firefox_128", "firefox_133",
     )  # fmt: skip
+    _impersonates_os = ("android", "ios", "linux", "macos", "windows")
 
     def __init__(
         self,
@@ -76,6 +77,7 @@ class DDGS:
             cookie_store=True,
             referer=True,
             impersonate=choice(self._impersonates),  # type: ignore
+            impersonate_os=choice(self._impersonates_os),  # type: ignore
             follow_redirects=False,
             verify=verify,
         )
