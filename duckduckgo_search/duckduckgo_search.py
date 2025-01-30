@@ -52,6 +52,7 @@ class DDGS:
         proxies: dict[str, str] | str | None = None,  # deprecated
         timeout: int | None = 10,
         verify: bool = True,
+        cert: str | None = None,
     ) -> None:
         """Initialize the DDGS object.
 
@@ -61,6 +62,7 @@ class DDGS:
                 example: "http://user:pass@example.com:3128". Defaults to None.
             timeout (int, optional): Timeout value for the HTTP client. Defaults to 10.
             verify (bool): SSL verification when making the request. Defaults to True.
+            cert (str, optional): path to a custom SSL certificate. Defaults to None.
         """
         ddgs_proxy: str | None = os.environ.get("DDGS_PROXY")
         self.proxy: str | None = ddgs_proxy if ddgs_proxy else _expand_proxy_tb_alias(proxy)
@@ -68,6 +70,7 @@ class DDGS:
         if not proxy and proxies:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
             self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
+        self.cert: str | None = os.environ.get("REQUESTS_CA_BUNDLE")
         self.headers = headers if headers else {}
         self.headers["Referer"] = "https://duckduckgo.com/"
         self.client = primp.Client(
@@ -80,6 +83,7 @@ class DDGS:
             impersonate_os=choice(self._impersonates_os),  # type: ignore
             follow_redirects=False,
             verify=verify,
+            ca_cert_file=self.cert,
         )
         self._chat_messages: list[dict[str, str]] = []
         self._chat_tokens_count = 0
