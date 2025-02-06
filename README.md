@@ -213,13 +213,13 @@ Exceptions:
 ## 1. chat() - AI chat
 
 ```python
-def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
+def chat(self, keywords: str, model: str = "o3-mini", timeout: int = 30) -> str:
     """Initiates a chat session with DuckDuckGo AI.
 
     Args:
         keywords (str): The initial message or question to send to the AI.
-        model (str): The model to use: "gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b".
-            Defaults to "gpt-4o-mini".
+        model (str): The model to use: "o3-mini", "gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b".
+            Defaults to "o3-mini".
         timeout (int): Timeout value for the HTTP client. Defaults to 30.
 
     Returns:

@@ -136,12 +136,12 @@ class DDGS:
         resp_content = self._get_url("GET", "https://duckduckgo.com", params={"q": keywords})
         return _extract_vqd(resp_content, keywords)
 
-    def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
+    def chat(self, keywords: str, model: str = "o3-mini", timeout: int = 30) -> str:
         """Initiates a chat session with DuckDuckGo AI.
 
         Args:
             keywords (str): The initial message or question to send to the AI.
-            model (str): The model to use: "gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b".
+            model (str): The model to use: "o3-mini", "gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b".
                 Defaults to "gpt-4o-mini".
             timeout (int): Timeout value for the HTTP client. Defaults to 20.
 
@@ -156,6 +156,7 @@ class DDGS:
             logger.info(f"{model=} is deprecated, using {models_deprecated[model]}")
             model = models_deprecated[model]
         models = {
+            "o3-mini": "o3-mini",
             "claude-3-haiku": "claude-3-haiku-20240307",
             "gpt-4o-mini": "gpt-4o-mini",
             "llama-3.1-70b": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
