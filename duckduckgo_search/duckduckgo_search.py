@@ -45,10 +45,10 @@ class DDGS:
     )  # fmt: skip
     _impersonates_os = ("android", "ios", "linux", "macos", "windows")
     _chat_models = {
-        "o3-mini": "o3-mini",
         "gpt-4o-mini": "gpt-4o-mini",
+        "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         "claude-3-haiku": "claude-3-haiku-20240307",
-        "llama-3.1-70b": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        "o3-mini": "o3-mini",
         "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
     }
 
@@ -143,13 +143,13 @@ class DDGS:
         resp_content = self._get_url("GET", "https://duckduckgo.com", params={"q": keywords})
         return _extract_vqd(resp_content, keywords)
 
-    def chat(self, keywords: str, model: str = "o3-mini", timeout: int = 30) -> str:
+    def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
         """Initiates a chat session with DuckDuckGo AI.
 
         Args:
             keywords (str): The initial message or question to send to the AI.
-            model (str): The model to use: "o3-mini", "gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b".
-                Defaults to "o3-mini".
+            model (str): The model to use: "gpt-4o-mini", "llama-3.3-70b", "claude-3-haiku",
+                "o3-mini", "mixtral-8x7b". Defaults to "gpt-4o-mini".
             timeout (int): Timeout value for the HTTP client. Defaults to 20.
 
         Returns:
@@ -162,7 +162,9 @@ class DDGS:
 
         self._chat_messages.append({"role": "user", "content": keywords})
         self._chat_tokens_count += len(keywords) // 4 if len(keywords) >= 4 else 1  # approximate number of tokens
-
+        if model not in self._chat_models:
+            warnings.warn(f"{model=} is unavailable. Using 'gpt-4o-mini'", stacklevel=1)
+            model = "gpt-4o-mini"
         json_data = {
             "model": self._chat_models[model],
             "messages": self._chat_messages,
