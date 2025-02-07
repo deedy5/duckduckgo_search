@@ -9,6 +9,7 @@ from itertools import cycle
 from random import choice, shuffle
 from time import sleep, time
 from types import TracebackType
+from typing import Literal, cast
 
 import primp
 from lxml.etree import _Element
@@ -117,7 +118,7 @@ class DDGS:
 
     def _get_url(
         self,
-        method: str,
+        method: Literal["GET", "HEAD", "OPTIONS", "DELETE", "POST", "PUT", "PATCH"],
         url: str,
         params: dict[str, str] | None = None,
         content: bytes | None = None,
@@ -133,7 +134,7 @@ class DDGS:
             raise DuckDuckGoSearchException(f"{url} {type(ex).__name__}: {ex}") from ex
         logger.debug(f"_get_url() {resp.url} {resp.status_code} {len(resp.content)}")
         if resp.status_code == 200:
-            return resp.content
+            return cast(bytes, resp.content)
         elif resp.status_code in (202, 301, 403):
             raise RatelimitException(f"{resp.url} {resp.status_code} Ratelimit")
         raise DuckDuckGoSearchException(f"{resp.url} return None. {params=} {content=} {data=}")
@@ -172,7 +173,7 @@ class DDGS:
         resp = self.client.post(
             "https://duckduckgo.com/duckchat/v1/chat",
             headers={"x-vqd-4": self._chat_vqd},
-            json=json_data,
+            json=json_data,  # type: ignore
             timeout=timeout,
         )
         self._chat_vqd = resp.headers.get("x-vqd-4", "")
