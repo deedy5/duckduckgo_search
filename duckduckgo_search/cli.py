@@ -34,6 +34,12 @@ COLORS = {
     14: "white",
     15: "bright_white",
 }
+CHAT_MODEL_CHOICES = {f"{i}": k for i, k in enumerate(DDGS._chat_models, start=1)}
+CHAT_MODEL_CHOICES_PROMPT = (
+    "DuckDuckGo AI chat. Choose a model:\n"
+    + "\n".join([f"[{key}]: {value}" for key, value in CHAT_MODEL_CHOICES.items()])
+    + "\n"
+)
 
 
 def _save_data(keywords, data, function_name, filename):
@@ -149,21 +155,15 @@ def version():
 @click.option(
     "-m",
     "--model",
-    prompt="""DuckDuckGo AI chat. Choose a model:
-[1]: o3-mini
-[2]: gpt-4o-mini
-[3]: claude-3-haiku
-[4]: llama-3.1-70b
-[5]: mixtral-8x7b
-""",
-    type=click.Choice(["1", "2", "3", "4", "5"]),
+    prompt=CHAT_MODEL_CHOICES_PROMPT,
+    type=click.Choice([k for k in CHAT_MODEL_CHOICES]),
     show_choices=False,
     default="1",
 )
 def chat(load, proxy, multiline, timeout, verify, model):
     """CLI function to perform an interactive AI chat using DuckDuckGo API."""
     client = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify)
-    model = ["o3-mini", "gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b"][int(model) - 1]
+    model = CHAT_MODEL_CHOICES[model]
 
     cache_file = "ddgs_chat_conversation.json"
     if load and Path(cache_file).exists():

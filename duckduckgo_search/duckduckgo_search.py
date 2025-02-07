@@ -44,6 +44,13 @@ class DDGS:
         "firefox_109", "firefox_117", "firefox_128", "firefox_133",
     )  # fmt: skip
     _impersonates_os = ("android", "ios", "linux", "macos", "windows")
+    _chat_models = {
+        "o3-mini": "o3-mini",
+        "gpt-4o-mini": "gpt-4o-mini",
+        "claude-3-haiku": "claude-3-haiku-20240307",
+        "llama-3.1-70b": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+    }
 
     def __init__(
         self,
@@ -142,19 +149,12 @@ class DDGS:
         Args:
             keywords (str): The initial message or question to send to the AI.
             model (str): The model to use: "o3-mini", "gpt-4o-mini", "claude-3-haiku", "llama-3.1-70b", "mixtral-8x7b".
-                Defaults to "gpt-4o-mini".
+                Defaults to "o3-mini".
             timeout (int): Timeout value for the HTTP client. Defaults to 20.
 
         Returns:
             str: The response from the AI.
         """
-        models = {
-            "o3-mini": "o3-mini",
-            "claude-3-haiku": "claude-3-haiku-20240307",
-            "gpt-4o-mini": "gpt-4o-mini",
-            "llama-3.1-70b": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-            "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        }
         # vqd
         if not self._chat_vqd:
             resp = self.client.get("https://duckduckgo.com/duckchat/v1/status", headers={"x-vqd-accept": "1"})
@@ -164,7 +164,7 @@ class DDGS:
         self._chat_tokens_count += len(keywords) // 4 if len(keywords) >= 4 else 1  # approximate number of tokens
 
         json_data = {
-            "model": models[model],
+            "model": self._chat_models[model],
             "messages": self._chat_messages,
         }
         resp = self.client.post(
