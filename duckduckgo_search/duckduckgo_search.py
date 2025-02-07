@@ -148,13 +148,6 @@ class DDGS:
         Returns:
             str: The response from the AI.
         """
-        models_deprecated = {
-            "gpt-3.5": "gpt-4o-mini",
-            "llama-3-70b": "llama-3.1-70b",
-        }
-        if model in models_deprecated:
-            logger.info(f"{model=} is deprecated, using {models_deprecated[model]}")
-            model = models_deprecated[model]
         models = {
             "o3-mini": "o3-mini",
             "claude-3-haiku": "claude-3-haiku-20240307",
