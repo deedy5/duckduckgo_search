@@ -69,3 +69,6 @@ select = [
 python_version = "3.9"
 strict = true
 exclude = ['cli\.py$', '__main__\.py$', "tests/", "build/"]
+
+[tool.setuptools.package-data]
+"*" = ["*.gz"]
