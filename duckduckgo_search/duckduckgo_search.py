@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import warnings
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import cycle
@@ -128,7 +129,7 @@ class DDGS:
         resp_content = self._get_url("GET", "https://duckduckgo.com", params={"q": keywords})
         return _extract_vqd(resp_content, keywords)
 
-    def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
+    def chat_yield(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> Iterator[str]:
         """Initiates a chat session with DuckDuckGo AI.
 
         Args:
@@ -137,8 +138,8 @@ class DDGS:
                 "o3-mini", "mixtral-8x7b". Defaults to "gpt-4o-mini".
             timeout (int): Timeout value for the HTTP client. Defaults to 20.
 
-        Returns:
-            str: The response from the AI.
+        Yields:
+            str: Chunks of the response from the AI.
         """
         # vqd
         if not self._chat_vqd:
@@ -154,36 +155,52 @@ class DDGS:
             "model": self._chat_models[model],
             "messages": self._chat_messages,
         }
-        resp = self.client.post(
-            "https://duckduckgo.com/duckchat/v1/chat",
+        with self.client.stream(
+            method="POST",
+            url="https://duckduckgo.com/duckchat/v1/chat",
             headers={"x-vqd-4": self._chat_vqd},
             json=json_data,
             timeout=timeout,
-        )
-        self._chat_vqd = resp.headers.get("x-vqd-4", "")
+        ) as resp:
+            self._chat_vqd = resp.headers.get("x-vqd-4", "")
+            chunks = []
+            for line in resp.iter_lines():
+                if line and line.startswith("data:"):
+                    if line == "data: [DONE]":
+                        break
+                    x = json_loads(line[5:].strip())
+                    if isinstance(x, dict):
+                        if x.get("action") == "error":
+                            err_message = x.get("type", "")
+                            if x.get("status") == 429:
+                                raise (
+                                    ConversationLimitException(err_message)
+                                    if err_message == "ERR_CONVERSATION_LIMIT"
+                                    else RatelimitException(err_message)
+                                )
+                            raise DuckDuckGoSearchException(err_message)
+                        elif message := x.get("message"):
+                            chunks.append(message)
+                            yield message
 
-        data = ",".join(x for line in resp.text.rstrip("[DONE]LIMT_CVRSA\n").split("data:") if (x := line.strip()))
-        data = json_loads("[" + data + "]")
-
-        results: list[str] = []
-        for x in data:
-            if isinstance(x, dict):
-                if x.get("action") == "error":
-                    err_message = x.get("type", "")
-                    if x.get("status") == 429:
-                        raise (
-                            ConversationLimitException(err_message)
-                            if err_message == "ERR_CONVERSATION_LIMIT"
-                            else RatelimitException(err_message)
-                        )
-                    raise DuckDuckGoSearchException(err_message)
-                elif message := x.get("message"):
-                    results.append(message)
-        result = "".join(results)
-
+        result = "".join(chunks)
         self._chat_messages.append({"role": "assistant", "content": result})
-        self._chat_tokens_count += len(results)
-        return result
+        self._chat_tokens_count += len(result)
+
+    def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
+        """Initiates a chat session with DuckDuckGo AI.
+
+        Args:
+            keywords (str): The initial message or question to send to the AI.
+            model (str): The model to use: "gpt-4o-mini", "llama-3.3-70b", "claude-3-haiku",
+                "o3-mini", "mixtral-8x7b". Defaults to "gpt-4o-mini".
+            timeout (int): Timeout value for the HTTP client. Defaults to 20.
+
+        Returns:
+            str: The response from the AI.
+        """
+        answer_generator = self.chat_yield(keywords, model, timeout)
+        return "".join(answer_generator)
 
     def text(
         self,
