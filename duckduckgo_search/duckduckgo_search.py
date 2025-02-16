@@ -88,7 +88,7 @@ class DDGS:
         exc_val: BaseException | None = None,
         exc_tb: TracebackType | None = None,
     ) -> None:
-        pass
+        self.client.__exit__(exc_type, exc_val, exc_tb)
 
     @cached_property
     def parser(self) -> LHTMLParser:
