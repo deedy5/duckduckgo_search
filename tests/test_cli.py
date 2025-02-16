@@ -15,7 +15,7 @@ IMAGES_RESULTS = None
 
 @pytest.fixture(autouse=True)
 def pause_between_tests():
-    time.sleep(1)
+    time.sleep(2)
 
 
 def test_version_command():
