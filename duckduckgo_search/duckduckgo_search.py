@@ -6,12 +6,11 @@ import warnings
 from datetime import datetime, timezone
 from functools import cached_property
 from itertools import cycle
-from random import choice, shuffle
+from random import shuffle
 from time import sleep, time
 from types import TracebackType
-from typing import Literal
 
-import primp
+import httpx
 from lxml.etree import _Element
 from lxml.html import HTMLParser as LHTMLParser
 from lxml.html import document_fromstring
@@ -20,6 +19,8 @@ from .exceptions import ConversationLimitException, DuckDuckGoSearchException, R
 from .utils import (
     _expand_proxy_tb_alias,
     _extract_vqd,
+    _get_random_headers,
+    _get_random_ssl_context,
     _normalize,
     _normalize_url,
     json_loads,
@@ -31,20 +32,6 @@ logger = logging.getLogger("duckduckgo_search.DDGS")
 class DDGS:
     """DuckDuckgo_search class to get search results from duckduckgo.com."""
 
-    _impersonates = (
-        "chrome_100", "chrome_101", "chrome_104", "chrome_105", "chrome_106", "chrome_107",
-        "chrome_108", "chrome_109", "chrome_114", "chrome_116", "chrome_117", "chrome_118",
-        "chrome_119", "chrome_120", "chrome_123", "chrome_124", "chrome_126", "chrome_127",
-        "chrome_128", "chrome_129", "chrome_130", "chrome_131",
-        "safari_ios_16.5", "safari_ios_17.2", "safari_ios_17.4.1", "safari_ios_18.1.1",
-        "safari_15.3", "safari_15.5", "safari_15.6.1", "safari_16", "safari_16.5",
-        "safari_17.0", "safari_17.2.1", "safari_17.4.1", "safari_17.5",
-        "safari_18", "safari_18.2",
-        "safari_ipad_18",
-        "edge_101", "edge_122", "edge_127", "edge_131",
-        "firefox_109", "firefox_117", "firefox_128", "firefox_133",
-    )  # fmt: skip
-    _impersonates_os = ("android", "ios", "linux", "macos", "windows")
     _chat_models = {
         "gpt-4o-mini": "gpt-4o-mini",
         "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
@@ -76,18 +63,15 @@ class DDGS:
         if not proxy and proxies:
             warnings.warn("'proxies' is deprecated, use 'proxy' instead.", stacklevel=1)
             self.proxy = proxies.get("http") or proxies.get("https") if isinstance(proxies, dict) else proxies
-        self.headers = headers if headers else {}
+        self.headers = headers if headers else _get_random_headers()
         self.headers["Referer"] = "https://duckduckgo.com/"
-        self.client = primp.Client(
+        self.client = httpx.Client(
             headers=self.headers,
             proxy=self.proxy,
             timeout=timeout,
-            cookie_store=True,
-            referer=True,
-            impersonate=choice(self._impersonates),  # type: ignore
-            impersonate_os=choice(self._impersonates_os),  # type: ignore
             follow_redirects=False,
-            verify=verify,
+            http2=True,
+            verify=_get_random_ssl_context() if verify else False,
         )
         self._chat_messages: list[dict[str, str]] = []
         self._chat_tokens_count = 0
@@ -118,7 +102,7 @@ class DDGS:
 
     def _get_url(
         self,
-        method: Literal["GET", "HEAD", "OPTIONS", "DELETE", "POST", "PUT", "PATCH"],
+        method: str,
         url: str,
         params: dict[str, str] | None = None,
         content: bytes | None = None,
