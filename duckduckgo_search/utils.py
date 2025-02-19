@@ -6,7 +6,7 @@ import ssl
 from html import unescape
 from pathlib import Path
 from random import SystemRandom, choice, choices, randint
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import unquote
 
 import certifi
@@ -76,7 +76,6 @@ def _expand_proxy_tb_alias(proxy: str | None) -> str | None:
 
 # SSL
 CRYPTORAND = SystemRandom()
-SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 DEFAULT_CIPHERS = [  # https://developers.cloudflare.com/ssl/reference/cipher-suites/recommendations/
     # Modern:
     "ECDHE-ECDSA-AES128-GCM-SHA256", "ECDHE-ECDSA-CHACHA20-POLY1305", "ECDHE-RSA-AES128-GCM-SHA256",
@@ -92,10 +91,18 @@ DEFAULT_CIPHERS = [  # https://developers.cloudflare.com/ssl/reference/cipher-su
 
 
 def _get_random_ssl_context() -> ssl.SSLContext:
-    """Get SSL context with shuffled ciphers."""
+    ssl_context = ssl.create_default_context(cafile=certifi.where())
     shuffled_ciphers = CRYPTORAND.sample(DEFAULT_CIPHERS[6:], len(DEFAULT_CIPHERS) - 6)
-    SSL_CONTEXT.set_ciphers(":".join(DEFAULT_CIPHERS[:6] + shuffled_ciphers))
-    return SSL_CONTEXT
+    ssl_context.set_ciphers(":".join(DEFAULT_CIPHERS[:6] + shuffled_ciphers))
+    commands: list[Callable[[ssl.SSLContext], None]] = [
+        lambda context: None,
+        lambda context: setattr(context, "maximum_version", ssl.TLSVersion.TLSv1_2),
+        lambda context: setattr(context, "minimum_version", ssl.TLSVersion.TLSv1_3),
+        lambda context: setattr(context, "options", context.options | ssl.OP_NO_TICKET),
+    ]
+    random_command = choice(commands)
+    random_command(ssl_context)
+    return ssl_context
 
 
 # Headers
