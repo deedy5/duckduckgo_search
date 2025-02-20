@@ -50,7 +50,7 @@ class DDGS:
         "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         "claude-3-haiku": "claude-3-haiku-20240307",
         "o3-mini": "o3-mini",
-        "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "mistral-small-3": "mistralai/Mistral-Small-24B-Instruct-2501",
     }
 
     def __init__(
