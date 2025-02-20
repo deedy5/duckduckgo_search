@@ -18,6 +18,7 @@ from lxml.html import document_fromstring
 
 from .exceptions import ConversationLimitException, DuckDuckGoSearchException, RatelimitException, TimeoutException
 from .utils import (
+    Patch,
     _expand_proxy_tb_alias,
     _extract_vqd,
     _get_random_headers,
@@ -112,7 +113,8 @@ class DDGS:
     ) -> bytes:
         self._sleep()
         try:
-            resp = self.client.request(method, url, params=params, content=content, data=data, cookies=cookies)
+            with Patch():
+                resp = self.client.request(method, url, params=params, content=content, data=data, cookies=cookies)
         except Exception as ex:
             if "time" in str(ex).lower():
                 raise TimeoutException(f"{url} {type(ex).__name__}: {ex}") from ex

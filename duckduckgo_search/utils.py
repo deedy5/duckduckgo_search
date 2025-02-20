@@ -124,23 +124,27 @@ def _get_random_headers() -> dict[str, str]:
     return choice(HEADERS)
 
 
-# Patch httpcore
-def _send_connection_init(self, request):  # type: ignore
-    self._h2_state.local_settings = h2.settings.Settings(
-        client=True,
-        initial_values={
-            h2.settings.SettingCodes.INITIAL_WINDOW_SIZE: randint(100, 200),
-            h2.settings.SettingCodes.HEADER_TABLE_SIZE: randint(4000, 5000),
-            h2.settings.SettingCodes.MAX_FRAME_SIZE: randint(16384, 17384),
-            h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: randint(100, 200),
-            h2.settings.SettingCodes.MAX_HEADER_LIST_SIZE: randint(65500, 66500),
-            h2.settings.SettingCodes.ENABLE_CONNECT_PROTOCOL: randint(0, 1),
-            h2.settings.SettingCodes.ENABLE_PUSH: randint(0, 1),
-        },
-    )
-    self._h2_state.initiate_connection()
-    self._h2_state.increment_flow_control_window(2**24)
-    self._write_outgoing_data(request)
+class Patch:
+    def __enter__(self) -> None:
+        def _send_connection_init(self, request):  # type: ignore
+            self._h2_state.local_settings = h2.settings.Settings(
+                client=True,
+                initial_values={
+                    h2.settings.SettingCodes.INITIAL_WINDOW_SIZE: randint(100, 200),
+                    h2.settings.SettingCodes.HEADER_TABLE_SIZE: randint(4000, 5000),
+                    h2.settings.SettingCodes.MAX_FRAME_SIZE: randint(16384, 17384),
+                    h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: randint(100, 200),
+                    h2.settings.SettingCodes.MAX_HEADER_LIST_SIZE: randint(65500, 66500),
+                    h2.settings.SettingCodes.ENABLE_CONNECT_PROTOCOL: randint(0, 1),
+                    h2.settings.SettingCodes.ENABLE_PUSH: randint(0, 1),
+                },
+            )
+            self._h2_state.initiate_connection()
+            self._h2_state.increment_flow_control_window(2**24)
+            self._write_outgoing_data(request)
 
+        self.original_send_connection_init = httpcore._sync.http2.HTTP2Connection._send_connection_init
+        httpcore._sync.http2.HTTP2Connection._send_connection_init = _send_connection_init  # type: ignore
 
-httpcore._sync.http2.HTTP2Connection._send_connection_init = _send_connection_init  # type: ignore
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore
+        httpcore._sync.http2.HTTP2Connection._send_connection_init = self.original_send_connection_init  # type: ignore
