@@ -122,7 +122,7 @@ class DDGS:
         logger.debug(f"_get_url() {resp.url} {resp.status_code} {len(resp.content)}")
         if resp.status_code == 200:
             return resp.content
-        elif resp.status_code in (202, 301, 403):
+        elif resp.status_code in (202, 301, 403, 400, 429, 418):
             raise RatelimitException(f"{resp.url} {resp.status_code} Ratelimit")
         raise DuckDuckGoSearchException(f"{resp.url} return None. {params=} {content=} {data=}")
 
@@ -170,6 +170,8 @@ class DDGS:
                 if line and line.startswith("data:"):
                     if line == "data: [DONE]":
                         break
+                    if line == "data: [DONE][LIMIT_CONVERSATION]":
+                        raise ConversationLimitException("ERR_CONVERSATION_LIMIT")
                     x = json_loads(line[5:].strip())
                     if isinstance(x, dict):
                         if x.get("action") == "error":
