@@ -174,16 +174,18 @@ def chat(load, proxy, multiline, timeout, verify, model):
             client._chat_tokens_count = cache.get("tokens", 0)
 
     while True:
-        print(f"{'-' * 78}\nYou[{model=} tokens={client._chat_tokens_count}]: ", end="")
+        click.secho(f"You[{model=} tokens={client._chat_tokens_count}]: ", fg="blue", nl=False)
         if multiline:
-            print(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]""")
+            click.secho(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]""", fg="green")
             user_input = sys.stdin.read()
-            print("...")
+            print()
         else:
             user_input = input()
         if user_input.strip():
-            resp_answer = client.chat(keywords=user_input, model=model, timeout=timeout)
-            click.secho(f"AI: {resp_answer}", fg="green")
+            click.secho("AI: ", fg="red", nl=False)
+            for chunk in client.chat_yield(keywords=user_input, model=model, timeout=timeout):
+                print(chunk, end="")
+            print()
 
             cache = {"vqd": client._chat_vqd, "tokens": client._chat_tokens_count, "messages": client._chat_messages}
             _save_json(cache_file, cache)
