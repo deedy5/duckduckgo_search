@@ -219,7 +219,7 @@ def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> 
     Args:
         keywords (str): The initial message or question to send to the AI.
         model (str): The model to use: "gpt-4o-mini", "llama-3.3-70b", "claude-3-haiku",
-            "o3-mini", "mixtral-8x7b". Defaults to "gpt-4o-mini".
+            "o3-mini", "mistral-small-3". Defaults to "gpt-4o-mini".
         timeout (int): Timeout value for the HTTP client. Defaults to 30.
 
     Returns:
@@ -229,6 +229,10 @@ def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> 
 ***Example***
 ```python
 results = DDGS().chat("summarize Daniel Defoe's The Consolidator", model='claude-3-haiku')
+
+# There is also `chat_yield` generator which yields chunks while a response is being processed:
+for x in DDGS().chat_yield("How Do Airplanes Fly", model='llama-3.3-70b'):
+    print(x)
 ```
 
 [Go To TOP](#TOP)
