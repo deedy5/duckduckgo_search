@@ -370,12 +370,7 @@ class DDGS:
 
         payload = {
             "q": keywords,
-            "s": "0",
-            "o": "json",
-            "api": "d.js",
-            "vqd": "",
             "kl": region,
-            "bing_market": region,
         }
         if timelimit:
             payload["df"] = timelimit
@@ -429,11 +424,15 @@ class DDGS:
                             if max_results and len(results) >= max_results:
                                 return results
 
-            next_page_s = tree.xpath("//form[./input[contains(@value, 'ext')]]/input[@name='s']/@value")
-            if not next_page_s or not max_results:
+            npx = tree.xpath("//form[./input[contains(@value, 'ext')]]")
+            if not npx or not max_results:
                 return results
-            elif isinstance(next_page_s, list):
-                payload["s"] = str(next_page_s[0])
+            next_page = npx[-1] if isinstance(npx, list) else None
+            if isinstance(next_page, _Element):
+                names = next_page.xpath('.//input[@type="hidden"]/@name')
+                values = next_page.xpath('.//input[@type="hidden"]/@value')
+                if isinstance(names, list) and isinstance(values, list):
+                    payload = {str(n): str(v) for n, v in zip(names, values)}
 
         return results
 
