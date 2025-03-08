@@ -302,12 +302,8 @@ class DDGS:
 
         payload = {
             "q": keywords,
-            "s": "0",
-            "o": "json",
-            "api": "d.js",
-            "vqd": "",
+            "b": "",
             "kl": region,
-            "bing_market": region,
         }
         if timelimit:
             payload["df"] = timelimit
