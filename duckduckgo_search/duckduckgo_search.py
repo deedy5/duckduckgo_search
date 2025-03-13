@@ -81,7 +81,7 @@ class DDGS:
         self.headers["Referer"] = "https://duckduckgo.com/"
         self.timeout = timeout
         self.client = primp.Client(
-            headers=self.headers,
+            # headers=self.headers,
             proxy=self.proxy,
             timeout=self.timeout,
             cookie_store=True,
@@ -500,7 +500,9 @@ class DDGS:
         results: list[dict[str, str]] = []
 
         for _ in range(5):
-            resp_content = self._get_url("GET", "https://duckduckgo.com/i.js", params=payload).content
+            resp_content = self._get_url(
+                "GET", "https://duckduckgo.com/i.js", params=payload, headers={"Referer": "https://duckduckgo.com/"}
+            ).content
             resp_json = json_loads(resp_content)
             page_data = resp_json.get("results", [])
 
