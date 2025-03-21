@@ -94,6 +94,7 @@ class DDGS:
         self._chat_messages: list[dict[str, str]] = []
         self._chat_tokens_count = 0
         self._chat_vqd: str = ""
+        self._chat_vqd_hash: str = ""
         self.sleep_timestamp = 0.0
 
     def __enter__(self) -> DDGS:
@@ -177,6 +178,7 @@ class DDGS:
                 method="GET", url="https://duckduckgo.com/duckchat/v1/status", headers={"x-vqd-accept": "1"}
             )
             self._chat_vqd = resp.headers.get("x-vqd-4", "")
+            self._chat_vqd_hash = resp.headers.get("x-vqd-hash-1", "")
 
         self._chat_messages.append({"role": "user", "content": keywords})
         self._chat_tokens_count += max(len(keywords) // 4, 1)  # approximate number of tokens
@@ -190,11 +192,12 @@ class DDGS:
         resp = self._get_url(
             method="POST",
             url="https://duckduckgo.com/duckchat/v1/chat",
-            headers={"x-vqd-4": self._chat_vqd},
+            headers={"x-vqd-4": self._chat_vqd, "x-vqd-hash-1": self._chat_vqd_hash},
             json=json_data,
             timeout=timeout,
         )
         self._chat_vqd = resp.headers.get("x-vqd-4", "")
+        self._chat_vqd_hash = resp.headers.get("x-vqd-hash-1", "")
         chunks = []
         try:
             for chunk in resp.stream():
