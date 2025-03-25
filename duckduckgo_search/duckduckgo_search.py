@@ -192,7 +192,7 @@ class DDGS:
         resp = self._get_url(
             method="POST",
             url="https://duckduckgo.com/duckchat/v1/chat",
-            headers={"x-vqd-4": self._chat_vqd, "x-vqd-hash-1": self._chat_vqd_hash},
+            headers={"x-vqd-4": self._chat_vqd, "x-vqd-hash-1": ""},
             json=json_data,
             timeout=timeout,
         )
