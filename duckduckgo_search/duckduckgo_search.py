@@ -95,6 +95,7 @@ class DDGS:
         self._chat_tokens_count = 0
         self._chat_vqd: str = ""
         self._chat_vqd_hash: str = ""
+        self._chat_xfe: str = ""
         self.sleep_timestamp = 0.0
 
     def __enter__(self) -> DDGS:
@@ -172,6 +173,20 @@ class DDGS:
         Yields:
             str: Chunks of the response from the AI.
         """
+        # x-fe-version
+        if not self._chat_xfe:
+            resp_content = self._get_url(
+                method="GET",
+                url="https://duckduckgo.com/?q=DuckDuckGo+AI+Chat&ia=chat&duckai=1",
+            ).content
+            try:
+                xfe1 = resp_content.split(b'__DDG_BE_VERSION__="', maxsplit=1)[1].split(b'"', maxsplit=1)[0].decode()
+                xfe2 = resp_content.split(b'__DDG_FE_CHAT_HASH__="', maxsplit=1)[1].split(b'"', maxsplit=1)[0].decode()
+                self._chat_xfe = f"{xfe1}-{xfe2}"
+            except Exception as ex:
+                raise DuckDuckGoSearchException(
+                    f"chat_yield() Error to get _chat_xfe: {type(ex).__name__}: {ex}"
+                ) from ex
         # vqd
         if not self._chat_vqd:
             resp = self._get_url(
@@ -192,7 +207,11 @@ class DDGS:
         resp = self._get_url(
             method="POST",
             url="https://duckduckgo.com/duckchat/v1/chat",
-            headers={"x-vqd-4": self._chat_vqd, "x-vqd-hash-1": ""},
+            headers={
+                "x-fe-version": self._chat_xfe,
+                "x-vqd-4": self._chat_vqd,
+                "x-vqd-hash-1": "",
+            },
             json=json_data,
             timeout=timeout,
         )
@@ -223,7 +242,7 @@ class DDGS:
                                 chunks.append(message)
                                 yield message
         except Exception as ex:
-            raise DuckDuckGoSearchException("chat_yield {type(ex).__name__}: {ex}") from ex
+            raise DuckDuckGoSearchException(f"chat_yield() {type(ex).__name__}: {ex}") from ex
 
         result = "".join(chunks)
         self._chat_messages.append({"role": "assistant", "content": result})
