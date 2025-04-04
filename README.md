@@ -22,9 +22,9 @@ AI chat and search for text, news, images and videos using the DuckDuckGo.com se
 ```python
 pip install duckduckgo_search==7.5.5
 ```
-To use chat (only works in version >= `2025.4.1`, chat ratelimit: `1 request per 20 seconds`)
+To use chat (only works in version >= `2025.4.4`, chat ratelimit: `1 request per 30 seconds`)
 ```python
-pip install duckduckgo_search[chat]==2025.4.1
+pip install duckduckgo_search[chat]==2025.4.4
 ```
 ## CLI version
 
