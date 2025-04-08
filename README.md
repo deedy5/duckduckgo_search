@@ -1,7 +1,9 @@
 ![Python >= 3.9](https://img.shields.io/badge/python->=3.9-red.svg) [![](https://badgen.net/github/release/deedy5/duckduckgo_search)](https://github.com/deedy5/duckduckgo_search/releases) [![](https://badge.fury.io/py/duckduckgo-search.svg)](https://pypi.org/project/duckduckgo-search)
 # Duckduckgo_search<a name="TOP"></a>
 
-AI chat and search for text, news, images and videos using the DuckDuckGo.com search engine.
+Search for text, news, images and videos using the DuckDuckGo.com search engine.
+
+:bangbang: AI chat moved to [duckai](https://pypi.org/project/duckai) package
 
 ## Table of Contents
 * [Install](#install)
@@ -11,11 +13,10 @@ AI chat and search for text, news, images and videos using the DuckDuckGo.com se
 * [DDGS class](#ddgs-class)
 * [Proxy](#proxy)
 * [Exceptions](#exceptions)
-* [1. chat() - AI chat](#1-chat---ai-chat)
-* [2. text() - text search](#2-text---text-search-by-duckduckgocom)
-* [3. images() - image search](#3-images---image-search-by-duckduckgocom)
-* [4. videos() - video search](#4-videos---video-search-by-duckduckgocom)
-* [5. news() - news search](#5-news---news-search-by-duckduckgocom)
+* [1. text() - text search](#2-text---text-search-by-duckduckgocom)
+* [2. images() - image search](#3-images---image-search-by-duckduckgocom)
+* [3. videos() - video search](#4-videos---video-search-by-duckduckgocom)
+* [4. news() - news search](#5-news---news-search-by-duckduckgocom)
 * [Disclaimer](#disclaimer)
 
 ## Install
@@ -30,8 +31,6 @@ ddgs --help
 ```
 CLI examples:
 ```python3
-# AI chat
-ddgs chat
 # text search
 ddgs text -k "Assyrian siege of Jerusalem"
 # find and download pdf files via proxy
@@ -210,34 +209,7 @@ Exceptions:
 
 [Go To TOP](#TOP)
 
-## 1. chat() - AI chat
-
-```python
-def chat(self, keywords: str, model: str = "gpt-4o-mini", timeout: int = 30) -> str:
-    """Initiates a chat session with DuckDuckGo AI.
-
-    Args:
-        keywords (str): The initial message or question to send to the AI.
-        model (str): The model to use: "gpt-4o-mini", "llama-3.3-70b", "claude-3-haiku",
-            "o3-mini", "mistral-small-3". Defaults to "gpt-4o-mini".
-        timeout (int): Timeout value for the HTTP client. Defaults to 30.
-
-    Returns:
-        str: The response from the AI.
-    """
-```
-***Example***
-```python
-results = DDGS().chat("summarize Daniel Defoe's The Consolidator", model='claude-3-haiku')
-
-# There is also `chat_yield` generator which yields chunks while a response is being processed:
-for x in DDGS().chat_yield("How Do Airplanes Fly", model='llama-3.3-70b'):
-    print(x)
-```
-
-[Go To TOP](#TOP)
-
-## 2. text() - text search by duckduckgo.com
+## 1. text() - text search by duckduckgo.com
 
 ```python
 def text(
@@ -282,7 +254,7 @@ print(results)
 
 [Go To TOP](#TOP)
 
-## 3. images() - image search by duckduckgo.com
+## 2. images() - image search by duckduckgo.com
 
 ```python
 def images(
@@ -349,7 +321,7 @@ print(images)
 
 [Go To TOP](#TOP)
 
-## 4. videos() - video search by duckduckgo.com
+## 3. videos() - video search by duckduckgo.com
 
 ```python
 def videos(
@@ -416,7 +388,7 @@ print(results)
 
 [Go To TOP](#TOP)
 
-## 5. news() - news search by duckduckgo.com
+## 4. news() - news search by duckduckgo.com
 
 ```python
 def news(

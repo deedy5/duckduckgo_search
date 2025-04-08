@@ -1,17 +1,15 @@
 import csv
 import logging
 import os
-import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from pathlib import Path
 from urllib.parse import unquote
 
 import click
 import primp
 
 from .duckduckgo_search import DDGS
-from .utils import _expand_proxy_tb_alias, json_dumps, json_loads
+from .utils import _expand_proxy_tb_alias, json_dumps
 from .version import __version__
 
 logger = logging.getLogger(__name__)
@@ -144,51 +142,6 @@ def safe_entry_point():
 def version():
     print(__version__)
     return __version__
-
-
-@cli.command()
-@click.option("-l", "--load", is_flag=True, default=False, help="load the last conversation from the json cache")
-@click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
-@click.option("-ml", "--multiline", is_flag=True, default=False, help="multi-line input")
-@click.option("-t", "--timeout", default=30, help="timeout value for the HTTP client")
-@click.option("-v", "--verify", default=True, help="verify SSL when making the request")
-@click.option(
-    "-m",
-    "--model",
-    prompt=CHAT_MODEL_CHOICES_PROMPT,
-    type=click.Choice([k for k in CHAT_MODEL_CHOICES]),
-    show_choices=False,
-    default="1",
-)
-def chat(load, proxy, multiline, timeout, verify, model):
-    """CLI function to perform an interactive AI chat using DuckDuckGo API."""
-    client = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify)
-    model = CHAT_MODEL_CHOICES[model]
-
-    cache_file = "ddgs_chat_conversation.json"
-    if load and Path(cache_file).exists():
-        with open(cache_file) as f:
-            cache = json_loads(f.read())
-            client._chat_vqd = cache.get("vqd", None)
-            client._chat_messages = cache.get("messages", [])
-            client._chat_tokens_count = cache.get("tokens", 0)
-
-    while True:
-        click.secho(f"You[{model=} tokens={client._chat_tokens_count}]: ", fg="blue", nl=False)
-        if multiline:
-            click.secho(f"""[multiline, send message: ctrl+{"Z" if sys.platform == "win32" else "D"}]""", fg="green")
-            user_input = sys.stdin.read()
-            print()
-        else:
-            user_input = input()
-        if user_input.strip():
-            click.secho("AI: ", fg="red", nl=False)
-            for chunk in client.chat_yield(keywords=user_input, model=model, timeout=timeout):
-                print(chunk, end="")
-            print()
-
-            cache = {"vqd": client._chat_vqd, "tokens": client._chat_tokens_count, "messages": client._chat_messages}
-            _save_json(cache_file, cache)
 
 
 @cli.command()

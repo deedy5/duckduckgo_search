@@ -23,11 +23,6 @@ def test_version_command():
     assert result.output.strip() == __version__
 
 
-def test_chat_command():
-    result = runner.invoke(cli, ["chat"])
-    assert "chat" in result.output
-
-
 def test_text_command():
     result = runner.invoke(cli, ["text", "-k", "python"])
     assert "title" in result.output
