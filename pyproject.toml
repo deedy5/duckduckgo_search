@@ -68,4 +68,4 @@ select = [
 [tool.mypy]
 python_version = "3.9"
 strict = true
-exclude = ['cli\.py$', '__main__\.py$', "tests/", "build/"]
+exclude = ["build/"]

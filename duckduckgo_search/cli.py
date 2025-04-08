@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import csv
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import unquote
 
 import click
@@ -40,7 +43,7 @@ CHAT_MODEL_CHOICES_PROMPT = (
 )
 
 
-def _save_data(keywords, data, function_name, filename):
+def _save_data(keywords: str, data: list[dict[str, str]], function_name: str, filename: str | None) -> None:
     filename, ext = filename.rsplit(".", 1) if filename and filename.endswith((".csv", ".json")) else (None, filename)
     filename = filename if filename else f"{function_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     if ext == "csv":
@@ -49,12 +52,12 @@ def _save_data(keywords, data, function_name, filename):
         _save_json(f"{filename}.{ext}", data)
 
 
-def _save_json(jsonfile, data):
+def _save_json(jsonfile: str | Path, data: list[dict[str, str]]) -> None:
     with open(jsonfile, "w", encoding="utf-8") as file:
         file.write(json_dumps(data))
 
 
-def _save_csv(csvfile, data):
+def _save_csv(csvfile: str | Path, data: list[dict[str, str]]) -> None:
     with open(csvfile, "w", newline="", encoding="utf-8") as file:
         if data:
             headers = data[0].keys()
@@ -63,7 +66,7 @@ def _save_csv(csvfile, data):
             writer.writerows(data)
 
 
-def _print_data(data):
+def _print_data(data: list[dict[str, str]]) -> None:
     if data:
         for i, e in enumerate(data, start=1):
             click.secho(f"{i}.\t    {'=' * 78}", bg="black", fg="white")
@@ -80,7 +83,7 @@ def _print_data(data):
             input()
 
 
-def _sanitize_keywords(keywords):
+def _sanitize_keywords(keywords: str) -> str:
     keywords = (
         keywords.replace("filetype", "")
         .replace(":", "")
@@ -94,7 +97,7 @@ def _sanitize_keywords(keywords):
     return keywords
 
 
-def _download_file(url, dir_path, filename, proxy, verify):
+def _download_file(url: str, dir_path: str, filename: str, proxy: str | None, verify: bool) -> None:
     try:
         resp = primp.Client(proxy=proxy, impersonate="chrome_131", timeout=10, verify=verify).get(url)
         if resp.status_code == 200:
@@ -104,7 +107,15 @@ def _download_file(url, dir_path, filename, proxy, verify):
         logger.debug(f"download_file url={url} {type(ex).__name__} {ex}")
 
 
-def _download_results(keywords, results, function_name, proxy=None, threads=None, verify=True, pathname=None):
+def _download_results(
+    keywords: str,
+    results: list[dict[str, str]],
+    function_name: str,
+    proxy: str | None = None,
+    threads: int | None = None,
+    verify: bool = True,
+    pathname: str | None = None,
+) -> None:
     path = pathname if pathname else f"{function_name}_{keywords}_{datetime.now():%Y%m%d_%H%M%S}"
     os.makedirs(path, exist_ok=True)
 
@@ -117,7 +128,7 @@ def _download_results(keywords, results, function_name, proxy=None, threads=None
             f = executor.submit(_download_file, url, path, f"{i}_{filename}", proxy, verify)
             futures.append(f)
 
-        with click.progressbar(
+        with click.progressbar(  # type: ignore
             length=len(futures), label="Downloading", show_percent=True, show_pos=True, width=50
         ) as bar:
             for future in as_completed(futures):
@@ -126,12 +137,12 @@ def _download_results(keywords, results, function_name, proxy=None, threads=None
 
 
 @click.group(chain=True)
-def cli():
+def cli() -> None:
     """duckduckgo_search CLI tool"""
     pass
 
 
-def safe_entry_point():
+def safe_entry_point() -> None:
     try:
         cli()
     except Exception as ex:
@@ -139,7 +150,7 @@ def safe_entry_point():
 
 
 @cli.command()
-def version():
+def version() -> str:
     print(__version__)
     return __version__
 
@@ -158,19 +169,19 @@ def version():
 @click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def text(
-    keywords,
-    region,
-    safesearch,
-    timelimit,
-    backend,
-    output,
-    download,
-    download_directory,
-    threads,
-    max_results,
-    proxy,
-    verify,
-):
+    keywords: str,
+    region: str,
+    safesearch: str,
+    timelimit: str | None,
+    backend: str,
+    output: str | None,
+    download: bool,
+    download_directory: str | None,
+    threads: int,
+    max_results: int | None,
+    proxy: str | None,
+    verify: bool,
+) -> None:
     """CLI function to perform a text search using DuckDuckGo API."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).text(
         keywords=keywords,
@@ -240,23 +251,23 @@ def text(
 @click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def images(
-    keywords,
-    region,
-    safesearch,
-    timelimit,
-    size,
-    color,
-    type_image,
-    layout,
-    license_image,
-    download,
-    download_directory,
-    threads,
-    max_results,
-    output,
-    proxy,
-    verify,
-):
+    keywords: str,
+    region: str,
+    safesearch: str,
+    timelimit: str | None,
+    size: str | None,
+    color: str | None,
+    type_image: str | None,
+    layout: str | None,
+    license_image: str | None,
+    download: bool,
+    download_directory: str | None,
+    threads: int,
+    max_results: int | None,
+    output: str | None,
+    proxy: str | None,
+    verify: bool,
+) -> None:
     """CLI function to perform a images search using DuckDuckGo API."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).images(
         keywords=keywords,
@@ -300,8 +311,18 @@ def images(
 @click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def videos(
-    keywords, region, safesearch, timelimit, resolution, duration, license_videos, max_results, output, proxy, verify
-):
+    keywords: str,
+    region: str,
+    safesearch: str,
+    timelimit: str | None,
+    resolution: str | None,
+    duration: str | None,
+    license_videos: str | None,
+    max_results: int | None,
+    output: str | None,
+    proxy: str | None,
+    verify: bool,
+) -> None:
     """CLI function to perform a videos search using DuckDuckGo API."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).videos(
         keywords=keywords,
@@ -329,7 +350,16 @@ def videos(
 @click.option("-o", "--output", help="csv, json or filename.csv|json (save the results to a csv or json file)")
 @click.option("-p", "--proxy", help="the proxy to send requests, example: socks5://127.0.0.1:9150")
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
-def news(keywords, region, safesearch, timelimit, max_results, output, proxy, verify):
+def news(
+    keywords: str,
+    region: str,
+    safesearch: str,
+    timelimit: str | None,
+    max_results: int | None,
+    output: str | None,
+    proxy: str | None,
+    verify: bool,
+) -> None:
     """CLI function to perform a news search using DuckDuckGo API."""
     data = DDGS(proxy=_expand_proxy_tb_alias(proxy), verify=verify).news(
         keywords=keywords, region=region, safesearch=safesearch, timelimit=timelimit, max_results=max_results
