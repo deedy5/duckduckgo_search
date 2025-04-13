@@ -83,11 +83,6 @@ class DDGS:
             follow_redirects=False,
             verify=verify,
         )
-        self._chat_messages: list[dict[str, str]] = []
-        self._chat_tokens_count = 0
-        self._chat_vqd: str = ""
-        self._chat_vqd_hash: str = ""
-        self._chat_xfe: str = ""
         self.sleep_timestamp = 0.0
 
     def __enter__(self) -> DDGS:
