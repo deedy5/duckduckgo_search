@@ -45,13 +45,6 @@ class DDGS:
         "firefox_109", "firefox_117", "firefox_128", "firefox_133", "firefox_135",
     )  # fmt: skip
     _impersonates_os = ("android", "ios", "linux", "macos", "windows")
-    _chat_models = {
-        "gpt-4o-mini": "gpt-4o-mini",
-        "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        "claude-3-haiku": "claude-3-haiku-20240307",
-        "o3-mini": "o3-mini",
-        "mistral-small-3": "mistralai/Mistral-Small-24B-Instruct-2501",
-    }
 
     def __init__(
         self,

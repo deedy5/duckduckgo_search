@@ -35,12 +35,6 @@ COLORS = {
     14: "white",
     15: "bright_white",
 }
-CHAT_MODEL_CHOICES = {f"{i}": k for i, k in enumerate(DDGS._chat_models, start=1)}
-CHAT_MODEL_CHOICES_PROMPT = (
-    "DuckDuckGo AI chat. Choose a model:\n"
-    + "\n".join([f"[{key}]: {value}" for key, value in CHAT_MODEL_CHOICES.items()])
-    + "\n"
-)
 
 
 def _save_data(keywords: str, data: list[dict[str, str]], function_name: str, filename: str | None) -> None:
