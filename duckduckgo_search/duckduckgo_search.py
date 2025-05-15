@@ -67,6 +67,7 @@ class DDGS:
             impersonate_os="random",
             follow_redirects=False,
             verify=verify,
+            http2_only=True,
         )
         self.sleep_timestamp = 0.0
 
@@ -192,6 +193,12 @@ class DDGS:
     ) -> list[dict[str, str]]:
         assert keywords, "keywords is mandatory"
 
+        headers = {
+            "Referer": "https://html.duckduckgo.com/",
+            "Sec-Fetch-User": "?1",
+        }
+        self.client.headers_update(headers)
+
         payload = {
             "q": keywords,
             "b": "",
@@ -259,6 +266,12 @@ class DDGS:
         max_results: int | None = None,
     ) -> list[dict[str, str]]:
         assert keywords, "keywords is mandatory"
+
+        headers = {
+            "Referer": "https://lite.duckduckgo.com/",
+            "Sec-Fetch-User": "?1",
+        }
+        self.client.headers_update(headers)
 
         payload = {
             "q": keywords,
