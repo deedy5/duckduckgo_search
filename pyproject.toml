@@ -69,3 +69,7 @@ select = [
 python_version = "3.9"
 strict = true
 exclude = ["build/"]
+
+[[tool.mypy.overrides]]
+module = "duckduckgo_search.cli"
+warn_unused_ignores = false
