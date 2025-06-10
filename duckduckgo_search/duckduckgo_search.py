@@ -67,7 +67,7 @@ class DDGS:
             impersonate_os="random",
             follow_redirects=False,
             verify=verify,
-            http2_only=True,
+            # http2_only=True,
         )
         self.sleep_timestamp = 0.0
 
