@@ -385,6 +385,11 @@ class DDGS:
 
         vqd = self._get_vqd(keywords)
 
+        headers = {
+            "Sec-Fetch-Mode": "cors",
+        }
+        self.client.headers_update(headers)
+
         safesearch_base = {"on": "1", "moderate": "1", "off": "-1"}
         timelimit = f"time:{timelimit}" if timelimit else ""
         size = f"size:{size}" if size else ""
@@ -393,12 +398,12 @@ class DDGS:
         layout = f"layout:{layout}" if layout else ""
         license_image = f"license:{license_image}" if license_image else ""
         payload = {
-            "l": region,
             "o": "json",
             "q": keywords,
+            "l": region,
             "vqd": vqd,
-            "f": f"{timelimit},{size},{color},{type_image},{layout},{license_image}",
             "p": safesearch_base[safesearch.lower()],
+            "f": f"{timelimit},{size},{color},{type_image},{layout},{license_image}",
         }
 
         cache = set()
