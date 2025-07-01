@@ -259,7 +259,7 @@ print(results)
 ```python
 def images(
     keywords: str,
-    region: str = "wt-wt",
+    region: str = "us-en",
     safesearch: str = "moderate",
     timelimit: str | None = None,
     size: str | None = None,
@@ -273,7 +273,7 @@ def images(
 
     Args:
         keywords: keywords for query.
-        region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        region: us-en, uk-en, ru-ru, etc. Defaults to "us-en".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: Day, Week, Month, Year. Defaults to None.
         size: Small, Medium, Large, Wallpaper. Defaults to None.
@@ -326,7 +326,7 @@ print(images)
 ```python
 def videos(
     keywords: str,
-    region: str = "wt-wt",
+    region: str = "us-en",
     safesearch: str = "moderate",
     timelimit: str | None = None,
     resolution: str | None = None,
@@ -338,7 +338,7 @@ def videos(
 
     Args:
         keywords: keywords for query.
-        region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        region: us-en, uk-en, ru-ru, etc. Defaults to "us-en".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m. Defaults to None.
         resolution: high, standart. Defaults to None.
@@ -393,7 +393,7 @@ print(results)
 ```python
 def news(
     keywords: str,
-    region: str = "wt-wt",
+    region: str = "us-en",
     safesearch: str = "moderate",
     timelimit: str | None = None,
     max_results: int | None = None,
@@ -402,7 +402,7 @@ def news(
 
     Args:
         keywords: keywords for query.
-        region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        region: us-en, uk-en, ru-ru, etc. Defaults to "us-en".
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m. Defaults to None.
         max_results: max number of results. If None, returns results only from the first response. Defaults to None.
