@@ -153,7 +153,7 @@ def version() -> str:
 
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="text search, keywords for query")
-@click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
+@click.option("-r", "--region", help="us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
 @click.option("-t", "--timelimit", type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
 @click.option("-m", "--max_results", type=int, help="maximum number of results")
@@ -166,7 +166,7 @@ def version() -> str:
 @click.option("-v", "--verify", default=True, help="verify SSL when making the request")
 def text(
     keywords: str,
-    region: str,
+    region: str | None,
     safesearch: str,
     timelimit: str | None,
     backend: str,
@@ -206,7 +206,7 @@ def text(
 
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="keywords for query")
-@click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
+@click.option("-r", "--region", default="us-en", help="us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
 @click.option("-t", "--timelimit", type=click.Choice(["Day", "Week", "Month", "Year"]))
 @click.option("-size", "--size", type=click.Choice(["Small", "Medium", "Large", "Wallpaper"]))
@@ -296,7 +296,7 @@ def images(
 
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="keywords for query")
-@click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
+@click.option("-r", "--region", default="us-en", help="us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
 @click.option("-t", "--timelimit", type=click.Choice(["d", "w", "m"]), help="day, week, month")
 @click.option("-res", "--resolution", type=click.Choice(["high", "standart"]))
@@ -339,7 +339,7 @@ def videos(
 
 @cli.command()
 @click.option("-k", "--keywords", required=True, help="keywords for query")
-@click.option("-r", "--region", default="wt-wt", help="wt-wt, us-en, ru-ru, etc. -region https://duckduckgo.com/params")
+@click.option("-r", "--region", default="us-en", help="us-en, ru-ru, etc. -region https://duckduckgo.com/params")
 @click.option("-s", "--safesearch", default="moderate", type=click.Choice(["on", "moderate", "off"]))
 @click.option("-t", "--timelimit", type=click.Choice(["d", "w", "m", "y"]), help="day, week, month, year")
 @click.option("-m", "--max_results", type=int, help="maximum number of results")
