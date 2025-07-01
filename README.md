@@ -214,7 +214,7 @@ Exceptions:
 ```python
 def text(
     keywords: str,
-    region: str = "wt-wt",
+    region: str | None = None,
     safesearch: str = "moderate",
     timelimit: str | None = None,
     backend: str = "auto",
@@ -224,7 +224,7 @@ def text(
 
     Args:
         keywords: keywords for query.
-        region: wt-wt, us-en, uk-en, ru-ru, etc. Defaults to "wt-wt".
+        region: us-en, uk-en, ru-ru, etc. Defaults to None.
         safesearch: on, moderate, off. Defaults to "moderate".
         timelimit: d, w, m, y. Defaults to None.
         backend: auto, html, lite. Defaults to auto.
