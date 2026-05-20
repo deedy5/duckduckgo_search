@@ -259,11 +259,14 @@ class DDGS:
             msg = f"Failed to fetch {url}: HTTP {resp.status_code}"
             raise DDGSException(msg)
 
-        content_map: dict[str, str | bytes] = {
-            "text_markdown": resp.text_markdown,
-            "text_plain": resp.text_plain,
-            "text_rich": resp.text_rich,
-            "text": resp.text,
-            "content": resp.content,
-        }
-        return {"url": url, "content": content_map.get(fmt, resp.text_markdown)}
+        if fmt == "text_plain":
+            content = resp.text_plain
+        elif fmt == "text_rich":
+            content = resp.text_rich
+        elif fmt == "text":
+            content = resp.text
+        elif fmt == "content":
+            content = resp.content
+        else:
+            content = resp.text_markdown
+        return {"url": url, "content": content}
