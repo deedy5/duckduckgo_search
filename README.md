@@ -17,6 +17,7 @@ A metasearch library that aggregates results from diverse web search services.
 * [4. news()](#4-news)
 * [5. books()](#5-books)
 * [6. extract()](#6-extract)
+* [Integrations](#integrations)
 * [Disclaimer](#disclaimer)
 
 ___
@@ -488,6 +489,41 @@ result = DDGS().extract("https://example.com", fmt="content")
 ddgs extract -u https://example.com
 ddgs extract -u https://example.com -f text_plain
 ddgs extract -u https://example.com -f content -o output.json
+```
+
+[Go To TOP](#TOP)
+___
+
+## Integrations
+
+Agent frameworks that ship `ddgs` support out of the box.
+
+### AG2
+
+[AG2](https://github.com/ag2ai/ag2) (>= 1.0.0) wraps `DDGS.text()` as `DuckDuckSearchTool`, giving an agent web search with no API key.
+
+```bash
+pip install "ag2[ddgs]"
+```
+
+```python
+from ag2 import Agent
+from ag2.config import AnthropicConfig
+from ag2.tools import DuckDuckSearchTool
+
+agent = Agent(
+    "researcher",
+    config=AnthropicConfig(model="claude-sonnet-4-6"),
+    tools=[DuckDuckSearchTool(max_results=10, region="uk-en", safesearch="strict")],
+)
+```
+
+The tool accepts an existing `DDGS` instance via `client=`, so proxy, timeout, and verify settings configured on the client are reused:
+
+```python
+from ddgs import DDGS
+
+tool = DuckDuckSearchTool(client=DDGS(proxy="socks5h://127.0.0.1:9150", timeout=20))
 ```
 
 [Go To TOP](#TOP)
