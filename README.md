@@ -503,7 +503,7 @@ Agent frameworks that ship `ddgs` support out of the box.
 [AG2](https://github.com/ag2ai/ag2) (>= 1.0.0) wraps `DDGS.text()` as `DuckDuckSearchTool`, giving an agent web search with no API key.
 
 ```bash
-pip install "ag2[ddgs]"
+pip install "ag2[ddgs,anthropic]"
 ```
 
 ```python
