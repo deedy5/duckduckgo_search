@@ -99,6 +99,26 @@ DEFAULT_CIPHERS = [  # https://developers.cloudflare.com/ssl/reference/cipher-su
 ]  # fmt: skip
 
 
+def _tls13_supported() -> bool:
+    """Return True when the platform supports setting TLS 1.3 as a minimum version.
+
+    LibreSSL (shipped with macOS system Python) does not support TLS 1.3,
+    so unconditionally setting ``minimum_version = TLSv1_3`` raises
+    ``ValueError: Unsupported protocol version``.  Probe once at import
+    time so the random SSL-context pool can exclude that command on
+    platforms where it would crash.
+    """
+    try:
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_3  # type: ignore[attr-defined]
+    except (ValueError, AttributeError):
+        return False
+    return True
+
+
+_TLS13_OK: bool = _tls13_supported()
+
+
 def _get_random_ssl_context(*, verify: bool | str) -> ssl.SSLContext:
     ssl_context = ssl.create_default_context(cafile=verify if isinstance(verify, str) else None)
     shuffled_ciphers = random.sample(DEFAULT_CIPHERS[9:], len(DEFAULT_CIPHERS) - 9)
@@ -106,9 +126,12 @@ def _get_random_ssl_context(*, verify: bool | str) -> ssl.SSLContext:
     commands: list[Callable[[ssl.SSLContext], None] | None] = [
         None,
         lambda context: setattr(context, "maximum_version", ssl.TLSVersion.TLSv1_2),
-        lambda context: setattr(context, "minimum_version", ssl.TLSVersion.TLSv1_3),
         lambda context: setattr(context, "options", context.options | ssl.OP_NO_TICKET),
     ]
+    if _TLS13_OK:
+        commands.append(
+            lambda context: setattr(context, "minimum_version", ssl.TLSVersion.TLSv1_3),
+        )
     random_command = random.choice(commands)
     if random_command:
         random_command(ssl_context)
