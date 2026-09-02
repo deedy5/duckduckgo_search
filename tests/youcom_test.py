@@ -1,6 +1,7 @@
 """Offline tests for the You.com engine: payload building, response parsing, registration."""
 
 import json
+from typing import Any, cast
 
 import pytest
 
@@ -90,7 +91,7 @@ def test_enabled_with_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(youcom_module, "_youcom_api_key", lambda: "test-key")
     engine_cls = type("YoucomEnabled", (youcom_module.Youcom,), {"disabled": False})
-    assert engine_cls.disabled is False
+    assert getattr(engine_cls, "disabled") is False
 
 
 def test_search_skips_without_key(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
@@ -114,7 +115,7 @@ class _FakeHttpClient:
     def __init__(self, status_code: int, text: str) -> None:
         self.status_code = status_code
         self.text = text
-        self.calls: list[dict] = []
+        self.calls: list[dict[str, object]] = []
 
     def request(self, *args: object, **kwargs: object) -> _FakeResponse:
         self.calls.append({"args": args, "kwargs": kwargs})  # type: ignore[arg-type]
@@ -130,11 +131,11 @@ def test_search_ok_with_key(monkeypatch: pytest.MonkeyPatch) -> None:
     engine.http_client = fake  # type: ignore[assignment]
     results = engine.search("wolf")
     assert results is not None and len(results) == 3
-    sent = fake.calls[0]
+    sent = cast("dict[str, Any]", fake.calls[0])
     assert sent["args"][0] == "POST"
     assert sent["args"][1] == "https://ydc-index.io/v1/search"
-    assert sent["kwargs"]["headers"]["X-API-Key"] == "test-key"  # type: ignore[index]
-    assert sent["kwargs"]["json"]["query"] == "wolf"  # type: ignore[index]
+    assert sent["kwargs"]["headers"]["X-API-Key"] == "test-key"
+    assert sent["kwargs"]["json"]["query"] == "wolf"
 
 
 def test_search_raises_on_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:

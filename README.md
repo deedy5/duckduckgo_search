@@ -136,8 +136,10 @@ ___
 \* `you` uses the You.com Web Search API (structured JSON, no page scraping). It requires an API key and is disabled unless the `YDC_API_KEY` environment variable is set (get a key at [you.com/platform/api-keys](https://you.com/platform/api-keys)), so it never joins `auto`/`all` rotation unless configured:
 
 ```python
-from ddgs import DDGS
 import os
+
+from ddgs import DDGS
+
 os.environ["YDC_API_KEY"] = "***"
 results = DDGS().text("python metasearch library", backend="you")
 ```
