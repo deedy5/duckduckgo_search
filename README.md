@@ -127,11 +127,20 @@ ___
 
 | DDGS function | Available backends |
 | --------------|:-------------------|
-| text()        | `bing`, `brave`, `duckduckgo`, `google`, `grokipedia`, `mojeek`, `startpage`, `yandex`, `yahoo`, `wikipedia`|
+| text()        | `bing`, `brave`, `duckduckgo`, `google`, `grokipedia`, `mojeek`, `startpage`, `you`*, `yandex`, `yahoo`, `wikipedia`|
 | images()      | `bing`, `duckduckgo` |
 | videos()      | `duckduckgo` |
 | news()        | `bing`, `duckduckgo`, `yahoo` |
 | books()       | `annasarchive` |
+
+\* `you` uses the You.com Web Search API (structured JSON, no page scraping). It requires an API key and is disabled unless the `YDC_API_KEY` environment variable is set (get a key at [you.com/platform/api-keys](https://you.com/platform/api-keys)), so it never joins `auto`/`all` rotation unless configured:
+
+```python
+from ddgs import DDGS
+import os
+os.environ["YDC_API_KEY"] = "***"
+results = DDGS().text("python metasearch library", backend="you")
+```
 
 [Go To TOP](#TOP)
 

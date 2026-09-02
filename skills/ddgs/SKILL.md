@@ -123,11 +123,13 @@ Available backends by method:
 
 | Method | Backends |
 |--------|----------|
-| `text()` | `bing`, `brave`, `duckduckgo`, `google`, `grokipedia`, `mojeek`, `startpage`, `yandex`, `yahoo`, `wikipedia` |
+| `text()` | `bing`, `brave`, `duckduckgo`, `google`, `grokipedia`, `mojeek`, `startpage`, `you`*, `yandex`, `yahoo`, `wikipedia` |
 | `images()` | `bing`, `duckduckgo` |
 | `videos()` | `duckduckgo` |
 | `news()` | `bing`, `duckduckgo`, `yahoo` |
 | `books()` | `annasarchive` |
+
+\* `you` (You.com Web Search API) requires the `YDC_API_KEY` environment variable and is disabled otherwise, so it only participates when explicitly configured.
 
 ## Tips
 
