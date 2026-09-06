@@ -202,6 +202,7 @@ def version() -> str:
             "grokipedia",
             "mojeek",
             "startpage",
+            "you",
             "yandex",
             "yahoo",
             "wikipedia",
