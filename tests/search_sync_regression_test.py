@@ -1,7 +1,7 @@
 """Regression tests for DDGS._search_sync future-collection bug (issue #427).
 
-These tests use deterministic engine stubs that bypass HTTP entirely (no network calls,
-no HTTP mocking) so they can run offline and reproduce the exact concurrency timing that
+These tests use controlled engine stubs that bypass HTTP entirely (no network calls,
+no HTTP mocking) so they can run offline and exercise the concurrency timing that
 triggers the bug: `wait(..., return_when="FIRST_EXCEPTION")` returning early while a
 sibling future is still running and successful.
 """
@@ -14,7 +14,7 @@ import pytest
 
 from ddgs.base import BaseSearchEngine
 from ddgs.ddgs import DDGS
-from ddgs.exceptions import DDGSException
+from ddgs.exceptions import DDGSException, TimeoutException
 from ddgs.results import TextResult
 
 
@@ -24,6 +24,7 @@ def _make_stub_engine(
     delay: float,
     raises: bool = False,
     href: str = "",
+    error: Exception | None = None,
 ) -> BaseSearchEngine[TextResult]:
     """Build a search-engine stub with a unique provider name and no HTTP calls."""
 
@@ -46,6 +47,8 @@ def _make_stub_engine(
         def search(self, *args: Any, **kwargs: Any) -> list[TextResult] | None:  # noqa: ANN401
             """Sleep for `delay`, then either raise or return one canned result."""
             time.sleep(delay)
+            if error is not None:
+                raise error
             if raises:
                 msg = f"{provider_name} failed"
                 raise RuntimeError(msg)
@@ -110,4 +113,16 @@ def test_all_engines_fail_still_raises() -> None:
     ddgs = _StubDDGS([fast_fail, slow_fail])
 
     with pytest.raises(DDGSException):
+        ddgs._search_sync("text", "query", max_results=10)
+
+
+@pytest.mark.parametrize("first_error", [TimeoutException("timed out"), RuntimeError("first failure")])
+def test_pending_failure_preserves_existing_error(first_error: Exception) -> None:
+    """Rescuing pending futures must not replace the earlier error or its timeout type."""
+    early = _make_stub_engine("early", delay=0.05, error=first_error)
+    late = _make_stub_engine("late", delay=0.3, error=RuntimeError("late failure"))
+    ddgs = _StubDDGS([early, late])
+    expected_type = TimeoutException if isinstance(first_error, TimeoutException) else DDGSException
+
+    with pytest.raises(expected_type, match=str(first_error)):
         ddgs._search_sync("text", "query", max_results=10)
