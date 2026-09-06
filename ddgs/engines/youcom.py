@@ -37,17 +37,28 @@ class Youcom(BaseSearchEngine[TextResult]):
     search_url = "https://ydc-index.io/v1/search"
     search_method = "POST"
 
+    # DDGS uses on/moderate/off; the You.com API uses off/moderate/strict
+    # (moderate is the API default). Map `on` -> `strict` so the caller's
+    # choice is not silently weakened to the API default.
+    SAFESEARCH_MAP: ClassVar[dict[str, str]] = {
+        "on": "strict",
+        "moderate": "moderate",
+        "off": "off",
+    }
+
     def build_payload(
         self,
         query: str,
         region: str,
-        safesearch: str,  # noqa: ARG002
+        safesearch: str,
         timelimit: str | None,
         page: int = 1,  # noqa: ARG002
         **kwargs: str,  # noqa: ARG002
     ) -> dict[str, Any]:
         """Build a payload for the You.com search request."""
         payload: dict[str, Any] = {"query": query, "count": 20}
+        if mapped_safesearch := self.SAFESEARCH_MAP.get(safesearch):
+            payload["safesearch"] = mapped_safesearch
         if country := region.lower().split("-", 1)[0]:
             payload["country"] = country.upper()
         if timelimit:

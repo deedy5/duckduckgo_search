@@ -61,7 +61,14 @@ def test_extract_results_empty_payload() -> None:
 def test_build_payload_defaults() -> None:
     engine = Youcom.__new__(Youcom)
     payload = engine.build_payload(query="wolf", region="us-en", safesearch="moderate", timelimit=None, page=1)
-    assert payload == {"query": "wolf", "count": 20, "country": "US"}
+    assert payload == {"query": "wolf", "count": 20, "country": "US", "safesearch": "moderate"}
+
+
+@pytest.mark.parametrize(("ddgs_mode", "youcom_mode"), [("on", "strict"), ("moderate", "moderate"), ("off", "off")])
+def test_build_payload_forwards_safesearch(ddgs_mode: str, youcom_mode: str) -> None:
+    engine = Youcom.__new__(Youcom)
+    payload = engine.build_payload(query="deep sea fish", region="us-en", safesearch=ddgs_mode, timelimit=None, page=1)
+    assert payload["safesearch"] == youcom_mode
 
 
 def test_build_payload_region_and_timelimit() -> None:
@@ -69,6 +76,7 @@ def test_build_payload_region_and_timelimit() -> None:
     payload = engine.build_payload(query="wolf", region="de-de", safesearch="on", timelimit="w", page=2)
     assert payload["country"] == "DE"
     assert payload["freshness"] == "week"
+    assert payload["safesearch"] == "strict"
 
 
 def test_engine_metadata() -> None:
