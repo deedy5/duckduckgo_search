@@ -10,7 +10,7 @@ from typing import Any, ClassVar
 
 from .base import BaseSearchEngine
 from .engines import ENGINES
-from .exceptions import DDGSException, TimeoutException
+from .exceptions import DDGSException, NoResultsException, TimeoutException
 from .http_client import HttpClient
 from .results import ResultsAggregator
 from .similarity import SimpleFilterRanker
@@ -57,7 +57,7 @@ class DDGS:
             type[BaseSearchEngine[Any]], BaseSearchEngine[Any]
         ] = {}  # dict[engine_class, engine_instance]
 
-    def __enter__(self) -> "DDGS":  # noqa: PYI034
+    def __enter__(self) -> "DDGS":
         """Enter the context manager and return the DDGS instance."""
         return self
 
@@ -132,7 +132,7 @@ class DDGS:
         instances.sort(key=lambda e: (e.priority, random), reverse=True)
         return instances
 
-    def _search_sync(  # noqa: C901
+    def _search_sync(  # noqa: C901, PLR0915
         self,
         category: str,
         query: str,
@@ -233,9 +233,14 @@ class DDGS:
         if results:
             return results[:max_results] if max_results else results
 
+        if isinstance(err, DDGSException):
+            raise err
         if "timed out" in f"{err}":
-            raise TimeoutException(err)
-        raise DDGSException(err or "No results found.")
+            raise TimeoutException(err) from err
+        if err is not None:
+            raise DDGSException(err) from err
+        msg = "No results found."
+        raise NoResultsException(msg)
 
     def text(self, query: str, **kwargs: Any) -> list[dict[str, Any]]:  # noqa: ANN401
         """Perform a text search."""
@@ -270,10 +275,6 @@ class DDGS:
         """
         client = HttpClient(proxy=self._proxy, timeout=self._timeout, verify=self._verify)
         resp = client.get(url)
-        if resp.status_code != 200:
-            msg = f"Failed to fetch {url}: HTTP {resp.status_code}"
-            raise DDGSException(msg)
-
         if fmt == "text_plain":
             content = resp.text_plain
         elif fmt == "text_rich":
