@@ -21,7 +21,7 @@ class Startpage(BaseSearchEngine[TextResult]):
     search_method = "POST"
     headers_update: ClassVar[dict[str, str]] = {"Referer": "https://www.startpage.com/"}
 
-    items_xpath = "//div[contains(@class, 'result')][./a]"
+    items_xpath = "//div[contains(@class, 'result css')][./a]"
     elements_xpath: ClassVar[Mapping[str, str]] = {
         "title": ".//h2//text()",
         "href": "./a/@href",
@@ -68,3 +68,7 @@ class Startpage(BaseSearchEngine[TextResult]):
             payload["with_date"] = timelimit
 
         return payload
+
+    def post_extract_results(self, results: list[TextResult]) -> list[TextResult]:
+        """Post-process search results."""
+        return [r for r in results if not r.href.startswith("https://www.google.com")]
