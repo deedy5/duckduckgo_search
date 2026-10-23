@@ -132,7 +132,7 @@ class DDGS:
         instances.sort(key=lambda e: (e.priority, random), reverse=True)
         return instances
 
-    def _search_sync(  # noqa: C901
+    def _search_sync(  # noqa: C901, PLR0912
         self,
         category: str,
         query: str,
@@ -180,19 +180,20 @@ class DDGS:
             max_workers = min(max_workers, DDGS.threads)
         futures, err = {}, None
         with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="DDGS") as executor:
-            for i, engine in enumerate(engines, start=1):
-                if engine.provider in seen_providers:
-                    continue
-                future = executor.submit(
-                    engine.search,
-                    query,
-                    region=region,
-                    safesearch=safesearch,
-                    timelimit=timelimit,
-                    page=page,
-                    **kwargs,
-                )
-                futures[future] = engine
+            for i, engine in enumerate([*engines, None], start=1):
+                if engine:
+                    if engine.provider in seen_providers:
+                        continue
+                    future = executor.submit(
+                        engine.search,
+                        query,
+                        region=region,
+                        safesearch=safesearch,
+                        timelimit=timelimit,
+                        page=page,
+                        **kwargs,
+                    )
+                    futures[future] = engine
 
                 if len(futures) >= max_workers or i >= max_workers:
                     done, not_done = wait(futures, timeout=self._timeout, return_when="FIRST_EXCEPTION")
