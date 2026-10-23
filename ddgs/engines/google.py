@@ -23,6 +23,8 @@ def get_ua() -> str:
 class Google(BaseSearchEngine[TextResult]):
     """Google search engine."""
 
+    disabled = True  # !!!
+
     name = "google"
     category = "text"
     provider = "google"
